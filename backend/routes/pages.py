@@ -58,12 +58,12 @@ async def save_preferences(
     user: CurrentUser,
     session: SessionDep,
     cv_creation_mode: Annotated[CVModeEnum, Form()],
-    generate_cover_letter: Annotated[bool, Form()],
     retries: Annotated[int, Form()],
-    cv_file: Annotated[UploadFile | None, File],
+    cv_file: Annotated[UploadFile, File],
+    generate_cover_letter: Annotated[bool, Form()] = False,
 ):
     file_path = ""
-    if cv_file:
+    if cv_file.size:
         logger.info(cv_file.filename)
         path = settings.CV_DIR_PATH / "user_specified_cv"
         if not os.path.isdir(path):
@@ -87,7 +87,11 @@ async def scrape_jobs(user: CurrentUser, session: SessionDep):
     websites = session.exec(
         select(WebsiteModel).where(WebsiteModel.user_id == user.id)
     ).all()
-    user_preferences = UserPreferencesModel  # TODO: Add logic here:
+    user_preferences = session.exec(
+        select(UserPreferencesModel).where(
+            UserPreferencesModel.user_id == user.id
+        )
+    ).first()
     return StreamingResponse(
         content=find_job_entries(
             user=user,
