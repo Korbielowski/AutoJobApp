@@ -120,7 +120,7 @@
     </ul>
 </div>
 <div id="scrape-container">
-    <form onsubmit="save_preferences()" id="scraping-form">
+    <form id="scraping-form">
         <div>
             <input type="checkbox" id="generate-cover-letter"
                    name="generate_cover_letter">
@@ -154,10 +154,11 @@
             <label for="retries">Number of retries of each step of the
                 process</label>
         </div>
-        <div>
-            <input type="submit" id="scrape-btn" value="Start job search"/>
-        </div>
     </form>
+    <div>
+        <!--        <input type="submit" id="scrape-btn" value="Start job search"/>-->
+    </div>
+    <button onclick="scrape_jobs()" id="scrape-btn">Start job search</button>
     <ul id="job-entries-container"></ul>
 </div>
 
@@ -270,7 +271,8 @@
         jobContainer.appendChild(li);
     }
 
-    function scrape_jobs() {
+    async function scrape_jobs() {
+        await save_preferences();
         const button = document.getElementById("scrape-btn");
         if (button.innerText === "Start job search") {
             button.innerText = "Stop job search";
