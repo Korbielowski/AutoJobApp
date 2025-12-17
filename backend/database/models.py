@@ -122,6 +122,7 @@ class UserPreferencesModel(SQLModel, table=True):
         default=None, foreign_key="usermodel.id", ondelete="CASCADE"
     )
     cv_mode: CVModeEnum
+    generate_cover_letter: bool
     cv_path: str
     retries: int = 3
 
