@@ -109,7 +109,7 @@ class User(BaseModel):
     age: str | None
 
 
-class CVModeEnum(StrEnum):
+class CVCreationModeEnum(StrEnum):
     llm_generation = "llm-generation"
     llm_selection = "llm-selection"
     no_llm_generation = "no-llm-generation"
@@ -121,7 +121,7 @@ class UserPreferencesModel(SQLModel, table=True):
     user_id: int | None = Field(
         default=None, foreign_key="usermodel.id", ondelete="CASCADE"
     )
-    cv_mode: CVModeEnum
+    cv_creation_mode: CVCreationModeEnum
     generate_cover_letter: bool
     cv_path: str
     retries: int = 3
