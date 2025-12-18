@@ -169,8 +169,41 @@ user:
 
   cover_letter_generation:
     prompt: "
-    Generate concise and professional cover letter.
+    Generate concise and professional cover letter in a HTML using simple
+    <p> tags with no additional CSS styling or custom libraries.
     Information about candidate:
-    - {}
-
+    - Full name: {full_name}
+    - Email: {email}
+    - Phone number: {phone_number}
+    - Programming languages: {programming_languages}
+    - Languages: {languages}
+    - Tools/Libraries/Frameworks: {tools}
+    - Certificates: {certificates}
+    - Charities: {charities}
+    - Education: {educations}
+    - Experience: {experiences}
+    - Projects: {projects}
+    Information about job entry and company:
+    - Job entry title: {title}
+    - Requirements: {requirements}
+    - Duties: {duties}
+    - About project: {about_project}
+    - Additional information: {additional_information}
     "
+    params:
+      - full_name
+      - email
+      - phone_number
+      - programming_languages
+      - languages
+      - tools
+      - certificates
+      - charities
+      - educations
+      - experiences
+      - projects
+      - title
+      - requirements
+      - duties
+      - about_project
+      - additional_information
