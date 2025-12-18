@@ -47,6 +47,18 @@
     #close-new-info-form-btn:hover, #close-edit-info-form-btn:hover {
         background-color: var(--error);
     }
+
+    .info-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: row;
+        gap: 0.5rem;
+    }
 </style>
 {% endblock styles %}
 
@@ -77,7 +89,7 @@
     <h3>Locations</h3>
     <button onclick="openAddNewInfoForm('location')">Add new location
     </button>
-    <ul id="locations-list">
+    <ul id="locations-list" class="info-list">
         {% for location in locations %}
         <li class="info-item" id="location-'{{ location.id }}'">
             <p>{{ location.country }}</p>
@@ -99,7 +111,7 @@
         programming
         language
     </button>
-    <ul id="programming-languages-list">
+    <ul id="programming-languages-list" class="info-list">
         {% for programming_language in programming_languages %}
         <li class="info-item"
             id="programmingLanguage-'{{ programming_language.id }}'">
@@ -118,7 +130,7 @@
     <h3>Languages</h3>
     <button onclick="openAddNewInfoForm('language')">Add new language
     </button>
-    <ul id="languages-list">
+    <ul id="languages-list" class="info-list">
         {% for language in languages %}
         <li class="info-item" id="language-'{{ language.id }}'">
             <p>{{ language.language }}</p>
@@ -136,7 +148,7 @@
     <h3>Tools</h3>
     <button onclick="openAddNewInfoForm('tool')">Add new tool
     </button>
-    <ul id="tools-list">
+    <ul id="tools-list" class="info-list">
         {% for tool in tools %}
         <li class="info-item" id="tool-'{{ tool.id }}'">
             <p>{{ tool.tool }}</p>
@@ -154,7 +166,7 @@
     <h3>Certificates</h3>
     <button onclick="openAddNewInfoForm('certificate')">Add new certificate
     </button>
-    <ul id="certificates-list">
+    <ul id="certificates-list" class="info-list">
         {% for certificate in certificates %}
         <li class="info-item" id="certificate-'{{ certificate.id }}'">
             <p>{{ certificate.certificate }}</p>
@@ -173,7 +185,7 @@
     <h3>Charities</h3>
     <button onclick="openAddNewInfoForm('charity')">Add new charity
     </button>
-    <ul id="charities-list">
+    <ul id="charities-list" class="info-list">
         {% for charity in charities %}
         <li class="info-item" id="charity-'{{ charity.id }}'">
             <p>{{ charity.charity }}</p>
@@ -194,7 +206,7 @@
     <h3>Education</h3>
     <button onclick="openAddNewInfoForm('education')">Add new education
     </button>
-    <ul id="educations-list">
+    <ul id="educations-list" class="info-list">
         {% for education in educations %}
         <li class="info-item" id="education-'{{ education.id }}'">
             <p>{{ education.school }}</p>
@@ -215,7 +227,7 @@
     <h3>Experience</h3>
     <button onclick="openAddNewInfoForm('experience')">Add new experience
     </button>
-    <ul id="experiences-list">
+    <ul id="experiences-list" class="info-list">
         {% for experience in experiences %}
         <li class="info-item" id="experience-'{{ experience.id }}'">
             <p>{{ experience.company }}</p>
@@ -236,7 +248,7 @@
     <h3>Projects</h3>
     <button onclick="openAddNewInfoForm('project')">Add new project
     </button>
-    <ul id="projects-list">
+    <ul id="projects-list" class="info-list">
         {% for project in projects %}
         <li class="info-item" id="project-'{{ project.id }}'">
             <p>{{ project.project }}</p>
@@ -256,7 +268,7 @@
     <button onclick="openAddNewInfoForm('socialPlatform')">Add new social
         platform
     </button>
-    <ul id="social-platforms-list">
+    <ul id="social-platforms-list" class="info-list">
         {% for social_platform in social_platforms %}
         <li class="info-item" id="socialPlatform-'{{ social_platform.id }}'">
             <p>{{ social_platform.social_platform }}</p>
@@ -275,7 +287,7 @@
     <h3>Job Posting Websites</h3>
     <button onclick="openAddNewInfoForm('website')">Add new job posting website
     </button>
-    <ul id="websites-list">
+    <ul id="websites-list" class="info-list">
         {% for website in websites %}
         <li class="info-item" id="website-'{{ website.id }}'">
             <p>{{ website.cookies }}</p>
