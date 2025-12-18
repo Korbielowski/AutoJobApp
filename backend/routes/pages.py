@@ -14,7 +14,7 @@ from sqlmodel import func, select
 from backend.config import settings
 from backend.database.crud import get_job_entries, save_model
 from backend.database.models import (
-    CVModeEnum,
+    CVCreationModeEnum,
     UserModel,
     UserPreferencesModel,
     WebsiteModel,
@@ -57,7 +57,7 @@ async def index(user: CurrentUser, session: SessionDep, request: Request):
 async def save_preferences(
     user: CurrentUser,
     session: SessionDep,
-    cv_creation_mode: Annotated[CVModeEnum, Form()],
+    cv_creation_mode: Annotated[CVCreationModeEnum, Form()],
     retries: Annotated[int, Form()],
     cv_file: Annotated[UploadFile, File],
     generate_cover_letter: Annotated[bool, Form()] = False,
@@ -74,7 +74,7 @@ async def save_preferences(
                     await save_file.write(await cv_file.read())
 
     preferences_model = UserPreferencesModel(
-        cv_mode=cv_creation_mode,
+        cv_creation_mode=cv_creation_mode,
         generate_cover_letter=generate_cover_letter,
         cv_path=file_path,
         retries=retries,
