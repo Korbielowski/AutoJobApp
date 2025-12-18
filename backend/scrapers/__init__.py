@@ -8,7 +8,7 @@ from sqlmodel import Session
 from backend.career_documents.pdf import (
     generate_career_documents,
 )
-from backend.database.models import CVModeEnum, UserModel
+from backend.database.models import CVCreationModeEnum, UserModel
 from backend.logger import get_logger
 from backend.scrapers.llm_scraper import LLMScraper
 
@@ -19,7 +19,7 @@ async def find_job_entries(
     user: UserModel,
     session: Session,
     websites,
-    cv_creation_mode: CVModeEnum,
+    cv_creation_mode: CVCreationModeEnum,
     generate_cover_letter: bool,
     retries: int,
     # auto_apply: bool,
