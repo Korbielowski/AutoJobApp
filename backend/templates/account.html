@@ -54,10 +54,21 @@
         gap: 1rem;
     }
 
-    .info-item {
-        display: flex;
-        flex-direction: row;
-        gap: 0.5rem;
+    /*.info-item {*/
+    /*    display: flex;*/
+    /*    flex-direction: row;*/
+    /*    gap: 0.5rem;*/
+    /*    background-color: red;*/
+    /*}*/
+    /*TODO: Add proper styling for tables and convert all uls to tables*/
+    table, th, td {
+        background-color: indianred;
+        border: 1px solid white;
+        border-collapse: collapse;
+    }
+
+    .info-item:hover {
+        background-color: blue;
     }
 </style>
 {% endblock styles %}
@@ -89,20 +100,28 @@
     <h3>Locations</h3>
     <button onclick="openAddNewInfoForm('location')">Add new location
     </button>
-    <ul id="locations-list" class="info-list">
+    <table id="locations-list" class="info-list">
+        <tr>
+            <th>Country</th>
+            <th>State</th>
+            <th>City</th>
+            <th>Zip code</th>
+        </tr>
         {% for location in locations %}
-        <li class="info-item" id="location-'{{ location.id }}'">
-            <p>{{ location.country }}</p>
-            <p>{{ location.state }}</p>
-            <p>{{ location.city }}</p>
-            <p>{{ location.zip_code }}</p>
-            <button onclick="openEditInformationForm('location', '{{ location.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
-        </li>
+        <tr class="info-item" id="location-'{{ location.id }}'">
+            <td>{{ location.country }}</td>
+            <td>{{ location.state }}</td>
+            <td>{{ location.city }}</td>
+            <td>{{ location.zip_code }}</td>
+            <td>
+                <button onclick="openEditInformationForm('location', '{{ location.id }}')">
+                    Edit Item
+                </button>
+                <button onclick="deleteInformation()">Delete Item</button>
+            </td>
+        </tr>
         {% endfor %}
-    </ul>
+    </table>
 </div>
 
 <div>
