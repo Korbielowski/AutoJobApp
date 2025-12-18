@@ -272,9 +272,9 @@
     }
 
     async function scrape_jobs() {
-        await save_preferences();
         const button = document.getElementById("scrape-btn");
         if (button.innerText === "Start job search") {
+            await save_preferences();
             button.innerText = "Stop job search";
             eventSrc = new EventSource("{{ url_for('scrape_jobs') }}");
             eventSrc.onmessage = function (event) {
