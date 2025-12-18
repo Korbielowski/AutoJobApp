@@ -162,7 +162,7 @@ user:
 
   company_data_search:
     prompt: "
-    Find most important information about company, using your search tool: {company_name}
+    Find most important information about company, using your search tool. Company name: {company_name}
     "
     params:
       - company_name
@@ -189,6 +189,10 @@ user:
     - Duties: {duties}
     - About project: {about_project}
     - Additional information: {additional_information}
+    - Products and technologies: {products_and_technologies}
+    - Work culture: {work_culture}
+    - Business and industry context: {business_and_industry_context}
+    - Mission and strategic direction: {mission_and_strategic_direction}
     "
     params:
       - full_name
@@ -207,3 +211,7 @@ user:
       - duties
       - about_project
       - additional_information
+      - products_and_technologies
+      - work_culture
+      - business_and_industry_context
+      - mission_and_strategic_direction
