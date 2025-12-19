@@ -13,7 +13,7 @@ from backend.database.crud import (
     save_job_entry,
 )
 from backend.database.models import (
-    CVModeEnum,
+    CVCreationModeEnum,
     JobEntryModel,
     SkillsLLMResponse,
     UserModel,
@@ -45,10 +45,16 @@ async def load_template_and_styling() -> tuple[str, str]:
     return html_template, styling
 
 
+async def save_document_to_file(path: Path, file_name: str, data: str) -> None:
+    editable_file_path = path / file_name
+    async with aiofiles.open(editable_file_path, "w") as file:
+        await file.write(data)
+
+
 async def create_cover_letter(
     user: UserModel,
-    session: Session,
     job_entry: JobEntry,
+    converted_title: str,
     current_time: str,
     path: Path,
 ) -> str:
@@ -69,20 +75,34 @@ async def create_cover_letter(
             company_name=job_entry.company_name,
         ),
         model=CompanyDetails,
+        tools=["web_search"],
     )
     logger.debug(f"Company info: {devtools.pformat(company_details)}")
 
     cover_letter = await send_req_to_llm(
         prompt=await load_prompt(
             prompt_path="career_documents:user:cover_letter_generation",
-            model=company_details,
+            model=user,
+            title=job_entry.title,
+            requirements=job_entry.requirements,
+            duties=job_entry.duties,
+            about_project=job_entry.about_project,
+            additional_information=job_entry.additional_information,
+            products_and_technologies=company_details.products_and_technologies,
+            work_culture=company_details.work_culture,
+            business_and_industry_context=company_details.business_and_industry_context,
+            mission_and_strategic_direction=company_details.mission_and_strategic_direction,
         ),
         model=CoverLetterOutput,
     )
 
-    cover_letter_path = path / f"{job_entry.title}_{current_time}.pdf"
+    file_name = f"Letter_{converted_title}_{current_time}"
+    cover_letter_path = path / f"{file_name}.pdf"
 
     HTML(string=cover_letter.html).write_pdf(cover_letter_path)
+    await save_document_to_file(
+        path, file_name=f"{file_name}.html", data=cover_letter.html
+    )
 
     return cover_letter_path.as_uri()
 
@@ -91,9 +111,10 @@ async def create_cv(
     user: UserModel,
     session: Session,
     job_entry: JobEntry,
+    converted_title: str,
     current_time: str,
     path: Path,
-    cv_creation_mode: CVModeEnum,
+    cv_creation_mode: CVCreationModeEnum,
 ) -> str:
     candidate_data = get_candidate_data(session=session, user=user)
     html_template, styling = await load_template_and_styling()
@@ -171,9 +192,16 @@ async def create_cv(
             return Path(user_preferences.cv_path).as_uri()
         raise Exception("Could not load or create/generate CV")
 
-    cv_path = path / f"{job_entry.title}_{current_time}.pdf"
+    file_name = f"CV_{converted_title}_{current_time}"
+    cv_path = path / f"{file_name}.pdf"
 
     HTML(string=cv.html).write_pdf(cv_path, stylesheets=[CSS(string=cv.css)])
+    await save_document_to_file(
+        path=path, file_name=f"{file_name}.html", data=cv.html
+    )
+    await save_document_to_file(
+        path=path, file_name=f"{file_name}.css", data=cv.css
+    )
 
     return cv_path.as_uri()
 
@@ -183,19 +211,21 @@ async def generate_career_documents(
     session: Session,
     job_entry: JobEntry,
     current_time: str,
-    cv_creation_mode: CVModeEnum,
+    cv_creation_mode: CVCreationModeEnum,
     generate_cover_letter: bool,
 ) -> JobEntryModel:
     if not os.path.isdir(settings.CV_DIR_PATH):
         os.mkdir(settings.CV_DIR_PATH)
 
-    documents_path = settings.CV_DIR_PATH / f"{job_entry.title}_{current_time}"
+    converted_title = job_entry.title.replace(" ", "").replace("/", "_")
+    documents_path = settings.CV_DIR_PATH / f"{converted_title}_{current_time}"
     os.mkdir(documents_path)
 
     job_entry.cv_path = await create_cv(
         user=user,
         session=session,
         job_entry=job_entry,
+        converted_title=converted_title,
         current_time=current_time,
         path=documents_path,
         cv_creation_mode=cv_creation_mode,
@@ -203,8 +233,8 @@ async def generate_career_documents(
     if generate_cover_letter:
         job_entry.cover_letter_path = await create_cover_letter(
             user=user,
-            session=session,
             job_entry=job_entry,
+            converted_title=converted_title,
             current_time=current_time,
             path=documents_path,
         )
