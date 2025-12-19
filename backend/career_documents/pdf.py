@@ -176,7 +176,7 @@ async def create_cv(
         )
     elif cv_creation_mode == "no-llm-generation":
         raise NotImplementedError(
-            "no-llm-generation option is not fully implemented yet"
+            "no-llm-generation option is not fully implemented yet. Please use other CV generation techniques"
         )
         # html = html_template.format(
         #     full_name=candidate_data.full_name,
