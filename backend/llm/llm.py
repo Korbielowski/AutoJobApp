@@ -1,5 +1,5 @@
 # TODO: If not used, remove openai-agents from dependencies and add normal OpenAI
-# TODO: Remove dotenv and code related to it from this file, when app setup works fine
+# TODO: Use async OpenAI class
 import asyncio
 
 import tiktoken
