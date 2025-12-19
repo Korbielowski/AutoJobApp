@@ -53,6 +53,7 @@ async def save_document_to_file(path: Path, file_name: str, data: str) -> None:
 
 async def create_cover_letter(
     user: UserModel,
+    session: Session,
     job_entry: JobEntry,
     converted_title: str,
     current_time: str,
@@ -79,10 +80,12 @@ async def create_cover_letter(
     )
     logger.debug(f"Company info: {devtools.pformat(company_details)}")
 
+    candidate_data = get_candidate_data(session=session, user=user)
+
     cover_letter = await send_req_to_llm(
         prompt=await load_prompt(
             prompt_path="career_documents:user:cover_letter_generation",
-            model=user,
+            model=candidate_data,
             title=job_entry.title,
             requirements=job_entry.requirements,
             duties=job_entry.duties,
@@ -233,6 +236,7 @@ async def generate_career_documents(
     if generate_cover_letter:
         job_entry.cover_letter_path = await create_cover_letter(
             user=user,
+            session=session,
             job_entry=job_entry,
             converted_title=converted_title,
             current_time=current_time,
