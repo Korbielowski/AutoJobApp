@@ -11,9 +11,6 @@ wheels/
 .ruff_cache/
 .pytest_cache/
 
-# Pyenv
-.python-version
-
 # Virtual environments
 .venv/
 venv/
@@ -22,7 +19,7 @@ venv/
 .env
 
 # PDFs and other files
-.pdf
+*.pdf
 
 # Code editors
 .idea/

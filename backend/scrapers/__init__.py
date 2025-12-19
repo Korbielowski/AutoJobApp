@@ -1,14 +1,15 @@
-import os
-from pathlib import Path
+import datetime
 from typing import Any, AsyncGenerator
 
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 from sqlmodel import Session
 
-from backend.database.models import UserModel
-from backend.logging import get_logger
-from backend.pdf import create_cv
+from backend.career_documents.pdf import (
+    generate_career_documents,
+)
+from backend.database.models import CVCreationModeEnum, UserModel
+from backend.logger import get_logger
 from backend.scrapers.llm_scraper import LLMScraper
 
 logger = get_logger()
@@ -18,10 +19,14 @@ async def find_job_entries(
     user: UserModel,
     session: Session,
     websites,
-    auto_apply: bool = False,
-    generate_cv: bool = False,
-    use_user_cv: bool = False,
+    cv_creation_mode: CVCreationModeEnum,
+    generate_cover_letter: bool,
+    retries: int,
+    # auto_apply: bool,
 ) -> AsyncGenerator[str, Any]:
+    if not websites:
+        yield "data:null\n\n"
+
     async with Stealth().use_async(async_playwright()) as playwright:
         # TODO: Add ability for users to choose their preferred browser, recommend and default to chromium
         browser = await playwright.chromium.launch(headless=False)
@@ -39,6 +44,7 @@ async def find_job_entries(
                 context=context,
                 page=page,
                 website_info=website,
+                retries=retries,
             )
             await scraper.login_to_page()
 
@@ -47,31 +53,18 @@ async def find_job_entries(
                 for job in await scraper.get_job_entries():
                     job_data = await scraper.process_and_evaluate_job(job)
                     if job_data:
-                        if not use_user_cv:
-                            cv = create_cv(
-                                user=user,
-                                job_entry=job_data,
-                                mode="llm-selection",
-                            )
-                        else:
-                            path = os.getenv("USER_CV", "")
-                            if not path:
-                                logger.error(
-                                    "USER_CV variable with path to user's cv is not set"
-                                )
-                                yield f"data:{job_data}\n\n"
-                            cv = Path(path)
-                        logger.info(cv)
-                    # TODO: Create CV in here and then apply ;)
-                    if job_data:
-                        logger.error("Sending data to client")
-                        yield f"data:{job_data.model_dump_json()}\n\n"
-                    else:
-                        logger.error("Sending just nothing to client")
-                        yield "data:null\n\n"
+                        job_entry_model = await generate_career_documents(
+                            user=user,
+                            session=session,
+                            job_entry=job_data,
+                            current_time=datetime.datetime.today().strftime(
+                                "%Y-%m-%d_%H:%M:%S"
+                            ),
+                            cv_creation_mode=cv_creation_mode,
+                            generate_cover_letter=generate_cover_letter,
+                        )
+                        yield f"data:{job_entry_model.model_dump_json()}\n\n"
                 running = await scraper.navigate_to_next_page()
-                logger.info(f"Running: {running}")
-                running = False
 
 
 __all__ = ["find_job_entries"]

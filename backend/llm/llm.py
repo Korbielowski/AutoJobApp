@@ -1,48 +1,62 @@
 # TODO: If not used, remove openai-agents from dependencies and add normal OpenAI
-# TODO: Remove dotenv and code related to it from this file, when app setup works fine
+# TODO: Use async OpenAI class
 import asyncio
 
+import tiktoken
 from openai import AuthenticationError, OpenAI, RateLimitError
-from sqlmodel import SQLModel
+from pydantic import BaseModel
 
 from backend.config import settings
-from backend.logging import get_logger
+from backend.logger import get_logger
 
 BASE_URL = "https://api.llm7.io/v1"
 MODEL = "deepseek-r1-0528"
 # OPENAI_MODEL = "gpt-5-nano-2025-08-07"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
+TIK = tiktoken.encoding_for_model("gpt-5-")
 logger = get_logger()
 
 
 async def send_req_to_llm(
     prompt: str,
+    system_prompt: str = "",
     temperature: float = 1,
     use_openai: bool = True,
-    use_json_schema: bool = False,
-    model: SQLModel | None = None,
+    model: type[BaseModel] | None = None,
+    tools: list[str] | None = None,
     retry: int = 3,
-) -> str:
-    # response = LLM.responses.create(model="deepseek/deepseek-r1-distill-llama-70b:free", instructions=prompt, input=str(description))
+) -> str | BaseModel:
     response = ""
+    logger.debug(
+        f"Prompt token count: {len(TIK.encode(system_prompt + prompt))}, temperature: {temperature}, use_openai: {use_openai}, model: {model}, retry: {retry}, tools: {tools}"
+    )
 
     if use_openai:
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
         while not response and retry > 0:
             try:
-                if use_json_schema and model:
+                if model:
+                    tools = [{"type": tool} for tool in tools] if tools else []
                     response = client.responses.parse(
                         model=OPENAI_MODEL,
-                        input=prompt,
+                        input=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": prompt},
+                        ],
+                        tools=tools,
                         temperature=temperature,
                         text_format=model,
                     )
-                    if response.output_parsed:
+                    if response and response.output_parsed:
                         return response.output_parsed
                 else:
                     response = client.responses.create(
                         model=OPENAI_MODEL,
-                        input=prompt,
+                        input=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": prompt},
+                        ],
+                        tools=tools,
                         temperature=temperature,
                     )
                     if response:

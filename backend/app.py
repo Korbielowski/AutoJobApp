@@ -14,7 +14,11 @@ async def setup(inner_app: FastAPI) -> AsyncGenerator:
     init_db()
     # TODO: Add LLM API setup
 
-    inner_app.mount("/static", StaticFiles(directory="static"), name="static")
+    inner_app.mount(
+        "/static",
+        StaticFiles(directory=settings.ROOT_DIR / "static"),
+        name="static",
+    )
 
     yield
     # TODO: In the future release all resources if needed

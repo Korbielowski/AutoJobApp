@@ -3,8 +3,9 @@ import abc
 from playwright.async_api import BrowserContext, Locator, Page
 
 from backend.database.models import JobEntry, WebsiteModel
-from backend.llm import send_req_to_llm
-from backend.logging import get_logger
+from backend.llm.llm import send_req_to_llm
+from backend.llm.prompts import load_prompt
+from backend.logger import get_logger
 
 logger = get_logger()
 
@@ -18,6 +19,7 @@ class BaseScraper(abc.ABC):
         context: BrowserContext,
         page: Page,
         website_info: WebsiteModel | None,
+        retries: int,
     ) -> None:
         self.url = url
         self.email = (
@@ -27,6 +29,7 @@ class BaseScraper(abc.ABC):
         self.context = context
         self.page = page
         self.website_info = website_info if website_info else WebsiteModel()
+        self.retries = retries
 
     @abc.abstractmethod
     async def login_to_page(self) -> None:
@@ -59,14 +62,10 @@ class BaseScraper(abc.ABC):
     async def process_and_evaluate_job(
         self, locator: Locator
     ) -> JobEntry | None:
-        url_2 = await locator.get_attribute("href")
-        url = await locator.get_attribute(
-            "href"
-        )  # FIXME: This does not return url as this locator is more general and is a parent for other elements, also for a tag with url to job offer
-        logger.info(
-            f"Url with get_by_role: {url_2}\nUrl with get_attribute: {url}"
-        )
-        job_entry = await self._get_job_information(url_2)
+        url = await locator.get_attribute("href")
+        job_entry = await self._get_job_information(url)
+
+        return job_entry
 
         if not job_entry:
             logger.error(f"job_entry: {job_entry}")
@@ -76,7 +75,11 @@ class BaseScraper(abc.ABC):
 
         # TODO: Get user needs
         user_needs = ""
-        prompt = f"Compare user qualifications and needs: {user_needs}. With these from job offer: {job_entry.model_dump_json()}. Return only one word, True if I should apply, and False if not and no other words/characters"
+        prompt = await load_prompt(
+            prompt_path="cv:user:determine_if_offer_valuable",
+            user_needs=user_needs,
+            job_entry=job_entry.model_dump_json(),
+        )  # TODO: Fix this code, so that it behaves as other load_prompt instances
         response = await send_req_to_llm(prompt, use_openai=True)
         logger.info(f"LLM evaluation: {response}")
 

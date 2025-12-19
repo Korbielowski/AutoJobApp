@@ -11,12 +11,23 @@ wheels/
 .ruff_cache/
 .pytest_cache/
 
-# Pyenv
-.python-version
-
 # Virtual environments
+requirements.txt
 .venv/
 venv/
 
-# VS Code
+# PDFs and other files
+*.pdf
+
+# Code editors
+.idea/
 .vscode/
+
+# Log files
+*.log
+
+# GitHub
+.github/
+
+# Documentation
+docs/

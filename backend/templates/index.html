@@ -5,7 +5,7 @@
 {% block styles %}
 {{ super() }}
 <style>
-    #scrape-container {
+    #scrape-container, #already-scraped-jobs {
         padding: 10px 10px;
         width: 100%;
         display: flex;
@@ -13,7 +13,7 @@
         gap: 10px;
     }
 
-    #job-entries-container li {
+    #job-entries-container li, #already-scraped-jobs li {
         margin: 10px 0;
         padding: 10px;
         background-color: var(--surface);
@@ -31,14 +31,134 @@
     .job-data {
 
     }
+
+    #scraping-form {
+        display: flex;
+        flex-direction: column;
+    }
 </style>
 {% endblock styles %}
 
 {% block content %}
 
 <div id="user-info-container"></div>
+<div id="already-scraped-jobs">
+    {% if scraped_job_entries %}
+    <h2>Already Scraped Job Entries</h2>
+    {% endif %}
+    <ul>
+        {% for job_entry in scraped_job_entries %}
+        <li>
+            <div>
+                <h5>Job Title: </h5>
+                <p class="job-data">{{ job_entry.title }}</p>
+                <br>
+                <h5>Location: </h5>
+                <p class="job-data">{{ job_entry.location }}</p>
+                <br>
+                <h5>Company Name: </h5>
+                <p class="job-data">{{ job_entry.company_name }}</p>
+            </div>
+            <details>
+                <summary>Job details</summary>
+                <div class="job-data-container">
+                    <h5>CV Path: </h5>
+                    <p>
+                        {{job_entry.cv_path }}
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Job Url: </h5>
+                    <p>
+                        <a href="{{ job_entry.job_url }}" target="_blank">{{
+                            job_entry.job_url }}</a>
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Url: </h5>
+                    <p>
+                        <a href="{{ job_entry.company_url }}" target="_blank">{{
+                            job_entry.company_url }}</a>
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Contract Type: </h5>
+                    <p class="job-data">{{ job_entry.contract_type }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Employment Type: </h5>
+                    <p class="job-data">{{ job_entry.employment_type }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Work Arrangement: </h5>
+                    <p class="job-data">{{ job_entry.work_arrangement }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Job Requirements: </h5>
+                    <p class="job-data">{{ job_entry.requirements }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Duties: </h5>
+                    <p class="job-data">{{ job_entry.duties }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>About Project: </h5>
+                    <p class="job-data">{{ job_entry.about_project }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Benefits: </h5>
+                    <p class="job-data">{{ job_entry.offer_benefits }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Additional Information: </h5>
+                    <p class="job-data">{{ job_entry.additional_information
+                        }}</p>
+                </div>
+            </details>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
 <div id="scrape-container">
-    <button id="scrape-btn" onclick="scrape_jobs()">Start job search</button>
+    <form id="scraping-form">
+        <div>
+            <input type="checkbox" id="generate-cover-letter"
+                   name="generate_cover_letter">
+            <label for="generate-cover-letter">Option whether to generate cover
+                letter</label>
+        </div>
+        <div>
+            <input type="radio" id="llm-generation" name="cv_creation_mode"
+                   value="llm-generation" checked>
+            <label for="llm-generation">Generate CV using LLM</label>
+            <input type="radio" id="llm-selection" name="cv_creation_mode"
+                   value="llm-selection">
+            <label for="llm-selection">Let LLM select skills and insert them
+                into
+                template</label>
+            <input type="radio" id="no-llm-generation" name="cv_creation_mode"
+                   value="no-llm-generation">
+            <label for="no-llm-generation">Let application insert skills into CV
+                template</label>
+            <input type="radio" id="user-specified" name="cv_creation_mode"
+                   value="user-specified" onclick="toggleFileField()">
+            <label for="user-specified">Use CV created by the user</label>
+        </div>
+        <div>
+            <input type="file" id="cv-file" name="cv_file" accept=".pdf">
+            <label for="cv-file">CV file to use (works only w</label>
+        </div>
+        <div>
+            <input type="number" id="retries" name="retries" min="1" max="10"
+                   value="3">
+            <label for="retries">Number of retries of each step of the
+                process</label>
+        </div>
+    </form>
+    <div>
+        <!--        <input type="submit" id="scrape-btn" value="Start job search"/>-->
+    </div>
+    <button onclick="scrape_jobs()" id="scrape-btn">Start job search</button>
     <ul id="job-entries-container"></ul>
 </div>
 
@@ -47,6 +167,39 @@
 {% block scripts %}
 <script>
     let eventSrc = null;
+
+    // TODO: In the future
+    // async function download_cv(path) {
+    //     const response = await fetch("{ url_('download_cv') }}", {
+    //         method: "POST",
+    //         headers: {
+    //             Accept: "application/json",
+    //             "Content-Type": "application/json",
+    //         },
+    //         body: JSON.stringify(path),
+    //     });
+    // }
+    // <a onclick="download_cv(${data.cv_path})">${data.cv_path}</a>
+
+    async function save_preferences() {
+        event.preventDefault();
+        const formData = new FormData(document.getElementById("scraping-form"));
+
+        await fetch("{{ url_for('save_preferences') }}", {
+            method: "POST",
+            body: formData
+        });
+    }
+
+    function toggleFileField() {
+        const cvFile = document.getElementById("cv-file");
+        if (cvFile.getAttribute("hidden") === "hidden") {
+            cvFile.removeAttribute("hidden");
+            cvFile.setAttribute("value", "");
+        } else {
+            cvFile.setAttribute("hidden", "hidden");
+        }
+    }
 
     function draw_job(data) {
         let jobContainer = document.getElementById("job-entries-container");
@@ -64,6 +217,10 @@
                 <p class="job-data">${data.company_name}</p>
             </div>
             <details>
+                <div class="job-data-container">
+                    <h5>CV Path: </h5>
+                    <p>${data.cv_path}</p>
+                </div>
                 <summary>Job details</summary>
                 <div class="job-data-container">
                     <h5>Job Url: </h5>
@@ -114,14 +271,22 @@
         jobContainer.appendChild(li);
     }
 
-    function scrape_jobs() {
-        let button = document.getElementById("scrape-btn");
+    async function scrape_jobs() {
+        const button = document.getElementById("scrape-btn");
         if (button.innerText === "Start job search") {
+            await save_preferences();
+            button.innerText = "Stop job search";
             eventSrc = new EventSource("{{ url_for('scrape_jobs') }}");
             eventSrc.onmessage = function (event) {
-                draw_job(JSON.parse(event.data));
+                const data = JSON.parse(event.data);
+                if (data === null) {
+                    button.innerText = "Start job search";
+                    eventSrc.close();
+                    eventSrc = null;
+                    return;
+                }
+                draw_job(data);
             };
-            button.innerText = "Stop job search";
         } else {
             eventSrc.close();
             eventSrc = null;

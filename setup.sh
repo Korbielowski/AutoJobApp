@@ -1,6 +1,4 @@
-# TODO: Make a proper setup script
-apt install postgresql
-sudo -u postgres psql
-postgres=# create database mydb;
-postgres=# create user myuser with encrypted password 'mypass';
-postgres=# grant all privileges on database mydb to myuser;
+command -v curl || { echo 'curl command not found, you must install it' ; exit 1; }
+command -v uv || { curl -LsSf https://astral.sh/uv/install.sh | sh; }
+
+uv sync

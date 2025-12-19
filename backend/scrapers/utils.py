@@ -1,15 +1,19 @@
 import asyncio
-import json
 import random
 
+import devtools
 import tiktoken
 from bs4 import BeautifulSoup
+from devtools import pformat
 from playwright.async_api import Locator, Page, TimeoutError
+from pydantic import BaseModel
 
 from backend.config import settings
 from backend.database.models import AttributeType, Step
-from backend.llm import send_req_to_llm
-from backend.logging import get_logger
+from backend.llm.llm import send_req_to_llm
+from backend.llm.prompts import load_prompt
+from backend.logger import get_logger
+from backend.schemas.llm_responses import HTMLElement
 
 TIK = tiktoken.encoding_for_model("gpt-5-")
 logger = get_logger()
@@ -113,32 +117,22 @@ async def get_page_content(page: Page) -> str:
 
 async def find_html_element_attributes(
     page: Page | str, prompt: str
-) -> None | dict:
-    pre_prompt = "I will give you an HTML snippet."
-    post_prompt = "Return only its identifying attributes in JSON format with the following keys: id, name, type, aria-label, placeholder, role, text, classList. If an attribute does not exist, return null for it, for classList return JSON list. Do not explain, only return JSON"
+) -> HTMLElement:
     if type(page) is Page:
         page_content = await get_page_content(page)
     else:
         page_content = page
-    final_prompt = f"{pre_prompt}{prompt}{post_prompt}\n{page_content}"
 
     response = await send_req_to_llm(
-        prompt=final_prompt,
+        system_prompt=await load_prompt("scraping:system:get_attributes"),
+        prompt=f"{prompt}\n{page_content}",
         use_openai=True,
+        model=HTMLElement,
     )
 
-    try:
-        attributes = json.loads(response)
-        logger.info(
-            f"Type of attributes: {type(attributes)}, attributes:\n{json.dumps(attributes, indent=2)}"
-        )
-        if type(attributes) is not dict:
-            return None
-    except json.JSONDecodeError:
-        logger.exception("Error while parsing attributes json")
-        return None
+    logger.info(f"Object got from LLM: {devtools.pformat(response)}")
 
-    return attributes
+    return response
 
 
 async def find_html_element(
@@ -149,25 +143,28 @@ async def find_html_element(
     page_content = await get_page_content(page)
     for _ in range(5):
         attributes = await find_html_element_attributes(page_content, prompt)
-        if not attributes:
+        if not any(attributes.model_dump().values()):
             return None, None, None
 
         count_dict = {}
+        locator = None
 
-        element_id = attributes.get("id", "")
-        locator = page.locator(f"#{element_id}")
-        count = await locator.count()
-        await log_locator(locator, message="Search by id", count=count)
-        if 0 < count < 2 and await verify_if_right_element_was_chosen(
-            locator.last, attributes, prompt
-        ):
-            return locator.last, element_id, AttributeType.id
-        elif count > 2:
-            count_dict[count] = await locator.all()
+        element_id = attributes.id
+        if element_id:
+            logger.info(element_id)
+            locator = page.locator(f"#{element_id}")
+            count = await locator.count()
+            await log_locator(locator, message="Search by id", count=count)
+            if 0 < count < 2 and await verify_if_right_element_was_chosen(
+                locator.last, attributes, prompt
+            ):
+                return locator.last, element_id, AttributeType.id
+            elif count > 2:
+                count_dict[count] = await locator.all()
 
-        role = attributes.get("role", "")
+        role = attributes.role
         if role:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(page.get_by_role(role, exact=True))
             else:
                 locator = page.get_by_role(role, exact=True)
@@ -181,10 +178,10 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        text = attributes.get("text", "")
+        text = attributes.text
         logger.info(f"Search by text: {text}")
         if text:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(page.get_by_text(text, exact=True))
             else:
                 locator = page.get_by_text(text, exact=True)
@@ -198,9 +195,9 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        aria_label = attributes.get("aria-label", "")
+        aria_label = attributes.aria_label
         if aria_label:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(
                     page.get_by_label(aria_label, exact=True)
                 )
@@ -217,9 +214,9 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        name = attributes.get("name", "")
+        name = attributes.name
         if name:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(page.locator(f'[name="{name}"]'))
             else:
                 locator = page.locator(f'[name="{name}"]')
@@ -232,9 +229,9 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        placeholder = attributes.get("placeholder", "")
+        placeholder = attributes.placeholder
         if placeholder:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(
                     page.get_by_placeholder(placeholder, exact=True)
                 )
@@ -252,9 +249,9 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        element_type = attributes.get("type", "")
+        element_type = attributes.element_type
         if element_type:
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(page.locator(f'[type="{element_type}"]'))
             else:
                 locator = page.locator(f'[type="{element_type}"]')
@@ -268,12 +265,12 @@ async def find_html_element(
             elif count > 2:
                 count_dict[count] = await locator.all()
 
-        class_list = attributes.get("classList", [])
+        class_list = attributes.class_list
         # FIXME: playwright._impl._errors.Error: Locator.count: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '.tw-w-[120px]' is not a valid selector.
         logger.info(f"Class_list type: {type(class_list)}, {class_list}")
         if class_list:
             class_selector = f".{'.'.join(class_list)}"
-            if await locator.count() >= 2:
+            if locator and await locator.count() >= 2:
                 locator = locator.and_(page.locator(class_selector))
             else:
                 locator = page.locator(class_selector)
@@ -284,29 +281,12 @@ async def find_html_element(
                 return locator.last, class_selector, AttributeType.class_l
             elif count > 2:
                 count_dict[count] = await locator.all()
-            # for class_l in class_list:
-            #     if await locator.count() >= 2:
-            #         locator = locator.and_(page.locator(f".{class_l}"))
-            #         # locator = locator.filter(has=page.locator(f".{class_l}"))
-            #     else:
-            #         locator = page.locator(f".{class_l}")
-            #     count = await locator.count()
-            #     await log_locator(
-            #         locator,
-            #         message="Search by class",
-            #         count=count,
-            #         class_l=class_l,
-            #     )
-            #     if 0 < count < 2 and await verify_if_right_element_was_chosen(
-            #         locator.last, attributes, prompt
-            #     ):
-            #         return locator.last, class_l, AttributeType.class_l
-            #     elif count > 2:
-            #         count_dict[count] = await locator.all()
 
         # TODO: Add LLM element choosing
         if additional_llm:
-            prompt_elements = "Compare and choose one locator from these that suit the prompt the most, return only the number, that represents the locator in the list, list starts from index 0."
+            prompt_elements = await load_prompt(
+                "scraping:user:llm_select_element"
+            )
             # TODO: We are choosing wrong item from dict by count
             for locator in count_dict[min(count_dict, key=count_dict.get)]:
                 prompt_elements += f"{await locator.all_inner_texts()}, "
@@ -336,16 +316,21 @@ async def find_html_element(
 
 
 async def verify_if_right_element_was_chosen(
-    locator: Locator, attributes: dict, prompt: str
+    locator: Locator, attributes: BaseModel, prompt: str
 ) -> bool:
-    check_prompt = f"Verify if right element from website was chosen comparing element data: {await locator.all_inner_texts()}, {attributes}, and prompt: '{prompt}'. Return 'True' if right element was chosen, otherwise 'False'."
+    check_prompt = await load_prompt(
+        "scraping:user:llm_verify_output",
+        inner_texts=await locator.all_inner_texts(),
+        attributes=attributes,
+        prompt=prompt,
+    )
     if "True" in await send_req_to_llm(prompt=check_prompt, use_openai=True):
         logger.info(
-            f"LLM thinks this element:\n{json.dumps(attributes, indent=2)}\nSuits this prompt: {prompt}"
+            f"LLM thinks this element:\n{pformat(attributes)}\nSuits this prompt: {prompt}"
         )
         return True
     logger.error(
-        f"LLM thinks this element:\n{json.dumps(attributes, indent=2)}\nDoes not suit this prompt: {prompt}"
+        f"LLM thinks this element:\n{pformat(attributes)}\nDoes not suit this prompt: {prompt}"
     )
     return False
 

@@ -4,8 +4,9 @@ import json
 
 from playwright.async_api import Locator, Page, TimeoutError
 
-from backend.llm import send_req_to_llm
-from backend.logging import get_logger
+from backend.llm.llm import send_req_to_llm
+from backend.llm.prompts import load_prompt
+from backend.logger import get_logger
 from backend.scrapers.base_scraper import BaseScraper, JobEntry
 from backend.scrapers.utils import (
     click,
@@ -31,33 +32,32 @@ class LLMScraper(BaseScraper):
         await self._navigate_to_login_page()
 
         email_field_locator, _, _ = await find_html_element(
-            self.page, "Find input field for username/email."
+            self.page, await load_prompt("scraping:user:email_field")
         )
         await fill(email_field_locator, self.email)
 
         password_field_locator, _, _ = await find_html_element(
-            self.page, "Find input field for password."
+            self.page, await load_prompt("scraping:user:password_field")
         )
         if not password_field_locator:
             sign_in_btn_locator, _, _ = await find_html_element(
-                self.page, "Find button that moves to next part of login page."
+                self.page, await load_prompt("scraping:user:next_login_page")
             )
             await click(sign_in_btn_locator, self.page)
 
             password_field_locator, _, _ = await find_html_element(
-                self.page, "Find input field for password."
+                self.page, await load_prompt("scraping:user:password_field")
             )
         await fill(password_field_locator, self.password)
 
         sign_in_btn_locator, _, _ = await find_html_element(
             self.page,
-            "Find the sign in/login button or button that moves to next part of login page.",
+            await load_prompt("scraping:user:sign_in_button"),
             additional_llm=True,
         )
         await click(sign_in_btn_locator, self.page)
 
     async def _is_on_login_page(self) -> bool:
-        url = self.page.url
         # if (
         #     "login" in url
         #     or "signin" in url
@@ -65,13 +65,14 @@ class LLMScraper(BaseScraper):
         #     or "sign_in" in url
         # ):
         #     return True
+        url = self.page.url
+        page = await get_page_content(self.page)
+        prompt = await load_prompt(
+            "scraping:user:is_login_page", url=url, page=page
+        )
 
-        if "True" in await send_req_to_llm(
-            f"Determine if this site is a login page based upon its source code and url, it should contain input field for user's email, sometimes login page contains password field too, return only True or False. url: {url}\npage: {await get_page_content(self.page)}",
-            use_openai=True,
-        ):
+        if "True" in await send_req_to_llm(prompt=prompt, use_openai=True):
             return True
-
         return False
 
     async def _navigate_to_login_page(self) -> None:
@@ -80,9 +81,14 @@ class LLMScraper(BaseScraper):
 
         while not await self._is_on_login_page() and retry < 5:
             if not attribute_list:
-                prompt = "Find a button/link that opens login page for a job candidate, where user logins using email and password or menu that lets user open login page"
+                prompt = await load_prompt(
+                    "scraping:user:navigate_to_login_page"
+                )
             else:
-                prompt = f"Find a button/link that opens login page for a job candidate, where user logins using email and password or menu that lets user open login page. Those are elements that were used in a previous steps, do not use them again: {attribute_list}"
+                prompt = await load_prompt(
+                    "scraping:user:navigate_to_login_page_with_params",
+                    attribute_list=attribute_list,
+                )
 
             btn, attributes, _ = await find_html_element(
                 page=self.page, prompt=prompt
@@ -96,13 +102,29 @@ class LLMScraper(BaseScraper):
             logger.error("We did not do it ;)")
         #     return
 
+    async def _check_if_popup_exists(self) -> bool:
+        retry = 0
+        while retry < 3:
+            response = await send_req_to_llm(
+                prompt=await load_prompt(
+                    "scraping:user:check_if_popup_exists", page=self.page
+                ),
+                use_openai=True,
+            )
+            if "True" in response:
+                return True
+            retry += 1
+        return False
+
     async def _pass_cookies_popup(self) -> None:
+        if not await self._check_if_popup_exists():
+            return
+
         retry = 0
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page,
-                "Find button that accepts cookies or closes the cookie consent banner. If multiple buttons exist, choose the one that makes the popup disappear",
+                self.page, "scraping:user:cookies_button"
             )
             passed = await click(btn, self.page)
             retry += 1
@@ -129,35 +151,24 @@ class LLMScraper(BaseScraper):
         # self.website_info.automation_steps.pass_cookies_popup = [step]
 
     async def _remove_any_popup(self) -> None:
+        if not await self._check_if_popup_exists():
+            return
+
         retry = 0
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page,
-                "Find button that closes the popup banner. If multiple buttons exist, choose the one that makes the popup disappear",
+                self.page, await load_prompt("scraping:user:popup_button")
             )
             passed = await click(btn, self.page)
             retry += 1
 
     async def _is_on_job_list_page(self) -> bool:
         url = self.page.url
-        prompt = f"""
-        You are analyzing a web page to determine whether it is strictly a job listing page.
-
-        A job listings page is a page that displays a list of multiple open positions or links to individual job offers.
-        It is NOT:
-        - A single job offer page (showing details for one position)
-        - A company homepage or careers landing page without listings
-        - A user account webpage, where there can also be some job postings or user saved jobs
-        - A blog, article, or unrelated content
-
-        Return only one word: True or False
-
-        Base your decision on both the URL and the visible page content.
-
-        URL: {url}
-        Page content: {await get_page_content(self.page)}
-        """
+        page = await get_page_content(self.page)
+        prompt = await load_prompt(
+            "scraping:user:is_job_listing_page", url=url, page=page
+        )
         if "True" in await send_req_to_llm(
             prompt=prompt,
             # f"Determine if this site is a job listing page, return only True or False. Consider it a job listing page if the content or url suggests: a list of open positions. Based upon url: {url} and page content: {await get_page_content(self.page)}",
@@ -177,11 +188,14 @@ class LLMScraper(BaseScraper):
         while not await self._is_on_job_list_page() and retry < 5:
             logger.info(f"Navigation step: {retry}")
             if not attribute_list:
-                prompt = (
-                    "Find button/link that opens job listing page or menu that lets user open job listing page",
+                prompt = await load_prompt(
+                    "scraping:user:job_listing_page_button"
                 )
             else:
-                prompt = f"Find button/link that opens job listing page or menu that lets user open job listing page. Those are elements that were used in a previous steps, do not use them again: {attribute_list}"
+                prompt = await load_prompt(
+                    "scraping:user:job_listing_page_button_with_params",
+                    attribute_list=attribute_list,
+                )
 
             btn, attributes, _ = await find_html_element(
                 page=self.page, prompt=prompt
@@ -202,8 +216,7 @@ class LLMScraper(BaseScraper):
         await self._navigate_to_job_list_page()
 
         bottom_element, _, _ = await find_html_element(
-            self.page,
-            "Find a footer of a website, if there is no footer find an element that is at the bottom of the page, so once in view port it loads all of the page content",
+            self.page, await load_prompt("scraping:user:footer")
         )
 
         if bottom_element:
@@ -242,14 +255,7 @@ class LLMScraper(BaseScraper):
             logger.info("Scrolled to bottom of the page using 'End' key")
 
         # TODO: Add some verification for this types of lines as the one below
-        prompt = """
-            Find <a> element inside job tiles of job offers that take user to job offer pages.
-            A job offer link typically:
-            - Contains the job title text, or
-            - Has an href that includes words like "job", "jobs", "careers", "position", or "opportunity"
-            and
-            - Does NOT link to saving, sharing, applying, or company info.
-        """
+        prompt = await load_prompt("scraping:user:job_offer_links")
         # prompt = "Find an element that is responsible for holding job offer tile",
         attributes = await find_html_element_attributes(
             page=self.page,
@@ -261,7 +267,7 @@ class LLMScraper(BaseScraper):
             )
             return tuple()
 
-        class_list = attributes.get("classList", [])
+        class_list = attributes.class_list
         if not class_list:
             logger.error("Did not find class_list for selecting job tiles")
             return tuple()
@@ -299,8 +305,7 @@ class LLMScraper(BaseScraper):
 
     async def navigate_to_next_page(self) -> bool:
         btn, _, _ = await find_html_element(
-            self.page,
-            "Find button that is responsible for moving to next job listing page",
+            self.page, await load_prompt("scarping:user:next_page_button")
         )
         if not btn:
             logger.info("Could not find next page button")
@@ -337,8 +342,11 @@ class LLMScraper(BaseScraper):
         model_dict.pop("discovery_date")
         model_dict.pop("job_url")
 
+        page = await get_page_content(job_page)
         response = await send_req_to_llm(
-            prompt=f"Retrieve all information about this job offer as a JSON in this schema: {model_dict} from this page: {await get_page_content(job_page)}",
+            prompt=await load_prompt(
+                "scraping:user:job_offer_info", model_dict=model_dict, page=page
+            ),
             use_openai=True,
         )
 

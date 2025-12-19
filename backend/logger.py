@@ -25,7 +25,11 @@ else:
         format=LOGS_FORMAT,
         colorize=True,
     )
-logger.add(sink=f"{settings.PROJECT_NAME}.log", level="DEBUG", colorize=False)
+
+if settings.LOG_TO_FILE:
+    logger.add(
+        sink=f"{settings.PROJECT_NAME}.log", level="DEBUG", colorize=False
+    )
 
 
 logger.level(

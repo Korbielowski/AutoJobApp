@@ -6,28 +6,32 @@ readme = "README.md"
 requires-python = ">=3.12"
 
 dependencies = [
+    "aiofiles>=25.1.0",
     "beautifulsoup4>=4.13.5",
+    "devtools>=0.12.2",
     "dotenv>=0.9.9",
     "fastapi[standard]>=0.115.12",
+    "loguru>=0.7.3",
     "openai-agents>=0.0.13",
     "playwright>=1.51.0",
     "playwright-stealth>=2.0.0",
-    "psycopg>=3.2.6",
+    "psycopg[binary]>=3.3.0",
     "pydantic>=2.11.3",
     "sqlmodel>=0.0.24",
     "tiktoken>=0.9.0",
+    "uvicorn>=0.35.0",
     "weasyprint>=65.1",
 ]
 
 [dependency-groups]
 dev = [
-    "loguru>=0.7.3",
     "mypy>=1.15.0",
     "pre-commit>=4.2.0",
     "pytest>=8.3.5",
     "pytest-asyncio>=1.1.0",
     "pytest-playwright>=0.7.0",
     "ruff>=0.11.7",
+    "scalene>=1.5.55",
 ]
 
 [tool.setuptools.packages.find]

@@ -5,6 +5,7 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
+from backend.config import settings
 from backend.database.crud import create_user, delete_user
 from backend.database.models import (
     Certificate,
@@ -43,7 +44,7 @@ from backend.database.models import (
     WebsiteModel,
     WebsitePost,
 )
-from backend.logging import get_logger
+from backend.logger import get_logger
 from backend.routes.deps import (
     CurrentUser,
     SessionDep,
@@ -51,13 +52,18 @@ from backend.routes.deps import (
 )
 
 router = APIRouter(tags=["users"])
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(settings.ROOT_DIR / "templates")
 logger = get_logger()
 
 
 @router.get("/login", response_class=HTMLResponse)
 async def load_login_page(session: SessionDep, request: Request):
-    users = session.exec(select(UserModel))
+    users = session.exec(select(UserModel)).all()
+    if not users:
+        return RedirectResponse(
+            url=request.url_for("load_register_page"),
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
     return templates.TemplateResponse(
         request=request, name="login.html", context={"users": users}
     )

@@ -63,6 +63,12 @@
                 type="email"
                 placeholder="Email"
         />
+        <input
+                name="phone_number"
+                class="form-control"
+                type="text"
+                placeholder="+00 000 000 000"
+        />
     </form>
 </div>
 
@@ -553,6 +559,7 @@
                 surname: surname,
                 age: formData.get("age"),
                 email: email,
+                phone_number: formData.get("phone_number"),
             },
             locations: locations,
             programming_languages: programmingLanguages,
