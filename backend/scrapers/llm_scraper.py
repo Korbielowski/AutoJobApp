@@ -102,7 +102,24 @@ class LLMScraper(BaseScraper):
             logger.error("We did not do it ;)")
         #     return
 
+    async def _check_if_popup_exists(self) -> bool:
+        retry = 0
+        while retry < 3:
+            response = await send_req_to_llm(
+                prompt=await load_prompt(
+                    "scraping:user:check_if_popup_exists", page=self.page
+                ),
+                use_openai=True,
+            )
+            if "True" in response:
+                return True
+            retry += 1
+        return False
+
     async def _pass_cookies_popup(self) -> None:
+        if not await self._check_if_popup_exists():
+            return
+
         retry = 0
         passed = False
         while not passed and retry < 5:
@@ -134,6 +151,9 @@ class LLMScraper(BaseScraper):
         # self.website_info.automation_steps.pass_cookies_popup = [step]
 
     async def _remove_any_popup(self) -> None:
+        if not await self._check_if_popup_exists():
+            return
+
         retry = 0
         passed = False
         while not passed and retry < 5:
