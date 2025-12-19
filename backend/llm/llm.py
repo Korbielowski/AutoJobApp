@@ -23,25 +23,27 @@ async def send_req_to_llm(
     temperature: float = 1,
     use_openai: bool = True,
     model: type[BaseModel] | None = None,
+    tools: list[str] | None = None,
     retry: int = 3,
 ) -> str | BaseModel:
     response = ""
-    if settings.DEBUG:
-        logger.debug(
-            f"Prompt token count: {len(TIK.encode(system_prompt + prompt))}, temperature: {temperature}, use_openai: {use_openai}, model: {model}, retry: {retry}"
-        )
+    logger.debug(
+        f"Prompt token count: {len(TIK.encode(system_prompt + prompt))}, temperature: {temperature}, use_openai: {use_openai}, model: {model}, retry: {retry}, tools: {tools}"
+    )
 
     if use_openai:
         client = OpenAI(api_key=settings.OPENAI_API_KEY)
         while not response and retry > 0:
             try:
                 if model:
+                    tools = [{"type": tool} for tool in tools] if tools else []
                     response = client.responses.parse(
                         model=OPENAI_MODEL,
                         input=[
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": prompt},
                         ],
+                        tools=tools,
                         temperature=temperature,
                         text_format=model,
                     )
@@ -54,6 +56,7 @@ async def send_req_to_llm(
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": prompt},
                         ],
+                        tools=tools,
                         temperature=temperature,
                     )
                     if response:
