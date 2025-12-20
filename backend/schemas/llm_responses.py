@@ -29,8 +29,6 @@ class CoverLetterOutput(BaseModel):
 
 
 class JobEntryResponse(BaseModel):
-    cv_path: str = ""
-    cover_letter_path: str = ""
     title: str
     company_name: str
     requirements: str
