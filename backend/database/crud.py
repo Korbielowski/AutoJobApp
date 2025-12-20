@@ -3,37 +3,39 @@ from typing import Sequence
 from sqlmodel import Session, SQLModel, select
 
 from backend.database.models import (
-    CandidateData,
-    Certificate,
     CertificateModel,
-    Charity,
     CharityModel,
-    Education,
     EducationModel,
-    Experience,
     ExperienceModel,
-    JobEntry,
     JobEntryModel,
-    Language,
     LanguageModel,
-    Location,
     LocationModel,
-    ProgrammingLanguage,
     ProgrammingLanguageModel,
-    Project,
     ProjectModel,
-    SocialPlatform,
     SocialPlatformModel,
-    Tool,
     ToolModel,
-    User,
     UserModel,
     UserPreferencesModel,
-    Website,
     WebsiteModel,
 )
 from backend.logger import get_logger
-from backend.schemas.models import UserNeeds
+from backend.schemas.models import (
+    UserNeeds,
+    User,
+    Location,
+    ProgrammingLanguage,
+    Language,
+    Tool,
+    Certificate,
+    Experience,
+    Charity,
+    Education,
+    SocialPlatform,
+    Project,
+    Website,
+    JobEntry,
+    CandidateData,
+)
 
 logger = get_logger()
 
@@ -132,7 +134,7 @@ def get_experiences(
     session: Session, user: UserModel, use_base_model: bool = False
 ) -> Sequence[Experience] | Sequence[ExperienceModel]:
     output = session.exec(
-        select(Experience).where(ExperienceModel.user_id == user.id)
+        select(ExperienceModel).where(ExperienceModel.user_id == user.id)
     ).all()
     if use_base_model:
         return output
