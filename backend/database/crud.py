@@ -68,7 +68,7 @@ def get_users(
     output = session.exec(select(UserModel)).all()
     if use_base_model:
         return output
-    return [UserModel.model_validate(element) for element in output]
+    return [User.model_validate(element) for element in output]
 
 
 def get_locations(
@@ -103,7 +103,7 @@ def get_languages(
     ).all()
     if use_base_model:
         return output
-    return [LanguageModel.model_validate(element) for element in output]
+    return [Language.model_validate(element) for element in output]
 
 
 def get_tools(
@@ -114,7 +114,7 @@ def get_tools(
     ).all()
     if use_base_model:
         return output
-    return [ToolModel.model_validate(element) for element in output]
+    return [Tool.model_validate(element) for element in output]
 
 
 def get_certificates(
@@ -125,7 +125,7 @@ def get_certificates(
     ).all()
     if use_base_model:
         return output
-    return [CertificateModel.model_validate(element) for element in output]
+    return [Certificate.model_validate(element) for element in output]
 
 
 def get_experiences(
@@ -136,7 +136,7 @@ def get_experiences(
     ).all()
     if use_base_model:
         return output
-    return [ExperienceModel.model_validate(element) for element in output]
+    return [Experience.model_validate(element) for element in output]
 
 
 def get_charities(
@@ -147,7 +147,7 @@ def get_charities(
     ).all()
     if use_base_model:
         return output
-    return [CharityModel.model_validate(element) for element in output]
+    return [Charity.model_validate(element) for element in output]
 
 
 def get_educations(
@@ -158,7 +158,7 @@ def get_educations(
     ).all()
     if use_base_model:
         return output
-    return [EducationModel.model_validate(element) for element in output]
+    return [Education.model_validate(element) for element in output]
 
 
 def get_social_platforms(
@@ -171,7 +171,7 @@ def get_social_platforms(
     ).all()
     if use_base_model:
         return output
-    return [SocialPlatformModel.model_validate(element) for element in output]
+    return [SocialPlatform.model_validate(element) for element in output]
 
 
 def get_projects(
@@ -182,7 +182,7 @@ def get_projects(
     ).all()
     if use_base_model:
         return output
-    return [ProjectModel.model_validate(element) for element in output]
+    return [Project.model_validate(element) for element in output]
 
 
 def get_websites(
@@ -193,7 +193,18 @@ def get_websites(
     ).all()
     if use_base_model:
         return output
-    return [WebsiteModel.model_validate(element) for element in output]
+    return [Website.model_validate(element) for element in output]
+
+
+def get_job_entries(
+    session: Session, user: UserModel, use_base_model: bool = False
+) -> Sequence[JobEntry] | Sequence[JobEntryModel]:
+    output = session.exec(
+        select(JobEntryModel).where(JobEntryModel.user_id == user.id)
+    ).all()
+    if use_base_model:
+        return output
+    return [JobEntry.model_validate(element) for element in output]
 
 
 def get_candidate_data(session: Session, user: UserModel) -> CandidateData:
@@ -250,12 +261,6 @@ def get_user_needs(session: Session, user: UserModel) -> UserNeeds:
         experiences=experiences,
         projects=projects,
     )
-
-
-def get_job_entries(session: Session, user: UserModel):
-    return session.exec(
-        select(JobEntryModel).where(JobEntryModel.user_id == user.id)
-    ).all()
 
 
 def save_job_entry(
