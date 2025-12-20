@@ -1,12 +1,13 @@
 import asyncio
 import datetime
-import json
 
+from devtools import pformat
 from playwright.async_api import Locator, Page, TimeoutError
 
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
+from backend.schemas.llm_responses import JobEntryResponse
 from backend.scrapers.base_scraper import BaseScraper, JobEntry
 from backend.scrapers.utils import (
     click,
@@ -323,49 +324,25 @@ class LLMScraper(BaseScraper):
         job_page: Page = await self.context.new_page()
         await goto(job_page, link)
 
-        # response = await send_req_to_llm(
-        #     f"Get job information like title, company_name, requirements, duties, about_project, offer_benefits, location, contract_type, employment_type, work_arrangement, additional_information. Do not explain, only return JSON\n{await get_page_content(job_page)}",
-        #     use_openai=True,
-        # )
-        # response = None
-        # try:
-        #     response = await send_req_to_llm(
-        #         prompt=f"Retrieve all information about this job offer from this page: {await get_page_content(job_page)}",
-        #         use_openai=True,
-        #         use_json_schema=True,
-        #         model=JobEntry,
-        #     )
-        # except Exception as e:
-        #     logger.exception(e)
-        model_dict = JobEntry.model_json_schema()["properties"]
-        logger.info(type(model_dict))
-        model_dict.pop("discovery_date")
-        model_dict.pop("job_url")
-
-        page = await get_page_content(job_page)
         response = await send_req_to_llm(
             prompt=await load_prompt(
-                "scraping:user:job_offer_info", model_dict=model_dict, page=page
+                "scraping:user:job_offer_info",
+                page=await get_page_content(job_page),
             ),
             use_openai=True,
+            model=JobEntryResponse,
         )
 
-        attributes = json.loads(response)
+        attributes = response.model_dump()
         attributes["discovery_date"] = datetime.date.today()
         attributes["job_url"] = link
 
-        logger.info(f"Something:\n{attributes}")
-        # logger.info(
-        #     f"Job information retrieved by LLM using JSON outputs: {response}"
-        # )
         await job_page.close()
 
         try:
-            data = JobEntry.model_validate(attributes)
-            logger.info(
-                f"JobEntry model data: {data.model_dump_json(indent=2)}"
-            )
-            return data
+            job_entry = JobEntry.model_validate(attributes)
+            logger.info(f"JobEntry model data: {pformat(job_entry)}")
+            return job_entry
         except Exception as e:
             logger.exception(e)
         return None
