@@ -19,22 +19,23 @@ from backend.database.models import (
     WebsiteModel,
 )
 from backend.logger import get_logger
+from backend.schemas.endpoints import UserPreferences
 from backend.schemas.models import (
-    UserNeeds,
-    User,
-    Location,
-    ProgrammingLanguage,
-    Language,
-    Tool,
+    CandidateData,
     Certificate,
-    Experience,
     Charity,
     Education,
-    SocialPlatform,
-    Project,
-    Website,
+    Experience,
     JobEntry,
-    CandidateData,
+    Language,
+    Location,
+    ProgrammingLanguage,
+    Project,
+    SocialPlatform,
+    Tool,
+    User,
+    UserNeeds,
+    Website,
 )
 
 logger = get_logger()
@@ -55,13 +56,20 @@ def delete_user(session: Session, email: str) -> None:
 
 
 def get_user_preferences(
-    session: Session, user: UserModel
-) -> UserPreferencesModel | None:
-    return session.exec(
+    session: Session, user: UserModel, use_base_model: bool = False
+) -> UserPreferencesModel | UserPreferences | None:
+    output = session.exec(
         select(UserPreferencesModel).where(
             UserPreferencesModel.user_id == user.id
         )
     ).first()
+    if use_base_model:
+        return output
+
+    if not output:
+        return output
+
+    return UserPreferences.model_validate(output)
 
 
 def get_users(
