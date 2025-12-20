@@ -1,7 +1,6 @@
 import asyncio
 import random
 
-import devtools
 import tiktoken
 from bs4 import BeautifulSoup
 from devtools import pformat
@@ -130,7 +129,7 @@ async def find_html_element_attributes(
         model=HTMLElement,
     )
 
-    logger.info(f"Object got from LLM: {devtools.pformat(response)}")
+    logger.info(f"Object got from LLM: {pformat(response)}")
 
     return response
 
