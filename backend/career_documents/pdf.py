@@ -15,7 +15,6 @@ from backend.database.crud import (
 from backend.database.models import (
     CVCreationModeEnum,
     JobEntryModel,
-    SkillsLLMResponse,
     UserModel,
 )
 from backend.llm.llm import send_req_to_llm
@@ -25,6 +24,7 @@ from backend.schemas.llm_responses import (
     CompanyDetails,
     CoverLetterOutput,
     CVOutput,
+    SkillsLLMResponse,
 )
 from backend.scrapers.base_scraper import JobEntry
 
