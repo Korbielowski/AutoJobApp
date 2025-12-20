@@ -7,7 +7,7 @@ from playwright.async_api import Locator, Page, TimeoutError
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
-from backend.schemas.llm_responses import JobEntryResponse
+from backend.schemas.llm_responses import JobEntryResponse, StateOutput
 from backend.scrapers.base_scraper import BaseScraper, JobEntry
 from backend.scrapers.utils import (
     click,
@@ -66,15 +66,16 @@ class LLMScraper(BaseScraper):
         #     or "sign_in" in url
         # ):
         #     return True
-        url = self.page.url
-        page = await get_page_content(self.page)
-        prompt = await load_prompt(
-            "scraping:user:is_login_page", url=url, page=page
+        state = await send_req_to_llm(
+            prompt=await load_prompt(
+                prompt_path="scraping:user:is_login_page",
+                url=self.page.url,
+                page=await get_page_content(self.page),
+            ),
+            use_openai=True,
+            model=StateOutput,
         )
-
-        if "True" in await send_req_to_llm(prompt=prompt, use_openai=True):
-            return True
-        return False
+        return state.state
 
     async def _navigate_to_login_page(self) -> None:
         retry = 0
@@ -102,13 +103,14 @@ class LLMScraper(BaseScraper):
     async def _check_if_popup_exists(self) -> bool:
         retry = 0
         while retry < 3:
-            response = await send_req_to_llm(
+            state = await send_req_to_llm(
                 prompt=await load_prompt(
                     "scraping:user:check_if_popup_exists", page=self.page
                 ),
                 use_openai=True,
+                model=StateOutput,
             )
-            if "True" in response:
+            if state.state:
                 return True
             retry += 1
         return False
@@ -161,21 +163,16 @@ class LLMScraper(BaseScraper):
             retry += 1
 
     async def _is_on_job_list_page(self) -> bool:
-        url = self.page.url
-        page = await get_page_content(self.page)
-        prompt = await load_prompt(
-            "scraping:user:is_job_listing_page", url=url, page=page
-        )
-        if "True" in await send_req_to_llm(
-            prompt=prompt,
-            # f"Determine if this site is a job listing page, return only True or False. Consider it a job listing page if the content or url suggests: a list of open positions. Based upon url: {url} and page content: {await get_page_content(self.page)}",
+        state = await send_req_to_llm(
+            prompt=await load_prompt(
+                prompt_path="scraping:user:is_job_listing_page",
+                url=self.page.url,
+                page=await get_page_content(self.page),
+            ),
             use_openai=True,
-        ):
-            logger.info("LLM thinks we are on job listing page")
-            return True
-
-        logger.info("We are not on a job listing page")
-        return False
+            model=StateOutput,
+        )
+        return state.state
 
     async def _navigate_to_job_list_page(self) -> None:
         logger.info("Navigating to job listing page")
