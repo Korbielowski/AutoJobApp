@@ -43,30 +43,30 @@ from backend.routes.deps import (
     set_current_user,
 )
 from backend.schemas.endpoints import (
-    ProfileInfo,
-    LocationPost,
-    ProgrammingLanguagePost,
-    LanguagePost,
-    ToolPost,
     CertificatePost,
     CharityPost,
     EducationPost,
     ExperiencePost,
+    LanguagePost,
+    LocationPost,
+    ProfileInfo,
+    ProgrammingLanguagePost,
     ProjectPost,
-    WebsitePost,
     SocialPlatformPost,
+    ToolPost,
+    WebsitePost,
 )
 from backend.schemas.models import (
-    Location,
-    ProgrammingLanguage,
-    Language,
     Certificate,
-    Tool,
     Charity,
     Education,
     Experience,
+    Language,
+    Location,
+    ProgrammingLanguage,
     Project,
     SocialPlatform,
+    Tool,
     Website,
 )
 
@@ -313,10 +313,11 @@ async def edit_information_about_account(
 async def load_manage_users_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):
-    users = session.exec(select(UserModel))
-
     return templates.TemplateResponse(
         request=request,
         name="manage_users.html",
-        context={"user": user, "users": users},
+        context={
+            "user": user,
+            "users": get_users(session, use_base_model=True),
+        },
     )
