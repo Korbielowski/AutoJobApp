@@ -117,7 +117,7 @@ async def get_page_content(page: Page) -> str:
 
 async def find_html_element_attributes(
     page: Page | str, prompt: str
-) -> HTMLElement:
+) -> str | BaseModel:
     if type(page) is Page:
         page_content = await get_page_content(page)
     else:
@@ -143,7 +143,7 @@ async def find_html_element(
     page_content = await get_page_content(page)
     for _ in range(5):
         attributes = await find_html_element_attributes(page_content, prompt)
-        if not any(attributes.model_dump().values()):
+        if not attributes or not any(attributes.model_dump().values()):
             return None, None, None
 
         count_dict = {}
