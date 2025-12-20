@@ -41,3 +41,7 @@ class JobEntryResponse(BaseModel):
     work_arrangement: str
     additional_information: None | str
     company_url: None | str
+
+
+class StateOutput(BaseModel):
+    state: bool = False
