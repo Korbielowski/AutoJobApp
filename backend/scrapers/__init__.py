@@ -8,8 +8,11 @@ from sqlmodel import Session
 from backend.career_documents.pdf import (
     generate_career_documents,
 )
-from backend.database.models import CVCreationModeEnum, UserModel
+from backend.database.models import (
+    UserModel,
+)
 from backend.logger import get_logger
+from backend.schemas.models import UserNeeds, UserPreferences
 from backend.scrapers.llm_scraper import LLMScraper
 
 logger = get_logger()
@@ -19,9 +22,8 @@ async def find_job_entries(
     user: UserModel,
     session: Session,
     websites,
-    cv_creation_mode: CVCreationModeEnum,
-    generate_cover_letter: bool,
-    retries: int,
+    user_preferences: UserPreferences,
+    user_needs: UserNeeds,
     # auto_apply: bool,
 ) -> AsyncGenerator[str, Any]:
     if not websites:
@@ -44,7 +46,7 @@ async def find_job_entries(
                 context=context,
                 page=page,
                 website_info=website,
-                retries=retries,
+                retries=user_preferences.retries,
             )
             await scraper.login_to_page()
 
@@ -60,8 +62,8 @@ async def find_job_entries(
                             current_time=datetime.datetime.today().strftime(
                                 "%Y-%m-%d_%H:%M:%S"
                             ),
-                            cv_creation_mode=cv_creation_mode,
-                            generate_cover_letter=generate_cover_letter,
+                            cv_creation_mode=user_preferences.cv_creation_mode,
+                            generate_cover_letter=user_preferences.generate_cover_letter,
                         )
                         yield f"data:{job_entry_model.model_dump_json()}\n\n"
                 running = await scraper.navigate_to_next_page()
