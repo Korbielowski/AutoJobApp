@@ -6,49 +6,68 @@ from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 
 from backend.config import settings
-from backend.database.crud import create_user, delete_user
+from backend.database.crud import (
+    create_user,
+    delete_user,
+    get_certificates,
+    get_charities,
+    get_educations,
+    get_experiences,
+    get_languages,
+    get_locations,
+    get_programming_languages,
+    get_projects,
+    get_social_platforms,
+    get_tools,
+    get_users,
+    get_websites,
+)
 from backend.database.models import (
-    Certificate,
     CertificateModel,
-    CertificatePost,
-    Charity,
     CharityModel,
-    CharityPost,
-    Education,
     EducationModel,
-    EducationPost,
-    Experience,
     ExperienceModel,
-    ExperiencePost,
-    Language,
     LanguageModel,
-    LanguagePost,
-    Location,
     LocationModel,
-    LocationPost,
-    ProfileInfo,
-    ProgrammingLanguage,
     ProgrammingLanguageModel,
-    ProgrammingLanguagePost,
-    Project,
     ProjectModel,
-    ProjectPost,
-    SocialPlatform,
     SocialPlatformModel,
-    SocialPlatformPost,
-    Tool,
     ToolModel,
-    ToolPost,
     UserModel,
-    Website,
     WebsiteModel,
-    WebsitePost,
 )
 from backend.logger import get_logger
 from backend.routes.deps import (
     CurrentUser,
     SessionDep,
     set_current_user,
+)
+from backend.schemas.endpoints import (
+    ProfileInfo,
+    LocationPost,
+    ProgrammingLanguagePost,
+    LanguagePost,
+    ToolPost,
+    CertificatePost,
+    CharityPost,
+    EducationPost,
+    ExperiencePost,
+    ProjectPost,
+    WebsitePost,
+    SocialPlatformPost,
+)
+from backend.schemas.models import (
+    Location,
+    ProgrammingLanguage,
+    Language,
+    Certificate,
+    Tool,
+    Charity,
+    Education,
+    Experience,
+    Project,
+    SocialPlatform,
+    Website,
 )
 
 router = APIRouter(tags=["users"])
@@ -58,7 +77,7 @@ logger = get_logger()
 
 @router.get("/login", response_class=HTMLResponse)
 async def load_login_page(session: SessionDep, request: Request):
-    users = session.exec(select(UserModel)).all()
+    users = get_users(session=session, use_base_model=True)
     if not users:
         return RedirectResponse(
             url=request.url_for("load_register_page"),
@@ -145,53 +164,39 @@ async def account_details(
         )
     context = {
         "user": current_user,
-        "locations": session.exec(
-            select(LocationModel).where(
-                LocationModel.user_id == current_user.id
-            )
-        ).all(),
-        "programming_languages": session.exec(
-            select(ProgrammingLanguageModel).where(
-                ProgrammingLanguageModel.user_id == current_user.id
-            )
-        ).all(),
-        "languages": session.exec(
-            select(LanguageModel).where(
-                LanguageModel.user_id == current_user.id
-            )
-        ).all(),
-        "tools": session.exec(
-            select(ToolModel).where(ToolModel.user_id == current_user.id)
-        ).all(),
-        "certificates": session.exec(
-            select(CertificateModel).where(
-                CertificateModel.user_id == current_user.id
-            )
-        ).all(),
-        "charities": session.exec(
-            select(CharityModel).where(CharityModel.user_id == current_user.id)
-        ).all(),
-        "educations": session.exec(
-            select(EducationModel).where(
-                EducationModel.user_id == current_user.id
-            )
-        ).all(),
-        "experiences": session.exec(
-            select(ExperienceModel).where(
-                ExperienceModel.user_id == current_user.id
-            )
-        ).all(),
-        "projects": session.exec(
-            select(ProjectModel).where(ProjectModel.user_id == current_user.id)
-        ).all(),
-        "social_platforms": session.exec(
-            select(SocialPlatformModel).where(
-                SocialPlatformModel.user_id == current_user.id
-            )
-        ).all(),
-        "websites": session.exec(
-            select(WebsiteModel).where(WebsiteModel.user_id == current_user.id)
-        ).all(),
+        "locations": get_locations(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "programming_languages": get_programming_languages(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "languages": get_languages(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "tools": get_tools(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "certificates": get_certificates(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "charities": get_charities(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "educations": get_educations(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "experiences": get_experiences(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "projects": get_projects(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "social_platforms": get_social_platforms(
+            session=session, user=current_user, use_base_model=True
+        ),
+        "websites": get_websites(
+            session=session, user=current_user, use_base_model=True
+        ),
     }
     return templates.TemplateResponse(
         request=request, name="account.html", context=context
