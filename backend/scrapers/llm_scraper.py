@@ -99,10 +99,6 @@ class LLMScraper(BaseScraper):
             await click(btn, self.page)
             retry += 1
 
-        if retry >= 5:
-            logger.error("We did not do it ;)")
-        #     return
-
     async def _check_if_popup_exists(self) -> bool:
         retry = 0
         while retry < 3:
