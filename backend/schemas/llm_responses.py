@@ -26,3 +26,20 @@ class CVOutput(BaseModel):
 
 class CoverLetterOutput(BaseModel):
     html: str = ""
+
+
+class JobEntryResponse(BaseModel):
+    cv_path: str = ""
+    cover_letter_path: str = ""
+    title: str
+    company_name: str
+    requirements: str
+    duties: str
+    about_project: str
+    offer_benefits: str
+    location: str
+    contract_type: str
+    employment_type: str
+    work_arrangement: str
+    additional_information: None | str
+    company_url: None | str
