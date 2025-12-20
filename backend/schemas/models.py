@@ -1,6 +1,6 @@
 import datetime
 from enum import StrEnum
-from typing import Sequence, Callable
+from typing import Callable, Sequence
 
 from pydantic import BaseModel, EmailStr
 
@@ -136,6 +136,13 @@ class Project(BaseModel):
 class SocialPlatform(BaseModel):
     social_platform: str
     url: str
+
+
+class UserPreferences(BaseModel):
+    cv_creation_mode: CVCreationModeEnum = CVCreationModeEnum.llm_generation
+    generate_cover_letter: bool = True
+    cv_path: str = ""
+    retries: int = 3
 
 
 class UserNeeds(BaseModel):

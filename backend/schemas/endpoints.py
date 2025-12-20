@@ -5,18 +5,17 @@ from pydantic import BaseModel, BeforeValidator, ConfigDict, EmailStr
 
 from backend.schemas.models import (
     AutomationSteps,
-    CVCreationModeEnum,
-    User,
-    Location,
-    ProgrammingLanguage,
-    Language,
-    Tool,
     Certificate,
     Charity,
-    Experience,
     Education,
+    Experience,
+    Language,
+    Location,
+    ProgrammingLanguage,
     Project,
     SocialPlatform,
+    Tool,
+    User,
     Website,
 )
 
@@ -25,13 +24,6 @@ def ensure_date(value: str | datetime.date):
     if isinstance(value, str):
         return datetime.date.fromisoformat(value)
     return value
-
-
-class UserPreferences(BaseModel):
-    cv_creation_mode: CVCreationModeEnum = CVCreationModeEnum.llm_generation
-    generate_cover_letter: bool = True
-    cv_path: str = ""
-    retries: int = 3
 
 
 class WebsitePost(BaseModel):
