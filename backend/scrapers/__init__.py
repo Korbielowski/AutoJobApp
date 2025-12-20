@@ -52,8 +52,10 @@ async def find_job_entries(
 
             running = True
             while running:
-                for job in await scraper.get_job_entries():
-                    job_data = await scraper.process_and_evaluate_job(job)
+                for job_locator in await scraper.get_job_entries():
+                    job_data = await scraper.process_and_evaluate_job(
+                        locator=job_locator, user_needs=user_needs
+                    )
                     if job_data:
                         job_entry_model = await generate_career_documents(
                             user=user,
