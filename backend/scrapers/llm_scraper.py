@@ -88,7 +88,7 @@ class LLMScraper(BaseScraper):
                 )
             else:
                 prompt = await load_prompt(
-                    "scraping:user:navigate_to_login_page_with_params",
+                    prompt_path="scraping:user:navigate_to_login_page_with_params",
                     attribute_list=attribute_list,
                 )
 
@@ -105,7 +105,8 @@ class LLMScraper(BaseScraper):
         while retry < 3:
             state = await send_req_to_llm(
                 prompt=await load_prompt(
-                    "scraping:user:check_if_popup_exists", page=self.page
+                    prompt_path="scraping:user:check_if_popup_exists",
+                    page=self.page,
                 ),
                 use_openai=True,
                 model=StateOutput,
@@ -123,7 +124,8 @@ class LLMScraper(BaseScraper):
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page, "scraping:user:cookies_button"
+                prompt=await load_prompt("scraping:user:cookies_button"),
+                page=self.page,
             )
             passed = await click(btn, self.page)
             retry += 1
@@ -157,7 +159,8 @@ class LLMScraper(BaseScraper):
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page, await load_prompt("scraping:user:popup_button")
+                prompt=await load_prompt("scraping:user:popup_button"),
+                page=self.page,
             )
             passed = await click(btn, self.page)
             retry += 1
@@ -187,7 +190,7 @@ class LLMScraper(BaseScraper):
                 )
             else:
                 prompt = await load_prompt(
-                    "scraping:user:job_listing_page_button_with_params",
+                    prompt_path="scraping:user:job_listing_page_button_with_params",
                     attribute_list=attribute_list,
                 )
 
@@ -319,7 +322,7 @@ class LLMScraper(BaseScraper):
 
         response = await send_req_to_llm(
             prompt=await load_prompt(
-                "scraping:user:job_offer_info",
+                prompt_path="scraping:user:job_offer_info",
                 page=await get_page_content(job_page),
             ),
             use_openai=True,
