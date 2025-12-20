@@ -1,5 +1,16 @@
 from pydantic import BaseModel
 
+from backend.schemas.models import (
+    Certificate,
+    Charity,
+    Education,
+    Experience,
+    Language,
+    ProgrammingLanguage,
+    Project,
+    Tool,
+)
+
 
 class HTMLElement(BaseModel):
     id: str = ""
@@ -41,6 +52,17 @@ class JobEntryResponse(BaseModel):
     work_arrangement: str
     additional_information: None | str
     company_url: None | str
+
+
+class SkillsLLMResponse(BaseModel):
+    programming_languages: list[ProgrammingLanguage] | None
+    languages: list[Language] | None
+    tools: list[Tool] | None
+    certificates: list[Certificate] | None
+    charities: list[Charity] | None
+    educations: list[Education] | None
+    experiences: list[Experience] | None
+    projects: list[Project] | None
 
 
 class StateOutput(BaseModel):
