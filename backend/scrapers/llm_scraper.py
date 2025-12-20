@@ -54,7 +54,7 @@ class LLMScraper(BaseScraper):
         sign_in_btn_locator, _, _ = await find_html_element(
             self.page,
             await load_prompt("scraping:user:sign_in_button"),
-            additional_llm=True,
+            # additional_llm=True, # TODO: Look at code using this parameter
         )
         await click(sign_in_btn_locator, self.page)
 
