@@ -11,7 +11,9 @@ from backend.database.models import (
     JobEntry,
     JobEntryModel,
     LanguageModel,
+    Location,
     LocationModel,
+    ProgrammingLanguage,
     ProgrammingLanguageModel,
     ProjectModel,
     SocialPlatformModel,
@@ -21,6 +23,7 @@ from backend.database.models import (
     WebsiteModel,
 )
 from backend.logger import get_logger
+from backend.schemas.models import UserNeeds
 
 logger = get_logger()
 
@@ -136,6 +139,29 @@ def get_candidate_data(session: Session, user: UserModel) -> CandidateData:
         experiences=experiences,
         projects=projects,
         social_platforms=social_platforms,
+    )
+
+
+def get_user_needs(session: Session, user: UserModel) -> UserNeeds:
+    locations = Location.model_validate(
+        get_model(session=session, user=user, model=LocationModel)
+    )
+    programming_languages = ProgrammingLanguage.model_validate(
+        get_model(session=session, user=user, model=ProgrammingLanguageModel)
+    )
+    languages = get_model(session=session, user=user, model=LanguageModel)
+    tools = get_model(session=session, user=user, model=ToolModel)
+    certificates = get_model(session=session, user=user, model=CertificateModel)
+    experiences = get_model(session=session, user=user, model=ExperienceModel)
+    projects = get_model(session=session, user=user, model=ProjectModel)
+    return UserNeeds(
+        locations=locations,
+        programming_languages=programming_languages,
+        languages=languages,
+        tools=tools,
+        certificates=certificates,
+        experiences=experiences,
+        projects=projects,
     )
 
 
