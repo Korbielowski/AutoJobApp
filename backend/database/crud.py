@@ -19,7 +19,6 @@ from backend.database.models import (
     WebsiteModel,
 )
 from backend.logger import get_logger
-from backend.schemas.endpoints import UserPreferences
 from backend.schemas.models import (
     CandidateData,
     Certificate,
@@ -36,6 +35,7 @@ from backend.schemas.models import (
     User,
     UserNeeds,
     Website,
+    UserPreferences,
 )
 
 logger = get_logger()
