@@ -69,7 +69,7 @@ def get_user_preferences(
     if not output:
         return output
 
-    return UserPreferences.model_validate(output)
+    return UserPreferences.model_validate(output.model_dump())
 
 
 def get_users(
