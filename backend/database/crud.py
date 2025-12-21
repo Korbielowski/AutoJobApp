@@ -34,8 +34,8 @@ from backend.schemas.models import (
     Tool,
     User,
     UserNeeds,
-    Website,
     UserPreferences,
+    Website,
 )
 
 logger = get_logger()
@@ -78,7 +78,7 @@ def get_users(
     output = session.exec(select(UserModel)).all()
     if use_base_model:
         return output
-    return [User.model_validate(element) for element in output]
+    return [User.model_validate(element.model_dump()) for element in output]
 
 
 def get_locations(
@@ -89,7 +89,7 @@ def get_locations(
     ).all()
     if use_base_model:
         return output
-    return [Location.model_validate(element) for element in output]
+    return [Location.model_validate(element.model_dump()) for element in output]
 
 
 def get_programming_languages(
@@ -102,7 +102,10 @@ def get_programming_languages(
     ).all()
     if use_base_model:
         return output
-    return [ProgrammingLanguage.model_validate(element) for element in output]
+    return [
+        ProgrammingLanguage.model_validate(element.model_dump())
+        for element in output
+    ]
 
 
 def get_languages(
@@ -113,7 +116,7 @@ def get_languages(
     ).all()
     if use_base_model:
         return output
-    return [Language.model_validate(element) for element in output]
+    return [Language.model_validate(element.model_dump()) for element in output]
 
 
 def get_tools(
@@ -124,7 +127,7 @@ def get_tools(
     ).all()
     if use_base_model:
         return output
-    return [Tool.model_validate(element) for element in output]
+    return [Tool.model_validate(element.model_dump()) for element in output]
 
 
 def get_certificates(
@@ -135,7 +138,9 @@ def get_certificates(
     ).all()
     if use_base_model:
         return output
-    return [Certificate.model_validate(element) for element in output]
+    return [
+        Certificate.model_validate(element.model_dump()) for element in output
+    ]
 
 
 def get_experiences(
@@ -146,7 +151,9 @@ def get_experiences(
     ).all()
     if use_base_model:
         return output
-    return [Experience.model_validate(element) for element in output]
+    return [
+        Experience.model_validate(element.model_dump()) for element in output
+    ]
 
 
 def get_charities(
@@ -157,7 +164,7 @@ def get_charities(
     ).all()
     if use_base_model:
         return output
-    return [Charity.model_validate(element) for element in output]
+    return [Charity.model_validate(element.model_dump()) for element in output]
 
 
 def get_educations(
@@ -168,7 +175,9 @@ def get_educations(
     ).all()
     if use_base_model:
         return output
-    return [Education.model_validate(element) for element in output]
+    return [
+        Education.model_validate(element.model_dump()) for element in output
+    ]
 
 
 def get_social_platforms(
@@ -181,7 +190,10 @@ def get_social_platforms(
     ).all()
     if use_base_model:
         return output
-    return [SocialPlatform.model_validate(element) for element in output]
+    return [
+        SocialPlatform.model_validate(element.model_dump())
+        for element in output
+    ]
 
 
 def get_projects(
@@ -192,7 +204,7 @@ def get_projects(
     ).all()
     if use_base_model:
         return output
-    return [Project.model_validate(element) for element in output]
+    return [Project.model_validate(element.model_dump()) for element in output]
 
 
 def get_websites(
@@ -203,7 +215,7 @@ def get_websites(
     ).all()
     if use_base_model:
         return output
-    return [Website.model_validate(element) for element in output]
+    return [Website.model_validate(element.model_dump()) for element in output]
 
 
 def get_job_entries(
@@ -214,7 +226,7 @@ def get_job_entries(
     ).all()
     if use_base_model:
         return output
-    return [JobEntry.model_validate(element) for element in output]
+    return [JobEntry.model_validate(element.model_dump()) for element in output]
 
 
 def get_candidate_data(session: Session, user: UserModel) -> CandidateData:
