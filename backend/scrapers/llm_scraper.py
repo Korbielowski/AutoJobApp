@@ -66,6 +66,7 @@ class LLMScraper(BaseScraper):
         #     or "sign_in" in url
         # ):
         #     return True
+        logger.debug("Checking if on login page")
         state = await send_req_to_llm(
             prompt=await load_prompt(
                 prompt_path="scraping:user:is_login_page",
@@ -82,6 +83,7 @@ class LLMScraper(BaseScraper):
         attribute_list = []
 
         while not await self._is_on_login_page() and retry < 5:
+            logger.debug("Navigating to login page")
             if not attribute_list:
                 prompt = await load_prompt(
                     "scraping:user:navigate_to_login_page"
