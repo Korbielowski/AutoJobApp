@@ -106,7 +106,7 @@ class LLMScraper(BaseScraper):
             state = await send_req_to_llm(
                 prompt=await load_prompt(
                     prompt_path="scraping:user:check_if_popup_exists",
-                    page=self.page,
+                    page=await get_page_content(self.page),
                 ),
                 use_openai=True,
                 model=StateOutput,
