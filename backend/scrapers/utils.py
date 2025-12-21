@@ -1,5 +1,7 @@
 import asyncio
+import json
 import random
+from copy import deepcopy
 
 import tiktoken
 from bs4 import BeautifulSoup
@@ -77,11 +79,7 @@ async def get_page_content(page: Page) -> str:
     # TODO: Add option to get important info about html tags and their content, then send all of it in json format to LLM
     page_content = await page.content()
 
-    logger.info(
-        f"Amount of tokens before cleaning: {len(TIK.encode(page_content))}"
-    )
     soup = BeautifulSoup(page_content, "html.parser")
-    cleaned_page_content = ""
     for tag in soup(
         [
             "head",
@@ -107,11 +105,50 @@ async def get_page_content(page: Page) -> str:
         ]
     ):
         tag.decompose()
-        cleaned_page_content = str(soup)
-    logger.info(
-        f"Amount of tokens after cleaning: {len(TIK.encode(cleaned_page_content))}"
-    )
-    return cleaned_page_content
+    tag_list = []
+    for tag in soup.find_all():
+        text = tag.find(text=True, recursive=False)
+        if not text:
+            text = ""
+        if len(text) == 1:
+            text = ""
+        data = {}
+        if tag_id := tag.get("id"):
+            data["id"] = tag_id
+        if name := tag.get("name"):
+            data["name"] = name
+        if tag_type := tag.get("type"):
+            data["element_type"] = tag_type
+        if aria_label := tag.get("aria-label"):
+            data["aria_label"] = aria_label
+        if role := tag.get("role"):
+            data["role"] = role
+        if text:
+            data["text"] = text
+        if class_list := tag.get("class"):
+            data["class_list"] = class_list
+        if any(iter(data.values())):
+            data["parents"] = ".".join(
+                reversed(tuple((t.name for t in tag.parents)))
+            )
+            tag_list.append(data)
+    tag_list_without_p = []
+    for tag in tag_list:
+        x: dict = deepcopy(tag)
+        x.pop("parents")
+        tag_list_without_p.append(x)
+
+    cleaned_page_content = str(soup)
+    methods = {
+        "Before cleaning": len(TIK.encode(page_content)),
+        "Normal cleaning": len(TIK.encode(cleaned_page_content)),
+        "New cleaning": len(TIK.encode(json.dumps(tag_list))),
+        "New cleaning without parents": len(
+            TIK.encode(json.dumps(tag_list_without_p))
+        ),
+    }
+    logger.info(pformat(methods))
+    return json.dumps(tag_list_without_p)
 
 
 async def find_html_element_attributes(
