@@ -1,4 +1,6 @@
-from pydantic import BaseModel
+from typing import Literal
+
+from pydantic import BaseModel, Field
 
 from backend.schemas.models import (
     Certificate,
@@ -67,3 +69,13 @@ class SkillsLLMResponse(BaseModel):
 
 class StateOutput(BaseModel):
     state: bool = False
+
+
+class TaskState(BaseModel):
+    """
+    state: State of your task
+    confidence: How confident you are that you accomplished your task
+    """
+
+    state: Literal["done", "in-progress"]
+    confidence: float = Field(gt=0.0, le=1.0)
