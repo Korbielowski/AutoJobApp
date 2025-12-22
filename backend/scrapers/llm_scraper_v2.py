@@ -252,7 +252,9 @@ class LLMScraperV2(BaseScraper):
                 context=ContextForLLM(
                     page=self.page, website_info=self.website_info
                 ),
-                run_config=RunConfig(session_input_callback=_session_input),
+                run_config=RunConfig(
+                    session_input_callback=_session_input
+                ),  # TODO: Fix
             )
             _log_agent_data(result)
             if (
