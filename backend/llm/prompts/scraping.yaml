@@ -1,4 +1,12 @@
 system:
+  login_to_page:
+    prompt: "
+    You are a user, that wants to login to this website. Please navigate first to a login page, if not already there
+    and then fill out the input fields for user email and password to login. Use functions, that I gave you, if needed.
+    Sometimes there are some popups when loading to a page, like cookies popup, you must accept those kind of popups.
+    If you accomplish your task to the end, return
+    "
+
   get_attributes:
     prompt: "
     I will give you an HTML snippet. Return only its identifying attributes.
