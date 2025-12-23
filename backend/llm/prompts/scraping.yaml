@@ -6,6 +6,13 @@ system:
     Sometimes there are some popups when loading to a page, like cookies popup, you must accept those kind of popups.
     If you accomplish your task to the end, return
     "
+  navigate_to_job_listing_page:
+    prompt: "
+    You are the user and want to navigate to a job listing page with job offers for IT, where there are many job tiles, usually those tiles
+    have information like: job title, company name, short job description.
+    Sometimes there are some popups when loading to a page, like cookies popup, you must accept/close those kind of popups if they appear in your way.
+    If you accomplish your task to the end, return
+    "
 
   get_attributes:
     prompt: "
