@@ -6,6 +6,7 @@ from typing import Literal, Optional
 
 from agents import (
     Agent,
+    MaxTurnsExceeded,
     OpenAIResponsesModel,
     RunConfig,
     RunContextWrapper,
@@ -204,12 +205,13 @@ async def get_page_data(
     wrapper: RunContextWrapper[ContextForLLM],
 ) -> ToolResult:
     """
-    Get data about all page HTML elements in a simplified form of JSON
-    :return: Page elements in JSON form
+    Get data about all page HTML elements in a simplified form of JSON and page url
+    :return: Page elements in JSON-like form and url
     :rtype: ToolResult
     """
     return ToolResult(
-        success=True, result=await get_page_content(wrapper.context.page)
+        success=True,
+        result=f"url: {wrapper.context.page.url}\npage: {await get_page_content(wrapper.context.page)}",
     )
 
 
@@ -227,53 +229,79 @@ class CouldNotLoginException(Exception):
     pass
 
 
-async def _session_input() -> TResponseInputItem:
+async def _session_input(
+    history_items: list[TResponseInputItem], new_items: list[TResponseInputItem]
+) -> list[TResponseInputItem]:
     pass
 
 
 class LLMScraperV2(BaseScraper):
+    model = OpenAIResponsesModel(
+        model=OPENAI_MODEL,
+        openai_client=AsyncOpenAI(api_key=settings.OPENAI_API_KEY),
+    )
+    run_config = RunConfig(session_input_callback=_session_input)
+
+    async def _agent_loop(self, agent: Agent):
+        start_url = self.page.url
+        for _ in range(self.retries):
+            try:
+                result = await Runner.run(
+                    starting_agent=agent,
+                    input=await get_page_content(self.page),
+                    context=ContextForLLM(
+                        page=self.page, website_info=self.website_info
+                    ),
+                    # run_config=self.run_config,
+                )
+                _log_agent_data(result)
+            except MaxTurnsExceeded:
+                logger.error(
+                    f"Could not log into the: {self.website_info.url}. Agent will try again"
+                )
+                await goto(page=self.page, link=start_url)
+                continue
+
+            if result.final_output.state == "done":
+                return
+
+        raise CouldNotLoginException(
+            f"Could not log into the: {self.website_info.url}. After this many attempts: {self.retries}"
+        )
+
     async def login_to_page(self) -> None:
         await goto(self.page, self.url)
 
-        for _ in range(self.retries):
-            login_agent = Agent(
-                name="login_agent",
-                instructions=await load_prompt("scraping:system:login_to_page"),
-                tools=[click, fill, get_page_data],
-                model=OpenAIResponsesModel(
-                    model=OPENAI_MODEL,
-                    openai_client=AsyncOpenAI(api_key=settings.OPENAI_API_KEY),
-                ),  # TODO: Maybe move this to constructor
-                output_type=TaskState,
-            )
-            result = await Runner.run(
-                starting_agent=login_agent,
-                input=await get_page_content(self.page),
-                context=ContextForLLM(
-                    page=self.page, website_info=self.website_info
-                ),
-                run_config=RunConfig(
-                    session_input_callback=_session_input
-                ),  # TODO: Fix
-            )
-            _log_agent_data(result)
-            if (
-                result.final_output.state == "done"
-                and result.final_output.confidence >= 0.8
-            ):
-                return
-            logger.error(
-                f"Could not log into the: {self.website_info.url}. After this many attempts: {self.retries}"
-            )
-            raise CouldNotLoginException(
-                f"Could not log into the: {self.website_info.url}. After this many attempts: {self.retries}"
-            )
+        login_agent = Agent(
+            name="login_agent",
+            instructions=await load_prompt("scraping:system:login_to_page"),
+            tools=[click, fill, get_page_data],
+            model=self.model,
+            output_type=TaskState,
+        )
+
+        await self._agent_loop(login_agent)
 
     async def _navigate_to_job_list_page(self) -> None:
-        pass
+        job_list_page_agent = Agent(
+            name="job_list_page_agent",
+            instructions=await load_prompt(
+                "scraping:system:navigate_to_job_listing_page"
+            ),
+            tools=[click, get_page_data],
+            model=self.model,
+            output_type=TaskState,
+        )
+
+        await self._agent_loop(job_list_page_agent)
 
     async def get_job_entries(self) -> tuple[Locator, ...]:
-        pass
+        await self._navigate_to_job_list_page()
+        with open("cos.json", "w") as file:
+            file.write(await get_page_content(self.page))
+
+        raise Exception("Done :)")
+        # await send_req_to_llm()
 
     async def navigate_to_next_page(self) -> bool:
         pass
