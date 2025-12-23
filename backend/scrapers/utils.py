@@ -4,6 +4,7 @@ import random
 from copy import deepcopy
 
 import tiktoken
+import toon
 from bs4 import BeautifulSoup
 from devtools import pformat
 from playwright.async_api import Locator, Page, TimeoutError
@@ -127,11 +128,13 @@ async def get_page_content(page: Page) -> str:
             data["text"] = text
         if class_list := tag.get("class"):
             data["class_list"] = class_list
-        if any(iter(data.values())):
+
+        if [k for k in data.keys() if k != "class_list"]:
             data["parents"] = ".".join(
                 reversed(tuple((t.name for t in tag.parents)))
             )
             tag_list.append(data)
+
     tag_list_without_p = []
     for tag in tag_list:
         x: dict = deepcopy(tag)
@@ -146,9 +149,12 @@ async def get_page_content(page: Page) -> str:
         "New cleaning without parents": len(
             TIK.encode(json.dumps(tag_list_without_p))
         ),
+        "New cleaning with toons": len(
+            TIK.encode(toon.encode(tag_list_without_p))
+        ),
     }
     logger.info(pformat(methods))
-    return json.dumps(tag_list_without_p)
+    return toon.encode(tag_list_without_p)
 
 
 async def find_html_element_attributes(
