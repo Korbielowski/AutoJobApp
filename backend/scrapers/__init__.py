@@ -13,7 +13,7 @@ from backend.database.models import (
 )
 from backend.logger import get_logger
 from backend.schemas.models import UserNeeds, UserPreferences
-from backend.scrapers.llm_scraper import LLMScraper
+from backend.scrapers.llm_scraper_v2 import LLMScraperV2
 
 logger = get_logger()
 
@@ -39,7 +39,7 @@ async def find_job_entries(
 
         for website in websites:
             logger.info(website)
-            scraper = LLMScraper(
+            scraper = LLMScraperV2(
                 url=website.url,
                 email=website.user_email,
                 password=website.user_password,
