@@ -71,6 +71,7 @@ dependencies = [
     { name = "playwright-stealth" },
     { name = "psycopg", extra = ["binary"] },
     { name = "pydantic" },
+    { name = "python-toon" },
     { name = "sqlmodel" },
     { name = "tiktoken" },
     { name = "uvicorn" },
@@ -101,6 +102,7 @@ requires-dist = [
     { name = "playwright-stealth", specifier = ">=2.0.0" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.3.0" },
     { name = "pydantic", specifier = ">=2.11.3" },
+    { name = "python-toon", specifier = ">=0.1.3" },
     { name = "sqlmodel", specifier = ">=0.0.24" },
     { name = "tiktoken", specifier = ">=0.9.0" },
     { name = "uvicorn", specifier = ">=0.35.0" },
@@ -1467,6 +1469,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/87/c7/5e1547c44e31da50a460df93af11a535ace568ef89d7a811069ead340c4a/python-slugify-8.0.4.tar.gz", hash = "sha256:59202371d1d05b54a9e7720c5e038f928f45daaffe41dd10822f3907b937c856", size = 10921, upload-time = "2024-02-08T18:32:45.488Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a4/62/02da182e544a51a5c3ccf4b03ab79df279f9c60c5e82d5e8bec7ca26ac11/python_slugify-8.0.4-py2.py3-none-any.whl", hash = "sha256:276540b79961052b66b7d116620b36518847f52d5fd9e3a70164fc8c50faa6b8", size = 10051, upload-time = "2024-02-08T18:32:43.911Z" },
+]
+
+[[package]]
+name = "python-toon"
+version = "0.1.3"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/92/640c83ca46d5fe9c49895449a8932f55252537dd13dd22186cbac3a1ce59/python_toon-0.1.3.tar.gz", hash = "sha256:ca348b214c4f1cdad3579fd83dd60032d9eb87eb349c2d430ad9eb6371f174bf", size = 31280, upload-time = "2025-11-04T09:12:20.949Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/26/a4/2f2def0378b44f913d2d6cb3bc5b1a15267b363937ab1cb9afb07ce2313c/python_toon-0.1.3-py3-none-any.whl", hash = "sha256:a27b0ee4a729e730d1037d0a63eb8b344b3e5a26e3dc9a173067b6c31a868ee6", size = 21797, upload-time = "2025-11-04T09:12:19.443Z" },
 ]
 
 [[package]]
