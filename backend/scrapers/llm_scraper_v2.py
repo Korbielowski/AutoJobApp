@@ -21,6 +21,7 @@ from pydantic import BaseModel
 
 from backend.config import settings
 from backend.database.models import WebsiteModel
+from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
 from backend.schemas.llm_responses import HTMLElement, TaskState
@@ -297,11 +298,26 @@ class LLMScraperV2(BaseScraper):
 
     async def get_job_entries(self) -> tuple[Locator, ...]:
         await self._navigate_to_job_list_page()
-        with open("cos.json", "w") as file:
-            file.write(await get_page_content(self.page))
 
-        raise Exception("Done :)")
-        # await send_req_to_llm()
+        element = await send_req_to_llm(
+            system_prompt=await load_prompt("scraping:user:job_offer_links"),
+            prompt=await get_page_content(self.page),
+            model=HTMLElement,
+        )
+        if element.class_list:
+            class_selector = f".{'.'.join(element.class_list)}"
+            locator = self.page.locator(class_selector)
+            logger.warning(f"Locator count: {await locator.count()}")
+            logger.warning(await locator.all())
+            # for loc in await locator.all():
+            #     try:
+            #         url = await loc.get_attribute("href")
+            #         logger.success(url)
+            #     except TimeoutError:
+            #         logger.error("Could not get href")
+            return tuple(await locator.all())
+        logger.warning("Could not find link locators")
+        return tuple()
 
     async def navigate_to_next_page(self) -> bool:
         pass
