@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import random
 from dataclasses import dataclass
 from enum import StrEnum
@@ -15,6 +16,7 @@ from agents import (
     TResponseInputItem,
     function_tool,
 )
+from devtools import pformat
 from openai import AsyncOpenAI
 from playwright.async_api import Locator, Page
 from pydantic import BaseModel
@@ -24,7 +26,11 @@ from backend.database.models import WebsiteModel
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
-from backend.schemas.llm_responses import HTMLElement, TaskState
+from backend.schemas.llm_responses import (
+    HTMLElement,
+    JobEntryResponse,
+    TaskState,
+)
 from backend.schemas.models import JobEntry
 from backend.scrapers.base_scraper import BaseScraper
 from backend.scrapers.utils import get_page_content, goto
@@ -338,4 +344,28 @@ class LLMScraperV2(BaseScraper):
         pass
 
     async def _get_job_information(self, url: str) -> JobEntry | None:
-        pass
+        job_page: Page = await self.context.new_page()
+        await goto(job_page, url)
+
+        response = await send_req_to_llm(
+            prompt=await load_prompt(
+                prompt_path="scraping:user:job_offer_info",
+                page=await get_page_content(job_page),
+            ),
+            use_openai=True,
+            model=JobEntryResponse,
+        )
+
+        attributes = response.model_dump()
+        attributes["discovery_date"] = datetime.date.today()
+        attributes["job_url"] = url
+
+        await job_page.close()
+
+        try:
+            job_entry = JobEntry.model_validate(attributes)
+            logger.info(f"JobEntry model data: {pformat(job_entry)}")
+            return job_entry
+        except Exception as e:
+            logger.exception(e)
+        return None
