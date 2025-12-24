@@ -73,8 +73,8 @@ class StateOutput(BaseModel):
 
 class TaskState(BaseModel):
     """
-    state: State of your task
-    confidence: How confident you are that you accomplished your task
+    state: State the task
+    confidence: confidence of accomplishing the task
     """
 
     state: Literal["done", "in-progress"]
