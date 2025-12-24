@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
 
+from agents import set_tracing_disabled
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
@@ -12,7 +13,8 @@ from backend.routes.main import api_router
 @asynccontextmanager
 async def setup(inner_app: FastAPI) -> AsyncGenerator:
     init_db()
-    # TODO: Add LLM API setup
+
+    set_tracing_disabled(disabled=True)
 
     inner_app.mount(
         "/static",
