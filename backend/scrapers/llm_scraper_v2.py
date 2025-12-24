@@ -157,6 +157,7 @@ async def click(
     :return: Result of the click action
     :rtype: ToolResult
     """
+    logger.debug(f"'click' tool call with params: element= {pformat(element)}")
     tag = await find_html_tag(page=wrapper.context.page, element=element)
     if not tag:
         return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
@@ -187,6 +188,9 @@ async def fill(
     :return: Result of the action
     :rtype: ToolResult
     """
+    logger.debug(
+        f"'fill' tool call with params: input_type= {input_type}\nelement= {pformat(element)}"
+    )
     tag = await find_html_tag(page=wrapper.context.page, element=element)
     if not tag:
         return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
@@ -216,6 +220,7 @@ async def get_page_data(
     :return: Page elements in JSON-like form and url
     :rtype: ToolResult
     """
+    logger.debug("'get_page_data' tool call")
     return ToolResult(
         success=True,
         result=f"url: {wrapper.context.page.url}\npage: {await get_page_content(wrapper.context.page)}",
