@@ -320,7 +320,16 @@ class LLMScraperV2(BaseScraper):
         return tuple()
 
     async def navigate_to_next_page(self) -> bool:
-        pass
+        next_page_agent = Agent(
+            name="next_page_agent",
+            instructions=await load_prompt(""),
+            tools=[click, get_page_data],
+            model=self.model,
+            output_type=TaskState,
+        )
+        await self._agent_loop(next_page_agent)
+
+        return True
 
     async def _go_to_next_job(self) -> bool:
         pass
