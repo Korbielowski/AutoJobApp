@@ -4,7 +4,7 @@ import asyncio
 from typing import TypeVar
 
 import tiktoken
-from openai import AuthenticationError, OpenAI, RateLimitError
+from openai import AsyncOpenAI, AuthenticationError, RateLimitError
 from pydantic import BaseModel
 
 from backend.config import settings
@@ -34,12 +34,12 @@ async def send_req_to_llm(
     )
 
     if use_openai:
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         while not response and retry > 0:
             try:
                 if model:
                     tools = [{"type": tool} for tool in tools] if tools else []
-                    response = client.responses.parse(
+                    response = await client.responses.parse(
                         model=OPENAI_MODEL,
                         input=[
                             {"role": "system", "content": system_prompt},
@@ -52,7 +52,7 @@ async def send_req_to_llm(
                     if response and response.output_parsed:
                         return response.output_parsed
                 else:
-                    response = client.responses.create(
+                    response = await client.responses.create(
                         model=OPENAI_MODEL,
                         input=[
                             {"role": "system", "content": system_prompt},
@@ -87,9 +87,9 @@ async def send_req_to_llm(
                 logger.info(f"LLM error: {e}")
             retry -= 1
     else:
-        client = OpenAI(api_key=settings.API_KEY, base_url=BASE_URL)
+        client = AsyncOpenAI(api_key=settings.API_KEY, base_url=BASE_URL)
         try:
-            response = client.responses.create(
+            response = await client.responses.create(
                 model=MODEL,
                 input=prompt,
                 # messages=[{"role": "user", "content": prompt}],
