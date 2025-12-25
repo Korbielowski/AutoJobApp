@@ -1,6 +1,7 @@
 # TODO: If not used, remove openai-agents from dependencies and add normal OpenAI
 # TODO: Use async OpenAI class
 import asyncio
+from typing import TypeVar
 
 import tiktoken
 from openai import AuthenticationError, OpenAI, RateLimitError
@@ -14,6 +15,7 @@ MODEL = "deepseek-r1-0528"
 # OPENAI_MODEL = "gpt-5-nano-2025-08-07"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
 TIK = tiktoken.encoding_for_model("gpt-5-")
+T = TypeVar("T", bound=BaseModel)
 logger = get_logger()
 
 
@@ -22,10 +24,10 @@ async def send_req_to_llm(
     system_prompt: str = "",
     temperature: float = 1,
     use_openai: bool = True,
-    model: type[BaseModel] | None = None,
+    model: type[T] | None = None,
     tools: list[str] | None = None,
     retry: int = 3,
-) -> str | BaseModel:
+) -> str | T:
     response = ""
     logger.debug(
         f"Prompt token count: {len(TIK.encode(system_prompt + prompt))}, temperature: {temperature}, use_openai: {use_openai}, model: {model}, retry: {retry}, tools: {tools}"
