@@ -279,20 +279,22 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
         )
 
 
-def _is_user_msg(item: TResponseInputItem) -> bool:
+TOOL_CALL_TYPE = "function_call"
+TOOL_RESPONSE_TYPE = "function_call_output"
+
+
+def _is_tool_call_or_result(item: TResponseInputItem) -> bool:
     if isinstance(item, dict):
-        role = item.get("role")
-        if role is not None:
-            return role == "user"
-        if item.get("type") == "message":
-            return item.get("role") == "user"
-    return getattr(item, "role", None) == "user"
+        t = item.get("type", "")
+        return t == TOOL_CALL_TYPE or t == TOOL_RESPONSE_TYPE
+    t = getattr(item, "type", "")
+    return t == TOOL_CALL_TYPE or t == TOOL_RESPONSE_TYPE
 
 
 class TrimmingSession(SessionABC):
     def __init__(self, turns: int):
-        self.turns = turns
-        self._items = Deque[TResponseInputItem] = deque()
+        self.turns = max(1, turns)
+        self._items: Deque[TResponseInputItem] = deque()
         self._lock = asyncio.Lock()
 
     def _trim_messages(
@@ -305,7 +307,7 @@ class TrimmingSession(SessionABC):
         start_idx = 0
 
         for i in range(len(items) - 1, -1, -1):
-            if _is_user_msg(items[i]):
+            if _is_tool_call_or_result(items[i]):
                 count += 1
                 if count == self.turns:
                     start_idx = i
@@ -359,6 +361,7 @@ class LLMScraperV2(BaseScraper):
                 result = await Runner.run(
                     starting_agent=agent,
                     input=await get_page_content(self.page),
+                    session=TrimmingSession(turns=2),
                     context=ContextForLLM(
                         page=self.page,
                         website_info=self.website_info,
