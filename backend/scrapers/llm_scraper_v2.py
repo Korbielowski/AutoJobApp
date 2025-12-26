@@ -1,9 +1,10 @@
 import asyncio
 import datetime
 import random
+from collections import deque
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Literal, Optional
+from typing import Deque, Literal, Optional
 
 from agents import (
     Agent,
@@ -281,6 +282,12 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
 class TrimmingSession(SessionABC):
     def __init__(self, turns: int):
         self.turns = turns
+        self._items = Deque[TResponseInputItem] = deque()
+
+    def _trim_messages(
+        self, items: list[TResponseInputItem]
+    ) -> list[TResponseInputItem]:
+        pass
 
     async def get_items(
         self, limit: int | None = None
@@ -288,7 +295,9 @@ class TrimmingSession(SessionABC):
         pass
 
     async def add_items(self, items: list[TResponseInputItem]) -> None:
-        pass
+        if not items:
+            return
+        self._trim_messages(items)
 
     async def pop_item(self) -> TResponseInputItem | None:
         pass
