@@ -43,6 +43,7 @@ logger = get_logger()
 class ContextForLLM:
     page: Page
     website_info: WebsiteModel
+    agent_name: str
 
 
 class ToolResult(BaseModel):
@@ -157,7 +158,9 @@ async def click(
     :return: Result of the click action
     :rtype: ToolResult
     """
-    logger.debug(f"'click' tool call with params: element= {pformat(element)}")
+    logger.debug(
+        f"'{wrapper.context.agent_name}' invoked 'click' tool call with params: element=\n{pformat(element)}"
+    )
     tag = await find_html_tag(page=wrapper.context.page, element=element)
     if not tag:
         return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
@@ -189,7 +192,7 @@ async def fill(
     :rtype: ToolResult
     """
     logger.debug(
-        f"'fill' tool call with params: input_type= {input_type}\nelement= {pformat(element)}"
+        f"'{wrapper.context.agent_name}' invoked 'fill' tool call with params: input_type= {input_type}\nelement= {pformat(element)}"
     )
     tag = await find_html_tag(page=wrapper.context.page, element=element)
     if not tag:
@@ -220,7 +223,9 @@ async def get_page_data(
     :return: Page elements in JSON-like form and url
     :rtype: ToolResult
     """
-    logger.debug("'get_page_data' tool call")
+    logger.debug(
+        f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool call"
+    )
     return ToolResult(
         success=True,
         result=f"url: {wrapper.context.page.url}\npage: {await get_page_content(wrapper.context.page)}",
@@ -229,11 +234,15 @@ async def get_page_data(
 
 def _log_agent_data(result: RunResult):
     logger.info(
-        f"Total tokens used: {
+        f"Agent name: {
+            result.context_wrapper.context.agent_name
+        }\nTotal tokens used: {
             result.context_wrapper.usage.total_tokens
         }\nInput tokens used: {
             result.context_wrapper.usage.input_tokens
-        }\nOutput tokens used: {result.context_wrapper.usage.output_tokens}"
+        }\nOutput tokens used: {
+            result.context_wrapper.usage.output_tokens
+        }\nFinal agent output{pformat(result.final_output)}"
     )
 
 
@@ -254,7 +263,9 @@ class LLMScraperV2(BaseScraper):
     )
     run_config = RunConfig(session_input_callback=_session_input)
 
-    async def _agent_loop(self, agent: Agent):
+    async def _agent_loop(self, agent: Agent) -> bool:
+        logger.debug(f"Running agent loop for '{agent.name}'")
+
         start_url = self.page.url
         for _ in range(self.retries):
             try:
@@ -262,7 +273,9 @@ class LLMScraperV2(BaseScraper):
                     starting_agent=agent,
                     input=await get_page_content(self.page),
                     context=ContextForLLM(
-                        page=self.page, website_info=self.website_info
+                        page=self.page,
+                        website_info=self.website_info,
+                        agent_name=agent.name,
                     ),
                     # run_config=self.run_config,
                 )
@@ -275,11 +288,8 @@ class LLMScraperV2(BaseScraper):
                 continue
 
             if result.final_output.state == "done":
-                return
-
-        raise CouldNotLoginException(
-            f"Could not log into the: {self.website_info.url}. After this many attempts: {self.retries}"
-        )
+                return True
+        return False
 
     async def login_to_page(self) -> None:
         await goto(self.page, self.url)
@@ -294,7 +304,7 @@ class LLMScraperV2(BaseScraper):
 
         await self._agent_loop(login_agent)
 
-    async def _navigate_to_job_list_page(self) -> None:
+    async def navigate_to_job_listing_page(self) -> None:
         job_list_page_agent = Agent(
             name="job_list_page_agent",
             instructions=await load_prompt(
@@ -308,7 +318,7 @@ class LLMScraperV2(BaseScraper):
         await self._agent_loop(job_list_page_agent)
 
     async def get_job_entries(self) -> tuple[Locator, ...]:
-        await self._navigate_to_job_list_page()
+        return tuple()
 
         element = await send_req_to_llm(
             system_prompt=await load_prompt("scraping:user:job_offer_links"),
@@ -333,14 +343,14 @@ class LLMScraperV2(BaseScraper):
     async def navigate_to_next_page(self) -> bool:
         next_page_agent = Agent(
             name="next_page_agent",
-            instructions=await load_prompt(""),
+            instructions=await load_prompt("scraping:user:next_page_button"),
             tools=[click, get_page_data],
             model=self.model,
             output_type=TaskState,
         )
-        await self._agent_loop(next_page_agent)
+        action_state = await self._agent_loop(next_page_agent)
 
-        return True
+        return action_state
 
     async def _go_to_next_job(self) -> bool:
         pass
