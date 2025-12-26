@@ -9,7 +9,7 @@ _ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_file=_ROOT_DIR / ".env",
+        env_file=_ROOT_DIR / ".." / ".env",
         env_ignore_empty=True,
         extra="ignore",
     )
