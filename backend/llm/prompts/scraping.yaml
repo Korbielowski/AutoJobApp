@@ -1,21 +1,88 @@
 system:
   login_to_page:
     prompt: "
-    You are a user, that wants to login to this website. Please navigate first to a login page, if not already there
-    and then fill out the input fields for user email and password to login. Use functions, that I gave you, if needed.
-    Sometimes there are some popups when loading to a page, like cookies popup, you must accept those kind of popups.
-    If you accomplish your task to the end, return
+    You are an automated web agent operating a browser via provided functions.
+
+    Goal:
+    Log into the website using the provided user credentials.
+
+    Instructions:
+    1. If the current page is not a login page, navigate to the login page.
+    2. Before interacting with the page, handle blocking popups (e.g. cookie consent dialogs) by accepting them if present.
+    3. Locate the input field for the user email and fill it with the provided email value.
+    4. Locate the input field for the user password and fill it with the provided password value.
+    5. Submit the login form.
+
+    Completion criteria:
+    - Consider the task successful when the page indicates a logged-in state (e.g. dashboard, user avatar, or logout button visible).
+    - If login fails or required elements are not found, stop and report the failure.
+
+    Rules:
+    - Use only the provided functions to interact with the page.
+    - Do not invent actions or assume state changes without verification.
+    - Do not continue indefinitely.
     "
   navigate_to_job_listing_page:
     prompt: "
-    You are the user and want to navigate to a job listing page with job offers for IT, where there are many job tiles, usually those tiles
-    have information like: job title, company name, short job description.
-    Sometimes there are some popups when loading to a page, like cookies popup, you must accept/close those kind of popups if they appear in your way.
-    If you accomplish your task to the end, return
+    You are an automated web agent operating a browser using the provided functions.
+
+    Goal:
+    Navigate to a job listing page that displays multiple IT job offers.
+
+    Instructions:
+    1. Navigate to a page that lists IT job offers.
+    2. If blocking popups appear (e.g. cookie consent or modal dialogs), close or accept them so that the page content is accessible.
+    3. Verify that the page contains multiple job offer tiles/cards.
+
+    A job listing page is defined as a page where:
+    - Multiple job offer tiles are visible.
+    - Each tile contains at least a job title and a company name.
+    - The offers are related to IT roles (e.g. software, developer, data, engineering).
+
+    Completion criteria:
+    - Consider the task successful when at least several job offer tiles matching the above criteria are visible on the page.
+    - If such a page cannot be reached, stop and report failure.
+
+    Rules:
+    - Use only the provided functions to interact with the page.
+    - Do not assume content is present without verification.
+    - Do not continue indefinitely.
     "
 
-  get_attributes:
+  next_page_button:
     prompt: "
+    You are an automated web agent operating a browser using the provided functions.
+
+    Goal:
+    Load additional job offers from the current job listing page.
+
+    Instructions:
+    1. Inspect the page for mechanisms that load more job offers, including:
+       - A pagination control (e.g. 'Next page', page numbers).
+        - A 'Load more' button.
+        - Infinite scroll behavior.
+
+    2. Choose the first applicable mechanism in the following priority order:
+      a) 'Load more' button.
+      b) Pagination to the next page.
+      c) Infinite scroll (scroll down to trigger loading).
+
+      3. Perform the selected action to load more job offers.
+
+      4. Verify that additional job offer tiles have appeared compared to the previous state.
+
+    Completion criteria:
+      - Consider the task successful if new job offer tiles are loaded and visible.
+      - If no mechanism to load additional offers exists, or if performing the action does not result in additional offers, stop and report failure.
+
+    Rules:
+      - Use only the provided functions to interact with the page.
+      - Do not repeat the same action indefinitely.
+      - Do not assume success without verifying that new offers are visible.
+    "
+
+    get_attributes:
+      prompt: "
     I will give you an HTML snippet. Return only its identifying attributes.
     Do not explain, only return JSON.
     "
@@ -162,10 +229,6 @@ user:
     - Does NOT link to saving, sharing, applying, or company info.
     "
 
-  next_page_button:
-    prompt: "
-    Find button that is responsible for moving to next job listing page
-    "
 
   job_offer_info:
     prompt: "
