@@ -9,7 +9,6 @@ from agents import (
     Agent,
     MaxTurnsExceeded,
     OpenAIResponsesModel,
-    RunConfig,
     RunContextWrapper,
     RunErrorDetails,
     Runner,
@@ -302,18 +301,12 @@ class TrimmingSession(SessionABC):
         pass
 
 
-async def _session_input(
-    history_items: list[TResponseInputItem], new_items: list[TResponseInputItem]
-) -> list[TResponseInputItem]:
-    pass
-
-
 class LLMScraperV2(BaseScraper):
     model = OpenAIResponsesModel(
         model=OPENAI_MODEL,
         openai_client=AsyncOpenAI(api_key=settings.OPENAI_API_KEY),
     )
-    run_config = RunConfig(session_input_callback=_session_input)
+    # run_config = RunConfig(session_input_callback=)
 
     async def _agent_loop(self, agent: Agent) -> bool:
         logger.debug(f"Running agent loop for '{agent.name}'")
