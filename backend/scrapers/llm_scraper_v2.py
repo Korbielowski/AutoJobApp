@@ -38,6 +38,8 @@ from backend.schemas.models import JobEntry
 from backend.scrapers.base_scraper import BaseScraper
 from backend.scrapers.utils import get_page_content, goto
 
+TOOL_CALL_TYPE = "function_call"
+TOOL_RESPONSE_TYPE = "function_call_output"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
 logger = get_logger()
 
@@ -272,10 +274,6 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
                 result.context_wrapper.usage.input_tokens
             }\nOutput tokens used: {result.context_wrapper.usage.output_tokens}"
         )
-
-
-TOOL_CALL_TYPE = "function_call"
-TOOL_RESPONSE_TYPE = "function_call_output"
 
 
 def _is_tool_call_or_result(item: TResponseInputItem) -> bool:
