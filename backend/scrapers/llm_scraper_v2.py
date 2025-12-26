@@ -293,13 +293,22 @@ class TrimmingSession(SessionABC):
     async def get_items(
         self, limit: int | None = None
     ) -> list[TResponseInputItem]:
-        pass
+        async with self._lock:
+            trimmed = self._trim_messages(list(self._items))
+            return (
+                trimmed[-limit:]
+                if (limit is not None and limit >= 0)
+                else trimmed
+            )
 
     async def add_items(self, items: list[TResponseInputItem]) -> None:
+        if not items:
+            return
         async with self._lock:
-            if not items:
-                return
-            self._trim_messages(items)
+            self._items.extend(items)
+            trimmed = self._trim_messages(list(self._items))
+            self._items.clear()
+            self._items.extend(trimmed)
 
     async def pop_item(self) -> TResponseInputItem | None:
         async with self._lock:
