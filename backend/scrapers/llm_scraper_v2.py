@@ -278,10 +278,6 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
         )
 
 
-class CouldNotLoginException(Exception):
-    pass
-
-
 class TrimmingSession(SessionABC):
     def __init__(self, turns: int):
         self.turns = turns
