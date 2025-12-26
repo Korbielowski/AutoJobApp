@@ -413,8 +413,6 @@ class LLMScraperV2(BaseScraper):
         await self._agent_loop(job_list_page_agent)
 
     async def get_job_entries(self) -> tuple[Locator, ...]:
-        return tuple()
-
         element = await send_req_to_llm(
             system_prompt=await load_prompt("scraping:user:job_offer_links"),
             prompt=await get_page_content(self.page),
