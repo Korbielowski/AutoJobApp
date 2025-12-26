@@ -312,9 +312,6 @@ class LLMScraper(BaseScraper):
         await click(btn, self.page)
         return True
 
-    async def _go_to_next_job(self) -> bool:
-        pass
-
     async def _apply_for_job(self):
         pass
 

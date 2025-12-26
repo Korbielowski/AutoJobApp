@@ -389,9 +389,6 @@ class LLMScraperV2(BaseScraper):
 
         return await self._agent_loop(next_page_agent)
 
-    async def _go_to_next_job(self) -> bool:
-        pass
-
     async def _apply_for_job(self):
         pass
 

@@ -51,10 +51,6 @@ class BaseScraper(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def _go_to_next_job(self) -> bool:
-        pass
-
-    @abc.abstractmethod
     async def _apply_for_job(self):
         pass
 
@@ -76,6 +72,7 @@ class BaseScraper(abc.ABC):
         if not job_entry:
             return None
 
+        return job_entry
         state = await send_req_to_llm(
             prompt=await load_prompt(
                 prompt_path="cv:user:determine_if_offer_valuable",
