@@ -169,11 +169,9 @@ user:
 
   job_offer_info:
     prompt: "
-    Retrieve all information about this job offer as a JSON in this schema:
-    {model_dict} from this page: {page}
+    Retrieve all information about this job offer from this page: {page}
     "
     params:
-      - model_dict
       - page
 
     determine_if_offer_valuable:
