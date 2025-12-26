@@ -283,6 +283,7 @@ class TrimmingSession(SessionABC):
     def __init__(self, turns: int):
         self.turns = turns
         self._items = Deque[TResponseInputItem] = deque()
+        self._lock = asyncio.Lock()
 
     def _trim_messages(
         self, items: list[TResponseInputItem]
@@ -295,15 +296,18 @@ class TrimmingSession(SessionABC):
         pass
 
     async def add_items(self, items: list[TResponseInputItem]) -> None:
-        if not items:
-            return
-        self._trim_messages(items)
+        async with self._lock:
+            if not items:
+                return
+            self._trim_messages(items)
 
     async def pop_item(self) -> TResponseInputItem | None:
-        return self._items.pop() if self._items else None
+        async with self._lock:
+            return self._items.pop() if self._items else None
 
     async def clear_session(self) -> None:
-        self._items.clear()
+        async with self._lock:
+            self._items.clear()
 
 
 class LLMScraperV2(BaseScraper):
