@@ -49,6 +49,7 @@ async def find_job_entries(
                 retries=user_preferences.retries,
             )
             await scraper.login_to_page()
+            await scraper.navigate_to_job_listing_page()
 
             running = True
             while running:
