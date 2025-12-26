@@ -279,6 +279,16 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
         )
 
 
+def _is_user_msg(item: TResponseInputItem) -> bool:
+    if isinstance(item, dict):
+        role = item.get("role")
+        if role is not None:
+            return role == "user"
+        if item.get("type") == "message":
+            return item.get("role") == "user"
+    return getattr(item, "role", None) == "user"
+
+
 class TrimmingSession(SessionABC):
     def __init__(self, turns: int):
         self.turns = turns
@@ -288,7 +298,20 @@ class TrimmingSession(SessionABC):
     def _trim_messages(
         self, items: list[TResponseInputItem]
     ) -> list[TResponseInputItem]:
-        pass
+        if not items:
+            return items
+
+        count = 0
+        start_idx = 0
+
+        for i in range(len(items) - 1, -1, -1):
+            if _is_user_msg(items[i]):
+                count += 1
+                if count == self.turns:
+                    start_idx = i
+                    break
+
+        return items[start_idx:]
 
     async def get_items(
         self, limit: int | None = None
