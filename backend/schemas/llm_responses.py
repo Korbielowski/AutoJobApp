@@ -73,9 +73,9 @@ class StateOutput(BaseModel):
 
 class TaskState(BaseModel):
     """
-    state: State the task
-    confidence: confidence of accomplishing the task
+    state: State of a task
+    confidence: Confidence of a task state
     """
 
-    state: Literal["done", "in-progress"]
+    state: Literal["done", "failed"]
     confidence: float = Field(gt=0.0, le=1.0)
