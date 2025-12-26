@@ -57,18 +57,19 @@ async def find_job_entries(
                     job_data = await scraper.process_and_evaluate_job(
                         locator=job_locator, user_needs=user_needs
                     )
-                    if job_data:
-                        job_entry_model = await generate_career_documents(
-                            user=user,
-                            session=session,
-                            job_entry=job_data,
-                            current_time=datetime.datetime.today().strftime(
-                                "%Y-%m-%d_%H:%M:%S"
-                            ),
-                            cv_creation_mode=user_preferences.cv_creation_mode,
-                            generate_cover_letter=user_preferences.generate_cover_letter,
-                        )
-                        yield f"data:{job_entry_model.model_dump_json()}\n\n"
+                    if not job_data:
+                        continue
+                    job_entry_model = await generate_career_documents(
+                        user=user,
+                        session=session,
+                        job_entry=job_data,
+                        current_time=datetime.datetime.today().strftime(
+                            "%Y-%m-%d_%H:%M:%S"
+                        ),
+                        cv_creation_mode=user_preferences.cv_creation_mode,
+                        generate_cover_letter=user_preferences.generate_cover_letter,
+                    )
+                    yield f"data:{job_entry_model.model_dump_json()}\n\n"
                 running = await scraper.navigate_to_next_page()
 
 
