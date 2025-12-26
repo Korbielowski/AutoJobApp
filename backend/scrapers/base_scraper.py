@@ -39,7 +39,7 @@ class BaseScraper(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def _navigate_to_job_list_page(self) -> None:
+    async def navigate_to_job_listing_page(self) -> None:
         pass
 
     @abc.abstractmethod
