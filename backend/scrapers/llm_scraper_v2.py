@@ -300,7 +300,7 @@ class TrimmingSession(SessionABC):
         self._trim_messages(items)
 
     async def pop_item(self) -> TResponseInputItem | None:
-        pass
+        return self._items.pop() if self._items else None
 
     async def clear_session(self) -> None:
         pass
