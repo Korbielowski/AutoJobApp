@@ -14,6 +14,7 @@ from agents import (
     RunErrorDetails,
     Runner,
     RunResult,
+    SessionABC,
     TResponseInputItem,
     function_tool,
 )
@@ -280,6 +281,25 @@ def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
 
 class CouldNotLoginException(Exception):
     pass
+
+
+class TrimmingSession(SessionABC):
+    def __init__(self, turns: int):
+        self.turns = turns
+
+    async def get_items(
+        self, limit: int | None = None
+    ) -> list[TResponseInputItem]:
+        pass
+
+    async def add_items(self, items: list[TResponseInputItem]) -> None:
+        pass
+
+    async def pop_item(self) -> TResponseInputItem | None:
+        pass
+
+    async def clear_session(self) -> None:
+        pass
 
 
 async def _session_input(
