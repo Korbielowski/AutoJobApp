@@ -303,7 +303,7 @@ class TrimmingSession(SessionABC):
         return self._items.pop() if self._items else None
 
     async def clear_session(self) -> None:
-        pass
+        self._items.clear()
 
 
 class LLMScraperV2(BaseScraper):
