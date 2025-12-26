@@ -11,11 +11,13 @@ from agents import (
     OpenAIResponsesModel,
     RunConfig,
     RunContextWrapper,
+    RunErrorDetails,
     Runner,
     RunResult,
     TResponseInputItem,
     function_tool,
 )
+from agents.run import DEFAULT_MAX_TURNS
 from devtools import pformat
 from openai import AsyncOpenAI
 from playwright.async_api import Locator, Page
@@ -63,13 +65,16 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
     locator = None
 
     if element.id:
-        logger.info(element.id)
+        logger.warning(f"{element.id=}")
         locator = page.locator(f"#{element.id}")
         count = await locator.count()
+
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.role:
+        logger.warning(f"{element.role=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(page.get_by_role(element.role, exact=True))
         else:
@@ -78,8 +83,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.text:
+        logger.warning(f"{element.text=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(page.get_by_text(element.text, exact=True))
         else:
@@ -88,8 +95,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.aria_label:
+        logger.warning(f"{element.aria_label=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(
                 page.get_by_label(element.aria_label, exact=True)
@@ -99,8 +108,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.name:
+        logger.warning(f"{element.name=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(page.locator(f'[name="{element.name}"]'))
         else:
@@ -108,8 +119,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.placeholder:
+        logger.warning(f"{element.placeholder=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(
                 page.get_by_placeholder(element.placeholder, exact=True)
@@ -120,8 +133,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     if element.element_type:
+        logger.warning(f"{element.element_type=}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(
                 page.locator(f'[type="{element.element_type}"]')
@@ -132,10 +147,12 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
 
     # FIXME: playwright._impl._errors.Error: Locator.count: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '.tw-w-[120px]' is not a valid selector.
     if element.class_list:
         class_selector = f".{'.'.join(element.class_list)}"
+        logger.warning(f"{element.class_list=}, {class_selector}")
         if locator and await locator.count() >= 2:
             locator = locator.and_(page.locator(class_selector))
         else:
@@ -143,6 +160,10 @@ async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
         count = await locator.count()
         if 0 < count < 2:
             return locator.last
+        logger.error(f"Count: {count}")
+
+    if locator:  # TODO: Add step where LLM selects from multiple elements, if code above could not select single one element
+        return locator.last
 
     return locator
 
@@ -232,18 +253,29 @@ async def get_page_data(
     )
 
 
-def _log_agent_data(result: RunResult):
-    logger.info(
-        f"Agent name: {
-            result.context_wrapper.context.agent_name
-        }\nTotal tokens used: {
-            result.context_wrapper.usage.total_tokens
-        }\nInput tokens used: {
-            result.context_wrapper.usage.input_tokens
-        }\nOutput tokens used: {
-            result.context_wrapper.usage.output_tokens
-        }\nFinal agent output{pformat(result.final_output)}"
-    )
+def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
+    if isinstance(result, RunResult):
+        logger.info(
+            f"Agent name: {
+                result.context_wrapper.context.agent_name
+            }\nTotal tokens used: {
+                result.context_wrapper.usage.total_tokens
+            }\nInput tokens used: {
+                result.context_wrapper.usage.input_tokens
+            }\nOutput tokens used: {
+                result.context_wrapper.usage.output_tokens
+            }\nFinal agent output{pformat(result.final_output)}"
+        )
+    elif isinstance(result, RunErrorDetails):
+        logger.error(
+            f"Agent name: {
+                result.context_wrapper.context.agent_name
+            }\nTotal tokens used: {
+                result.context_wrapper.usage.total_tokens
+            }\nInput tokens used: {
+                result.context_wrapper.usage.input_tokens
+            }\nOutput tokens used: {result.context_wrapper.usage.output_tokens}"
+        )
 
 
 class CouldNotLoginException(Exception):
@@ -267,6 +299,7 @@ class LLMScraperV2(BaseScraper):
         logger.debug(f"Running agent loop for '{agent.name}'")
 
         start_url = self.page.url
+        max_turns = DEFAULT_MAX_TURNS  # TODO: Test what happens if we have too little turns for a given agent
         for _ in range(self.retries):
             try:
                 result = await Runner.run(
@@ -277,18 +310,23 @@ class LLMScraperV2(BaseScraper):
                         website_info=self.website_info,
                         agent_name=agent.name,
                     ),
+                    max_turns=max_turns,
                     # run_config=self.run_config,
                 )
-                _log_agent_data(result)
-            except MaxTurnsExceeded:
+                _log_agent_run_data(result)
+            except MaxTurnsExceeded as e:
                 logger.error(
-                    f"Could not log into the: {self.website_info.url}. Agent will try again"
+                    f"Agent '{agent.name}' could not finish task, {max_turns=}"
                 )
+                _log_agent_run_data(e.run_data)
+                max_turns += 5
                 await goto(page=self.page, link=start_url)
                 continue
 
             if result.final_output.state == "done":
                 return True
+            elif result.final_output.state == "failed":
+                return False
         return False
 
     async def login_to_page(self) -> None:
@@ -343,14 +381,13 @@ class LLMScraperV2(BaseScraper):
     async def navigate_to_next_page(self) -> bool:
         next_page_agent = Agent(
             name="next_page_agent",
-            instructions=await load_prompt("scraping:user:next_page_button"),
+            instructions=await load_prompt("scraping:system:next_page_button"),
             tools=[click, get_page_data],
             model=self.model,
             output_type=TaskState,
         )
-        action_state = await self._agent_loop(next_page_agent)
 
-        return action_state
+        return await self._agent_loop(next_page_agent)
 
     async def _go_to_next_job(self) -> bool:
         pass
