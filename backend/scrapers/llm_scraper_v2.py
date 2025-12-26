@@ -3,7 +3,6 @@ import datetime
 import random
 from collections import deque
 from dataclasses import dataclass
-from enum import StrEnum
 from typing import Deque, Literal, Optional
 
 from agents import (
@@ -31,6 +30,7 @@ from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
 from backend.schemas.llm_responses import (
     HTMLElement,
+    InputFieldTypeEnum,
     JobEntryResponse,
     TaskState,
 )
@@ -55,11 +55,6 @@ class ToolResult(BaseModel):
     error_code: Optional[
         Literal["ELEMENT_NOT_FOUND", "TIMEOUT", "NOT_VISIBLE", "WRONG_INPUT"]
     ] = None
-
-
-class InputEnum(StrEnum):
-    email = "email"
-    password = "password"
 
 
 async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
@@ -209,7 +204,7 @@ async def fill(
     :param element: Input field to fill
     :type element: HTMLElement
     :param input_type: Whether the input, that should be passed to input filed should be user email or password. Password and email will be read from database by function.
-    :type input_type: InputEnum
+    :type input_type: InputFieldTypeEnum
     :return: Result of the action
     :rtype: ToolResult
     """
@@ -220,9 +215,9 @@ async def fill(
     if not tag:
         return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
 
-    if input_type == InputEnum.email:
+    if input_type == InputFieldTypeEnum.email:
         value = wrapper.context.website_info.user_email
-    elif input_type == InputEnum.password:
+    elif input_type == InputFieldTypeEnum.password:
         value = wrapper.context.website_info.user_password
     else:
         return ToolResult(success=False, error_code="WRONG_INPUT")

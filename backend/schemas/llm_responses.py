@@ -1,3 +1,4 @@
+from enum import StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
@@ -65,6 +66,11 @@ class SkillsLLMResponse(BaseModel):
     educations: list[Education] | None
     experiences: list[Experience] | None
     projects: list[Project] | None
+
+
+class InputFieldTypeEnum(StrEnum):
+    email = "email"
+    password = "password"
 
 
 class StateOutput(BaseModel):
