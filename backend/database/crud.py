@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, TypeVar
 
 from sqlmodel import Session, SQLModel, select
 
@@ -39,6 +39,7 @@ from backend.schemas.models import (
 )
 
 logger = get_logger()
+T = TypeVar("T", bound=SQLModel)
 
 
 def create_user(session: Session, user: UserModel) -> UserModel:
@@ -66,6 +67,22 @@ def get_user_preferences(
     if use_base_model:
         return output
     return UserPreferences.model_validate(output.model_dump())
+
+
+def update_user_preferences(
+    session: Session, user: UserModel, model: UserPreferencesModel
+):
+    record = session.exec(
+        select(UserPreferencesModel).where(
+            UserPreferencesModel.user_id == user.id
+        )
+    ).first()
+    if not record:
+        save_model(session=session, user=user, model=model)
+        return
+    record.sqlmodel_update(model.model_dump())
+    session.add(record)
+    session.commit()
 
 
 def get_users(
@@ -295,8 +312,8 @@ def save_job_entry(
 def save_model(
     session: Session,
     user: UserModel,
-    model: SQLModel,
-    validator: type[SQLModel] | None = None,
+    model: T,
+    validator: type[T] | None = None,
 ) -> None:
     if validator:
         model = validator.model_validate(model.model_dump())
@@ -308,9 +325,9 @@ def save_model(
 def save_and_return_model(
     session: Session,
     user: UserModel,
-    model: SQLModel,
-    validator: type[SQLModel] | None = None,
-) -> SQLModel:
+    model: T,
+    validator: type[T] | None = None,
+) -> T:
     if validator:
         model = validator.model_validate(model.model_dump())
     model.user_id = user.id
