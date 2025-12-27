@@ -73,7 +73,12 @@ async def save_preferences(
         path = settings.CV_DIR_PATH / "user_specified_cv"
         if not os.path.isdir(path):
             os.mkdir(path)
-            file_path = (path / cv_file.filename).as_uri()
+            file_name = (
+                cv_file.filename
+                if cv_file.filename
+                else "user_specified_cv.pdf"
+            )
+            file_path = (path / file_name).as_uri()
             if not os.path.isfile(file_path):
                 async with aiofiles.open(file_path, "wb") as save_file:
                     await save_file.write(await cv_file.read())
