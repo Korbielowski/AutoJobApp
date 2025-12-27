@@ -38,7 +38,9 @@ async def send_req_to_llm(
         while not response and retry > 0:
             try:
                 if model:
-                    tools = [{"type": tool} for tool in tools] if tools else []
+                    tools: list[dict] = (
+                        [{"type": tool} for tool in tools] if tools else []
+                    )
                     response = await client.responses.parse(
                         model=OPENAI_MODEL,
                         input=[
