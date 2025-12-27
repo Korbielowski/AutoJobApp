@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PORT: int = 5432
     # TODO: Check if user can specify custom drivers, so that they would not break SQLAlchemy
-    DRIVERNAME: str = "postgresql+psycopg"
+    DRIVERNAME: str = "postgresql+psycopg"  # TODO: Switch to async
 
     @computed_field
     @property
