@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     STYLING_PATH: Path = _ROOT_DIR / "career_documents" / "styling.css"
     PDF_ENGINE: str = "weasyprint"
     DEBUG: bool = False
+    HEADLESS: bool = False
     LOG_TO_FILE: bool = True
     API_KEY: str
     OPENAI_API_KEY: str
