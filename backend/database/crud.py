@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, TypeVar
 
 from sqlmodel import Session, SQLModel, select
 
@@ -39,6 +39,7 @@ from backend.schemas.models import (
 )
 
 logger = get_logger()
+T = TypeVar("T", bound=SQLModel)
 
 
 def create_user(session: Session, user: UserModel) -> UserModel:
@@ -57,19 +58,36 @@ def delete_user(session: Session, email: str) -> None:
 
 def get_user_preferences(
     session: Session, user: UserModel, use_base_model: bool = False
-) -> UserPreferencesModel | UserPreferences | None:
+) -> UserPreferencesModel | UserPreferences:
     output = session.exec(
         select(UserPreferencesModel).where(
             UserPreferencesModel.user_id == user.id
         )
-    ).first()
+    ).one()
     if use_base_model:
         return output
-
-    if not output:
-        return output
-
     return UserPreferences.model_validate(output.model_dump())
+
+
+def update_user_preferences(
+    session: Session, user: UserModel, model: UserPreferencesModel
+):
+    record = session.exec(
+        select(UserPreferencesModel).where(
+            UserPreferencesModel.user_id == user.id
+        )
+    ).first()
+    if not record:
+        save_model(session=session, user=user, model=model)
+        return
+
+    # record.sqlmodel_update(model.model_dump())
+    record.cv_creation_mode = model.cv_creation_mode
+    record.generate_cover_letter = model.generate_cover_letter
+    record.cv_path = model.cv_path
+    record.retries = record.retries
+    session.add(record)
+    session.commit()
 
 
 def get_users(
@@ -299,8 +317,8 @@ def save_job_entry(
 def save_model(
     session: Session,
     user: UserModel,
-    model: SQLModel,
-    validator: type[SQLModel] | None = None,
+    model: T,
+    validator: type[T] | None = None,
 ) -> None:
     if validator:
         model = validator.model_validate(model.model_dump())
@@ -312,9 +330,9 @@ def save_model(
 def save_and_return_model(
     session: Session,
     user: UserModel,
-    model: SQLModel,
-    validator: type[SQLModel] | None = None,
-) -> SQLModel:
+    model: T,
+    validator: type[T] | None = None,
+) -> T:
     if validator:
         model = validator.model_validate(model.model_dump())
     model.user_id = user.id

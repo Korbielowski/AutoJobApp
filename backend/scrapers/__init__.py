@@ -8,6 +8,7 @@ from sqlmodel import Session
 from backend.career_documents.pdf import (
     generate_career_documents,
 )
+from backend.config import settings
 from backend.database.models import (
     UserModel,
 )
@@ -31,7 +32,7 @@ async def find_job_entries(
 
     async with Stealth().use_async(async_playwright()) as playwright:
         # TODO: Add ability for users to choose their preferred browser, recommend and default to chromium
-        browser = await playwright.chromium.launch(headless=False)
+        browser = await playwright.chromium.launch(headless=settings.HEADLESS)
         # TODO: Move code below to the for loop
         context = await browser.new_context(locale="en-US")
         # context.add_cookies()

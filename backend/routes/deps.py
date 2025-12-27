@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from backend.database.db import engine
 from backend.database.models import UserModel
 
-user: UserModel | None = None
+user: UserModel = UserModel()
 
 
 def get_session() -> Generator[Session, None, None]:
@@ -15,7 +15,7 @@ def get_session() -> Generator[Session, None, None]:
         yield session
 
 
-def current_user() -> UserModel | None:
+def current_user() -> UserModel:
     return user
 
 
@@ -24,10 +24,10 @@ def set_current_user(session: Session, email: EmailStr | str | None) -> None:
     if email:
         user = session.exec(
             select(UserModel).where(UserModel.email == email)
-        ).first()
+        ).one()
     else:
-        user = None
+        user = UserModel()
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
-CurrentUser = Annotated[UserModel | None, Depends(current_user)]
+CurrentUser = Annotated[UserModel, Depends(current_user)]

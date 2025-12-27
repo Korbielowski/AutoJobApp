@@ -20,6 +20,7 @@ class Settings(BaseSettings):
     STYLING_PATH: Path = _ROOT_DIR / "career_documents" / "styling.css"
     PDF_ENGINE: str = "weasyprint"
     DEBUG: bool = False
+    HEADLESS: bool = False
     LOG_TO_FILE: bool = True
     API_KEY: str
     OPENAI_API_KEY: str
@@ -29,7 +30,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PORT: int = 5432
     # TODO: Check if user can specify custom drivers, so that they would not break SQLAlchemy
-    DRIVERNAME: str = "postgresql+psycopg"
+    DRIVERNAME: str = "postgresql+psycopg"  # TODO: Switch to async
 
     @computed_field
     @property

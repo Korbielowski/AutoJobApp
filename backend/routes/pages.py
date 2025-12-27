@@ -17,7 +17,7 @@ from backend.database.crud import (
     get_user_needs,
     get_user_preferences,
     get_websites,
-    save_model,
+    update_user_preferences,
 )
 from backend.database.models import (
     CVCreationModeEnum,
@@ -35,7 +35,7 @@ logger = get_logger()
 
 @router.get("/", response_class=Union[RedirectResponse, HTMLResponse])
 async def index(user: CurrentUser, session: SessionDep, request: Request):
-    if not user:
+    if not user.id:
         if session.scalar(func.count(UserModel.id)) >= 1:
             return RedirectResponse(
                 url=request.url_for("load_login_page"),
@@ -58,6 +58,25 @@ async def index(user: CurrentUser, session: SessionDep, request: Request):
     )
 
 
+async def save_user_cv(cv_file: UploadFile) -> str:
+    file_path = ""
+    if cv_file.size:
+        logger.info(cv_file.filename)
+        path = settings.CV_DIR_PATH / "user_specified_cv"
+        if not os.path.isdir(path):
+            os.mkdir(path)
+            file_name = (
+                cv_file.filename
+                if cv_file.filename
+                else "user_specified_cv.pdf"
+            )
+            file_path = (path / file_name).as_uri()
+            if not os.path.isfile(file_path):
+                async with aiofiles.open(file_path, "wb") as save_file:
+                    await save_file.write(await cv_file.read())
+    return file_path
+
+
 @router.post("/save_preferences")
 async def save_preferences(
     user: CurrentUser,
@@ -67,24 +86,13 @@ async def save_preferences(
     cv_file: Annotated[UploadFile, File],
     generate_cover_letter: Annotated[bool, Form()] = False,
 ):
-    file_path = ""
-    if cv_file.size:
-        logger.info(cv_file.filename)
-        path = settings.CV_DIR_PATH / "user_specified_cv"
-        if not os.path.isdir(path):
-            os.mkdir(path)
-            file_path = (path / cv_file.filename).as_uri()
-            if not os.path.isfile(file_path):
-                async with aiofiles.open(file_path, "wb") as save_file:
-                    await save_file.write(await cv_file.read())
-
     preferences_model = UserPreferencesModel(
         cv_creation_mode=cv_creation_mode,
         generate_cover_letter=generate_cover_letter,
-        cv_path=file_path,
+        cv_path=await save_user_cv(cv_file),
         retries=retries,
     )
-    save_model(session=session, user=user, model=preferences_model)
+    update_user_preferences(session=session, user=user, model=preferences_model)
 
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
