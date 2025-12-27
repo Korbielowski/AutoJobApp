@@ -35,7 +35,7 @@ logger = get_logger()
 
 @router.get("/", response_class=Union[RedirectResponse, HTMLResponse])
 async def index(user: CurrentUser, session: SessionDep, request: Request):
-    if not user:
+    if not user.id:
         if session.scalar(func.count(UserModel.id)) >= 1:
             return RedirectResponse(
                 url=request.url_for("load_login_page"),
