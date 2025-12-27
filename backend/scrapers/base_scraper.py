@@ -66,6 +66,8 @@ class BaseScraper(abc.ABC):
         except TimeoutError as e:
             logger.exception(e)
             return None
+        if not url:
+            return None
 
         job_entry = await self._get_job_information(url)
         logger.info(f"job_entry: {pformat(job_entry)}")
