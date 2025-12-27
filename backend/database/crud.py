@@ -80,7 +80,12 @@ def update_user_preferences(
     if not record:
         save_model(session=session, user=user, model=model)
         return
-    record.sqlmodel_update(model.model_dump())
+
+    # record.sqlmodel_update(model.model_dump())
+    record.cv_creation_mode = model.cv_creation_mode
+    record.generate_cover_letter = model.generate_cover_letter
+    record.cv_path = model.cv_path
+    record.retries = record.retries
     session.add(record)
     session.commit()
 
