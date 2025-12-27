@@ -4,3 +4,7 @@
 
 __*AI agents that look for adequate jobs and create tailored CVs and cover letters. Fully automated — no more manual effort*__
 <br>
+
+## About AutoJobApp
+
+## Installation Guide
