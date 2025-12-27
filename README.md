@@ -8,3 +8,28 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 ## About AutoJobApp
 
 ## Installation Guide
+
+### Docker (Recommended):
+
+#### Requirements:
+- Docker
+- Docker Compose
+
+```bash
+git clone https://github.com/Korbielowski/AutoJobApp
+cd AutoJobApp/
+docker compose up --build
+```
+
+### Local Installation:
+
+#### Requirements:
+- Python 3.12+ (Recommended uv)
+- Weasyprint
+- PostgreSQL 17+
+
+```bash
+git clone https://github.com/Korbielowski/AutoJobApp
+cd AutoJobApp/
+./setup.sh --run
+```
