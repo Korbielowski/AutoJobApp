@@ -1,5 +1,5 @@
 :root {
-    --backgorund-main: #0A0E1A;
+    --background-main: #0A0E1A;
     --surface: #121829;
     --primary-accent: #1E40AF;
     --secondary-accent: #38BDF8;
@@ -39,7 +39,7 @@
 }
 
 body {
-    background-color: var(--backgorund-main);
+    background-color: var(--background-main);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -172,7 +172,7 @@ summary::marker {
 
 ::-webkit-scrollbar {
     width: 7px;
-    background-color: var(--backgorund-main);
+    background-color: var(--background-main);
 }
 
 ::-webkit-scrollbar-thumb {

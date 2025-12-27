@@ -15,7 +15,6 @@ from backend.database.crud import (
 from backend.database.models import (
     CVCreationModeEnum,
     JobEntryModel,
-    SkillsLLMResponse,
     UserModel,
 )
 from backend.llm.llm import send_req_to_llm
@@ -25,13 +24,14 @@ from backend.schemas.llm_responses import (
     CompanyDetails,
     CoverLetterOutput,
     CVOutput,
+    SkillsLLMResponse,
 )
 from backend.scrapers.base_scraper import JobEntry
 
 logger = get_logger()
 
 
-async def load_template_and_styling() -> tuple[str, str]:
+async def _load_template_and_styling() -> tuple[str, str]:
     html_template, styling = "", ""
     async with (
         aiofiles.open(settings.HTML_TEMPLATE_PATH, "r") as template_file,
@@ -45,13 +45,13 @@ async def load_template_and_styling() -> tuple[str, str]:
     return html_template, styling
 
 
-async def save_document_to_file(path: Path, file_name: str, data: str) -> None:
+async def _save_document_to_file(path: Path, file_name: str, data: str) -> None:
     editable_file_path = path / file_name
     async with aiofiles.open(editable_file_path, "w") as file:
         await file.write(data)
 
 
-async def create_cover_letter(
+async def _create_cover_letter(
     user: UserModel,
     session: Session,
     job_entry: JobEntry,
@@ -103,14 +103,14 @@ async def create_cover_letter(
     cover_letter_path = path / f"{file_name}.pdf"
 
     HTML(string=cover_letter.html).write_pdf(cover_letter_path)
-    await save_document_to_file(
+    await _save_document_to_file(
         path, file_name=f"{file_name}.html", data=cover_letter.html
     )
 
     return cover_letter_path.as_uri()
 
 
-async def create_cv(
+async def _create_cv(
     user: UserModel,
     session: Session,
     job_entry: JobEntry,
@@ -120,7 +120,7 @@ async def create_cv(
     cv_creation_mode: CVCreationModeEnum,
 ) -> str:
     candidate_data = get_candidate_data(session=session, user=user)
-    html_template, styling = await load_template_and_styling()
+    html_template, styling = await _load_template_and_styling()
     cv = None
 
     if cv_creation_mode == "llm-generation":
@@ -199,10 +199,10 @@ async def create_cv(
     cv_path = path / f"{file_name}.pdf"
 
     HTML(string=cv.html).write_pdf(cv_path, stylesheets=[CSS(string=cv.css)])
-    await save_document_to_file(
+    await _save_document_to_file(
         path=path, file_name=f"{file_name}.html", data=cv.html
     )
-    await save_document_to_file(
+    await _save_document_to_file(
         path=path, file_name=f"{file_name}.css", data=cv.css
     )
 
@@ -224,7 +224,7 @@ async def generate_career_documents(
     documents_path = settings.CV_DIR_PATH / f"{converted_title}_{current_time}"
     os.mkdir(documents_path)
 
-    job_entry.cv_path = await create_cv(
+    job_entry.cv_path = await _create_cv(
         user=user,
         session=session,
         job_entry=job_entry,
@@ -234,7 +234,7 @@ async def generate_career_documents(
         cv_creation_mode=cv_creation_mode,
     )
     if generate_cover_letter:
-        job_entry.cover_letter_path = await create_cover_letter(
+        job_entry.cover_letter_path = await _create_cover_letter(
             user=user,
             session=session,
             job_entry=job_entry,

@@ -1,12 +1,13 @@
 import asyncio
 import datetime
-import json
 
+from devtools import pformat
 from playwright.async_api import Locator, Page, TimeoutError
 
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
+from backend.schemas.llm_responses import JobEntryResponse, StateOutput
 from backend.scrapers.base_scraper import BaseScraper, JobEntry
 from backend.scrapers.utils import (
     click,
@@ -53,7 +54,7 @@ class LLMScraper(BaseScraper):
         sign_in_btn_locator, _, _ = await find_html_element(
             self.page,
             await load_prompt("scraping:user:sign_in_button"),
-            additional_llm=True,
+            # additional_llm=True, # TODO: Look at code using this parameter
         )
         await click(sign_in_btn_locator, self.page)
 
@@ -65,28 +66,31 @@ class LLMScraper(BaseScraper):
         #     or "sign_in" in url
         # ):
         #     return True
-        url = self.page.url
-        page = await get_page_content(self.page)
-        prompt = await load_prompt(
-            "scraping:user:is_login_page", url=url, page=page
+        logger.debug("Checking if on login page")
+        state = await send_req_to_llm(
+            prompt=await load_prompt(
+                prompt_path="scraping:user:is_login_page",
+                url=self.page.url,
+                page=await get_page_content(self.page),
+            ),
+            use_openai=True,
+            model=StateOutput,
         )
-
-        if "True" in await send_req_to_llm(prompt=prompt, use_openai=True):
-            return True
-        return False
+        return state.state
 
     async def _navigate_to_login_page(self) -> None:
         retry = 0
         attribute_list = []
 
         while not await self._is_on_login_page() and retry < 5:
+            logger.debug("Navigating to login page")
             if not attribute_list:
                 prompt = await load_prompt(
                     "scraping:user:navigate_to_login_page"
                 )
             else:
                 prompt = await load_prompt(
-                    "scraping:user:navigate_to_login_page_with_params",
+                    prompt_path="scraping:user:navigate_to_login_page_with_params",
                     attribute_list=attribute_list,
                 )
 
@@ -98,20 +102,18 @@ class LLMScraper(BaseScraper):
             await click(btn, self.page)
             retry += 1
 
-        if retry >= 5:
-            logger.error("We did not do it ;)")
-        #     return
-
     async def _check_if_popup_exists(self) -> bool:
         retry = 0
         while retry < 3:
-            response = await send_req_to_llm(
+            state = await send_req_to_llm(
                 prompt=await load_prompt(
-                    "scraping:user:check_if_popup_exists", page=self.page
+                    prompt_path="scraping:user:check_if_popup_exists",
+                    page=await get_page_content(self.page),
                 ),
                 use_openai=True,
+                model=StateOutput,
             )
-            if "True" in response:
+            if state.state:
                 return True
             retry += 1
         return False
@@ -124,7 +126,8 @@ class LLMScraper(BaseScraper):
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page, "scraping:user:cookies_button"
+                prompt=await load_prompt("scraping:user:cookies_button"),
+                page=self.page,
             )
             passed = await click(btn, self.page)
             retry += 1
@@ -158,27 +161,23 @@ class LLMScraper(BaseScraper):
         passed = False
         while not passed and retry < 5:
             btn, attribute, attribute_type = await find_html_element(
-                self.page, await load_prompt("scraping:user:popup_button")
+                prompt=await load_prompt("scraping:user:popup_button"),
+                page=self.page,
             )
             passed = await click(btn, self.page)
             retry += 1
 
     async def _is_on_job_list_page(self) -> bool:
-        url = self.page.url
-        page = await get_page_content(self.page)
-        prompt = await load_prompt(
-            "scraping:user:is_job_listing_page", url=url, page=page
-        )
-        if "True" in await send_req_to_llm(
-            prompt=prompt,
-            # f"Determine if this site is a job listing page, return only True or False. Consider it a job listing page if the content or url suggests: a list of open positions. Based upon url: {url} and page content: {await get_page_content(self.page)}",
+        state = await send_req_to_llm(
+            prompt=await load_prompt(
+                prompt_path="scraping:user:is_job_listing_page",
+                url=self.page.url,
+                page=await get_page_content(self.page),
+            ),
             use_openai=True,
-        ):
-            logger.info("LLM thinks we are on job listing page")
-            return True
-
-        logger.info("We are not on a job listing page")
-        return False
+            model=StateOutput,
+        )
+        return state.state
 
     async def _navigate_to_job_list_page(self) -> None:
         logger.info("Navigating to job listing page")
@@ -193,7 +192,7 @@ class LLMScraper(BaseScraper):
                 )
             else:
                 prompt = await load_prompt(
-                    "scraping:user:job_listing_page_button_with_params",
+                    prompt_path="scraping:user:job_listing_page_button_with_params",
                     attribute_list=attribute_list,
                 )
 
@@ -313,9 +312,6 @@ class LLMScraper(BaseScraper):
         await click(btn, self.page)
         return True
 
-    async def _go_to_next_job(self) -> bool:
-        pass
-
     async def _apply_for_job(self):
         pass
 
@@ -323,49 +319,25 @@ class LLMScraper(BaseScraper):
         job_page: Page = await self.context.new_page()
         await goto(job_page, link)
 
-        # response = await send_req_to_llm(
-        #     f"Get job information like title, company_name, requirements, duties, about_project, offer_benefits, location, contract_type, employment_type, work_arrangement, additional_information. Do not explain, only return JSON\n{await get_page_content(job_page)}",
-        #     use_openai=True,
-        # )
-        # response = None
-        # try:
-        #     response = await send_req_to_llm(
-        #         prompt=f"Retrieve all information about this job offer from this page: {await get_page_content(job_page)}",
-        #         use_openai=True,
-        #         use_json_schema=True,
-        #         model=JobEntry,
-        #     )
-        # except Exception as e:
-        #     logger.exception(e)
-        model_dict = JobEntry.model_json_schema()["properties"]
-        logger.info(type(model_dict))
-        model_dict.pop("discovery_date")
-        model_dict.pop("job_url")
-
-        page = await get_page_content(job_page)
         response = await send_req_to_llm(
             prompt=await load_prompt(
-                "scraping:user:job_offer_info", model_dict=model_dict, page=page
+                prompt_path="scraping:user:job_offer_info",
+                page=await get_page_content(job_page),
             ),
             use_openai=True,
+            model=JobEntryResponse,
         )
 
-        attributes = json.loads(response)
+        attributes = response.model_dump()
         attributes["discovery_date"] = datetime.date.today()
         attributes["job_url"] = link
 
-        logger.info(f"Something:\n{attributes}")
-        # logger.info(
-        #     f"Job information retrieved by LLM using JSON outputs: {response}"
-        # )
         await job_page.close()
 
         try:
-            data = JobEntry.model_validate(attributes)
-            logger.info(
-                f"JobEntry model data: {data.model_dump_json(indent=2)}"
-            )
-            return data
+            job_entry = JobEntry.model_validate(attributes)
+            logger.info(f"JobEntry model data: {pformat(job_entry)}")
+            return job_entry
         except Exception as e:
             logger.exception(e)
         return None

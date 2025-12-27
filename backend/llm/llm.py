@@ -1,9 +1,10 @@
 # TODO: If not used, remove openai-agents from dependencies and add normal OpenAI
 # TODO: Use async OpenAI class
 import asyncio
+from typing import TypeVar
 
 import tiktoken
-from openai import AuthenticationError, OpenAI, RateLimitError
+from openai import AsyncOpenAI, AuthenticationError, RateLimitError
 from pydantic import BaseModel
 
 from backend.config import settings
@@ -14,6 +15,7 @@ MODEL = "deepseek-r1-0528"
 # OPENAI_MODEL = "gpt-5-nano-2025-08-07"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
 TIK = tiktoken.encoding_for_model("gpt-5-")
+T = TypeVar("T", bound=BaseModel)
 logger = get_logger()
 
 
@@ -22,22 +24,22 @@ async def send_req_to_llm(
     system_prompt: str = "",
     temperature: float = 1,
     use_openai: bool = True,
-    model: type[BaseModel] | None = None,
+    model: type[T] | None = None,
     tools: list[str] | None = None,
     retry: int = 3,
-) -> str | BaseModel:
+) -> str | T:
     response = ""
     logger.debug(
         f"Prompt token count: {len(TIK.encode(system_prompt + prompt))}, temperature: {temperature}, use_openai: {use_openai}, model: {model}, retry: {retry}, tools: {tools}"
     )
 
     if use_openai:
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         while not response and retry > 0:
             try:
                 if model:
                     tools = [{"type": tool} for tool in tools] if tools else []
-                    response = client.responses.parse(
+                    response = await client.responses.parse(
                         model=OPENAI_MODEL,
                         input=[
                             {"role": "system", "content": system_prompt},
@@ -50,7 +52,7 @@ async def send_req_to_llm(
                     if response and response.output_parsed:
                         return response.output_parsed
                 else:
-                    response = client.responses.create(
+                    response = await client.responses.create(
                         model=OPENAI_MODEL,
                         input=[
                             {"role": "system", "content": system_prompt},
@@ -85,9 +87,9 @@ async def send_req_to_llm(
                 logger.info(f"LLM error: {e}")
             retry -= 1
     else:
-        client = OpenAI(api_key=settings.API_KEY, base_url=BASE_URL)
+        client = AsyncOpenAI(api_key=settings.API_KEY, base_url=BASE_URL)
         try:
-            response = client.responses.create(
+            response = await client.responses.create(
                 model=MODEL,
                 input=prompt,
                 # messages=[{"role": "user", "content": prompt}],

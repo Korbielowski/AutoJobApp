@@ -9,15 +9,20 @@ from fastapi.responses import (
     StreamingResponse,
 )
 from fastapi.templating import Jinja2Templates
-from sqlmodel import func, select
+from sqlmodel import func
 
 from backend.config import settings
-from backend.database.crud import get_job_entries, save_model
+from backend.database.crud import (
+    get_job_entries,
+    get_user_needs,
+    get_user_preferences,
+    get_websites,
+    save_model,
+)
 from backend.database.models import (
     CVCreationModeEnum,
     UserModel,
     UserPreferencesModel,
-    WebsiteModel,
 )
 from backend.logger import get_logger
 from backend.routes.deps import CurrentUser, SessionDep
@@ -84,22 +89,16 @@ async def save_preferences(
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
 async def scrape_jobs(user: CurrentUser, session: SessionDep):
-    websites = session.exec(
-        select(WebsiteModel).where(WebsiteModel.user_id == user.id)
-    ).all()
-    user_preferences = session.exec(
-        select(UserPreferencesModel).where(
-            UserPreferencesModel.user_id == user.id
-        )
-    ).first()
+    websites = get_websites(session=session, user=user, use_base_model=True)
+    user_preferences = get_user_preferences(session=session, user=user)
+    user_needs = get_user_needs(session=session, user=user)
     return StreamingResponse(
         content=find_job_entries(
             user=user,
             session=session,
             websites=websites,
-            cv_creation_mode=user_preferences.cv_creation_mode,
-            generate_cover_letter=user_preferences.generate_cover_letter,
-            retries=user_preferences.retries,
+            user_preferences=user_preferences,
+            user_needs=user_needs,
         ),
         media_type="text/event-stream",
     )

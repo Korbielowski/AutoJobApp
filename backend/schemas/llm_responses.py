@@ -1,4 +1,18 @@
-from pydantic import BaseModel
+from enum import StrEnum
+from typing import Literal
+
+from pydantic import BaseModel, Field
+
+from backend.schemas.models import (
+    Certificate,
+    Charity,
+    Education,
+    Experience,
+    Language,
+    ProgrammingLanguage,
+    Project,
+    Tool,
+)
 
 
 class HTMLElement(BaseModel):
@@ -26,3 +40,48 @@ class CVOutput(BaseModel):
 
 class CoverLetterOutput(BaseModel):
     html: str = ""
+
+
+class JobEntryResponse(BaseModel):
+    title: str
+    company_name: str
+    requirements: str
+    duties: str
+    about_project: str
+    offer_benefits: str
+    location: str
+    contract_type: str
+    employment_type: str
+    work_arrangement: str
+    additional_information: None | str
+    company_url: None | str
+
+
+class SkillsLLMResponse(BaseModel):
+    programming_languages: list[ProgrammingLanguage] | None
+    languages: list[Language] | None
+    tools: list[Tool] | None
+    certificates: list[Certificate] | None
+    charities: list[Charity] | None
+    educations: list[Education] | None
+    experiences: list[Experience] | None
+    projects: list[Project] | None
+
+
+class InputFieldTypeEnum(StrEnum):
+    email = "email"
+    password = "password"
+
+
+class StateOutput(BaseModel):
+    state: bool = False
+
+
+class TaskState(BaseModel):
+    """
+    state: State of a task
+    confidence: Confidence of a task state
+    """
+
+    state: Literal["done", "failed"]
+    confidence: float = Field(gt=0.0, le=1.0)
