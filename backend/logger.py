@@ -1,6 +1,6 @@
 import sys
 
-from loguru import logger
+from loguru import Logger, logger
 
 from backend.config import settings
 
@@ -46,5 +46,5 @@ def __log_failure(self, message, *args, **kwargs):
 logger.failure = __log_failure.__get__(logger, logger.__class__)
 
 
-def get_logger():
+def get_logger() -> Logger:
     return logger
