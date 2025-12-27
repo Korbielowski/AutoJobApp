@@ -15,7 +15,9 @@ def get_session() -> Generator[Session, None, None]:
         yield session
 
 
-def current_user() -> UserModel | None:
+def current_user() -> UserModel:
+    if not user:
+        raise Exception("There is no current user")
     return user
 
 
@@ -30,4 +32,4 @@ def set_current_user(session: Session, email: EmailStr | str | None) -> None:
 
 
 SessionDep = Annotated[Session, Depends(get_session)]
-CurrentUser = Annotated[UserModel | None, Depends(current_user)]
+CurrentUser = Annotated[UserModel, Depends(current_user)]
