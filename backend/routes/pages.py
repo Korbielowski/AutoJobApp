@@ -17,7 +17,7 @@ from backend.database.crud import (
     get_user_needs,
     get_user_preferences,
     get_websites,
-    save_model,
+    update_user_preferences,
 )
 from backend.database.models import (
     CVCreationModeEnum,
@@ -92,7 +92,7 @@ async def save_preferences(
         cv_path=await save_user_cv(cv_file),
         retries=retries,
     )
-    save_model(session=session, user=user, model=preferences_model)
+    update_user_preferences(session=session, user=user, model=preferences_model)
 
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
