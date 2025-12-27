@@ -57,18 +57,14 @@ def delete_user(session: Session, email: str) -> None:
 
 def get_user_preferences(
     session: Session, user: UserModel, use_base_model: bool = False
-) -> UserPreferencesModel | UserPreferences | None:
+) -> UserPreferencesModel | UserPreferences:
     output = session.exec(
         select(UserPreferencesModel).where(
             UserPreferencesModel.user_id == user.id
         )
-    ).first()
+    ).one()
     if use_base_model:
         return output
-
-    if not output:
-        return output
-
     return UserPreferences.model_validate(output.model_dump())
 
 
