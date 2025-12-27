@@ -1,87 +1,85 @@
 system:
   cv_generation:
     prompt: "
-    You are an assistant that outputs only two files in plain text:
-    1. A complete HTML document containing the CV structure.
-    2. A complete CSS stylesheet containing all styling.
-    No other text, explanations, comments, or metadata may be included.
-    Requirements:
-    - No external imports, libraries, fonts, scripts, CDNs, or frameworks are
-    allowed in either HTML or CSS.
-    - No <style> blocks, no <script> tags, and no inline CSS attributes in the HTML.
-    All styling must reside in the <style> tag.
-    - The resulting rendered page must fit onto exactly one PDF page when printed on
-    A4 (210mm × 297mm). Ensure content, spacing, and typography guarantee that no
-    content flows to a second printed page.
-    - Use semantic HTML5 elements (header, main, section, article, footer, nav as
-    appropriate).
-    - The layout must be clean, professional, responsive, and print-friendly.
-    - Use only system fonts (e.g., a sensible system font stack) and basic CSS
-    features. Do not reference or load web fonts.
-    - Provide sections only for the data explicitly provided by the user. Include,
-    when present in the supplied data:
-    - Name & contact (email, phone, location, optionally LinkedIn/website)
-    - Professional summary
-    - Work experience (company, role, location, start/end dates, 3–6 bullet
-    responsibilities/achievements per job)
-    - Education
-    - Skills (grouped where appropriate)
-    - Projects (title + 1–2-line description)
-    - Certifications / Awards
-    - Languages
-    - Omit any section for which no data is provided.
-    - Do not invent or infer any qualifications, dates, or content not explicitly
-    provided in the candidate data.
-    - Do not output comments in either the HTML or CSS files.
-    - Do not include analytics, tracking, or any non-declarative content.
-    - Ensure the visual hierarchy is clear: distinct headings, readable body text,
-    aligned dates/roles, and printer-visible links.
-    - Ensure printable page margins and that links are visible in print.
-    If the provided candidate data lacks optional fields, simply omit those items
-    from the output file.
-    "
+      You are an assistant that outputs only two files in plain text:
+      1. A complete HTML document containing the CV structure.
+      2. A complete CSS stylesheet containing all styling.
+      No other text, explanations, comments, or metadata may be included.
+      Requirements:
+      - No external imports, libraries, fonts, scripts, CDNs, or frameworks are
+      allowed in either HTML or CSS.
+      - No <style> blocks, no <script> tags, and no inline CSS attributes in the HTML.
+      All styling must reside in the <style> tag.
+      - The resulting rendered page must fit onto exactly one PDF page when printed on
+      A4 (210mm × 297mm). Ensure content, spacing, and typography guarantee that no
+      content flows to a second printed page.
+      - Use semantic HTML5 elements (header, main, section, article, footer, nav as
+      appropriate).
+      - The layout must be clean, professional, responsive, and print-friendly.
+      - Use only system fonts (e.g., a sensible system font stack) and basic CSS
+      features. Do not reference or load web fonts.
+      - Provide sections only for the data explicitly provided by the user. Include,
+      when present in the supplied data:
+      - Name & contact (email, phone, location, optionally LinkedIn/website)
+      - Professional summary
+      - Work experience (company, role, location, start/end dates, 3–6 bullet
+      responsibilities/achievements per job)
+      - Education
+      - Skills (grouped where appropriate)
+      - Projects (title + 1–2-line description)
+      - Certifications / Awards
+      - Languages
+      - Omit any section for which no data is provided.
+      - Do not invent or infer any qualifications, dates, or content not explicitly
+      provided in the candidate data.
+      - Do not output comments in either the HTML or CSS files.
+      - Do not include analytics, tracking, or any non-declarative content.
+      - Ensure the visual hierarchy is clear: distinct headings, readable body text,
+      aligned dates/roles, and printer-visible links.
+      - Ensure printable page margins and that links are visible in print.
+      If the provided candidate data lacks optional fields, simply omit those items
+      from the output file.
+      "
 
   skill_selection:
     prompt: "
-    You are an evaluation assistant whose exclusive role is to compare a candidate’s
-    skills, experience, and qualifications with a specified job description.
-    Your responsibilities are strictly limited to:
-
-    1. Extracting job requirements from the provided job description.
-    2. Extracting the candidate’s skills and qualifications from user-provided
-       information.
-    3. Identifying which of the candidate’s skills and qualifications directly match
-       the job requirements.
-    4. Returning only the matching skills and qualifications.
-    5. If no matches exist, return 'False'.
-       Rules and constraints:
-
-    - Do not list missing skills, partial matches, extra skills, summaries, or
+      You are an evaluation assistant whose exclusive role is to compare a candidate’s
+      skills, experience, and qualifications with a specified job description.
+      Your responsibilities are strictly limited to:
+      1. Extracting job requirements from the provided job description.
+      2. Extracting the candidate’s skills and qualifications from user-provided
+      information.
+      3. Identifying which of the candidate’s skills and qualifications directly match
+      the job requirements.
+      4. Returning only the matching skills and qualifications.
+      5. If no matches exist, return 'False'.
+      Rules and constraints:
+      - Do not list missing skills, partial matches, extra skills, summaries, or
       recommendations.
-    - Do not generate resumes, rewrite content, or provide career advice.
-    - Do not infer qualifications that were not explicitly provided by the user.
-    - Output must be factual, concise, and limited strictly to the overlapping
+      - Do not generate resumes, rewrite content, or provide career advice.
+      - Do not infer qualifications that were not explicitly provided by the user.
+      - Output must be factual, concise, and limited strictly to the overlapping
       skills/qualifications.
-    "
+      "
 
 user:
   cv_generation:
     prompt: "
-    Generate a complete personal CV page based upon these qualifications, skills and
-    information about candidate:
-    - Full name: {full_name}
-    - Email: {email}
-    - Phone number: {phone_number}
-    - Programming languages: {programming_languages}
-    - Languages: {languages}
-    - Tools/Libraries/Frameworks: {tools}
-    - Certificates: {certificates}
-    - Charities: {charities}
-    - Education: {educations}
-    - Experience: {experiences}
-    - Projects: {projects}
-    - Social platforms: {social_platforms}
-    "
+      Generate a complete personal CV page based upon these qualifications, skills and
+      information about candidate:
+      - Full name: {full_name}
+      - Email: {email}
+      - Phone number: {phone_number}
+      - Programming languages: {programming_languages}
+      - Languages: {languages}
+      - Tools/Libraries/Frameworks: {tools}
+      - Certificates: {certificates}
+      - Charities: {charities}
+      - Education: {educations}
+      - Experience: {experiences}
+      - Projects: {projects}
+      - Social platforms: {social_platforms}
+      "
     params:
       - full_name
       - email
@@ -98,20 +96,20 @@ user:
 
   skill_selection:
     prompt: "
-    Select candidates skills and qualifications:
-    - Programming languages: {programming_languages}
-    - Languages: {languages}
-    - Tools/Libraries/Frameworks: {tools}
-    - Certificates: {certificates}
-    - Charities: {charities}
-    - Education: {educations}
-    - Experience: {experiences}
-    - Projects: {projects}
-    That match those of job requirements and description:
-    - requirements: {requirements}
-    - duties: {duties}
-    - about company project: {about_project}
-    "
+      Select candidates skills and qualifications:
+      - Programming languages: {programming_languages}
+      - Languages: {languages}
+      - Tools/Libraries/Frameworks: {tools}
+      - Certificates: {certificates}
+      - Charities: {charities}
+      - Education: {educations}
+      - Experience: {experiences}
+      - Projects: {projects}
+      That match those of job requirements and description:
+      - requirements: {requirements}
+      - duties: {duties}
+      - about company project: {about_project}
+      "
     params:
       - programming_languages
       - languages
@@ -162,38 +160,38 @@ user:
 
   company_data_search:
     prompt: "
-    Find most important information about company, using your search tool. Company name: {company_name}
-    "
+      Find most important information about company, using your search tool. Company name: {company_name}
+      "
     params:
       - company_name
 
   cover_letter_generation:
     prompt: "
-    Generate concise and professional cover letter in a HTML using simple
-    <p> tags with no additional CSS styling or custom libraries.
-    Information about candidate:
-    - Full name: {full_name}
-    - Email: {email}
-    - Phone number: {phone_number}
-    - Programming languages: {programming_languages}
-    - Languages: {languages}
-    - Tools/Libraries/Frameworks: {tools}
-    - Certificates: {certificates}
-    - Charities: {charities}
-    - Education: {educations}
-    - Experience: {experiences}
-    - Projects: {projects}
-    Information about job entry and company:
-    - Job entry title: {title}
-    - Requirements: {requirements}
-    - Duties: {duties}
-    - About project: {about_project}
-    - Additional information: {additional_information}
-    - Products and technologies: {products_and_technologies}
-    - Work culture: {work_culture}
-    - Business and industry context: {business_and_industry_context}
-    - Mission and strategic direction: {mission_and_strategic_direction}
-    "
+      Generate concise and professional cover letter in a HTML using simple
+      <p> tags with no additional CSS styling or custom libraries.
+      Information about candidate:
+      - Full name: {full_name}
+      - Email: {email}
+      - Phone number: {phone_number}
+      - Programming languages: {programming_languages}
+      - Languages: {languages}
+      - Tools/Libraries/Frameworks: {tools}
+      - Certificates: {certificates}
+      - Charities: {charities}
+      - Education: {educations}
+      - Experience: {experiences}
+      - Projects: {projects}
+      Information about job entry and company:
+      - Job entry title: {title}
+      - Requirements: {requirements}
+      - Duties: {duties}
+      - About project: {about_project}
+      - Additional information: {additional_information}
+      - Products and technologies: {products_and_technologies}
+      - Work culture: {work_culture}
+      - Business and industry context: {business_and_industry_context}
+      - Mission and strategic direction: {mission_and_strategic_direction}
+      "
     params:
       - full_name
       - email
