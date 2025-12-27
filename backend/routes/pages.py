@@ -58,15 +58,7 @@ async def index(user: CurrentUser, session: SessionDep, request: Request):
     )
 
 
-@router.post("/save_preferences")
-async def save_preferences(
-    user: CurrentUser,
-    session: SessionDep,
-    cv_creation_mode: Annotated[CVCreationModeEnum, Form()],
-    retries: Annotated[int, Form()],
-    cv_file: Annotated[UploadFile, File],
-    generate_cover_letter: Annotated[bool, Form()] = False,
-):
+async def save_user_cv(cv_file: UploadFile) -> str:
     file_path = ""
     if cv_file.size:
         logger.info(cv_file.filename)
@@ -82,11 +74,22 @@ async def save_preferences(
             if not os.path.isfile(file_path):
                 async with aiofiles.open(file_path, "wb") as save_file:
                     await save_file.write(await cv_file.read())
+    return file_path
 
+
+@router.post("/save_preferences")
+async def save_preferences(
+    user: CurrentUser,
+    session: SessionDep,
+    cv_creation_mode: Annotated[CVCreationModeEnum, Form()],
+    retries: Annotated[int, Form()],
+    cv_file: Annotated[UploadFile, File],
+    generate_cover_letter: Annotated[bool, Form()] = False,
+):
     preferences_model = UserPreferencesModel(
         cv_creation_mode=cv_creation_mode,
         generate_cover_letter=generate_cover_letter,
-        cv_path=file_path,
+        cv_path=await save_user_cv(cv_file),
         retries=retries,
     )
     save_model(session=session, user=user, model=preferences_model)
