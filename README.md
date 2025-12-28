@@ -4,19 +4,20 @@
 
 __*AI agents that look for adequate jobs and create tailored CVs and cover letters. Fully automated — no more manual effort*__
 <br>
+<br>
 
 # About AutoJobApp
 
-**AutoJobApp** is an application which goal is to greatly simplify a process of seeking for job opportunities, especially for younger and less experienced devs(not only), that would be easy to use, free, and open-source.
+**AutoJobApp** is an application whose goal is to greatly simplify the process of seeking for job opportunities, especially for younger and less experienced developers(not limited to junior profiles), that would also be easy to use, free, and open-source.
 
 # Installation and Configuration Guide
 
 ## Configuration
 
-Application environment can be edited via ```.env``` file, example one is present in the repository and is named ```.env.example``` with all the possible configuration options.
+The application environment can be edited via ```.env``` file. An example is provided in the repository as ```.env.example``` with all the possible configuration options.
 
 The most important key in the config file is
-```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for proper functioning of the application(website scraping and automatic document generation).
+```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).
 
 ## Docker Installation (Recommended):
 
@@ -44,9 +45,9 @@ sh setup.sh
 ```
 # Usage/Quick Start
 
-After configuration and installation of the application, you can run it using commands below and then click the link or copy and paste it into preferred browser, that the fastapi backend returns e.g. ```http://127.0.0.1:8000```.
+After the configuration and installation of the application, you can run it using the commands below. Then click the link that the FastAPI backend returns, e.g. ```http://127.0.0.1:8000```.
 
-For more information on how to use software click [HERE](https://github.com/Korbielowski/AutoJobApp/blob/main/docs/guides/basic_guide.md).
+For more information on how to use the software, click [HERE](https://github.com/Korbielowski/AutoJobApp/blob/main/docs/guides/basic_guide.md).
 
 ### Docker (Recommended)
 ```bash
@@ -64,9 +65,12 @@ fastapi run backend/app.py
 
 # Features
 
-In it's current version AutoJobApp enables it's users to collect job entries and information about those in the central dashboard for many different candidate profiles.
-
-Before each scraping run there is a possiblility to set automatic generation of documents for each job entry, and other configuration options.
+- Centralized dashboard aggregating job listings from multiple sources
+- Support for multiple candidate profiles with separate preferences
+- Editable user preferences, experience and search criteria
+- Automated CV and cover letter generation tailored to each job offer
+- Configurable scraping runs with per-profile settings
+- Structured storage of job data and generated documents
 
 # Roadmap
 
@@ -95,7 +99,7 @@ Before each scraping run there is a possiblility to set automatic generation of 
 │   ├── llm                 # Prompt loading and requests to LLMs
 │   │   └── prompts         # Prompts in yaml files
 │   ├── routes              # FastAPI application routes
-│   ├── schemas             # Endpoint and LLM resposnse models
+│   ├── schemas             # Endpoint and LLM response models
 │   ├── scrapers            # Scraper logic and utility functions
 │   ├── static              # Icons and styling
 │   └── templates           # HTML templates
@@ -104,7 +108,7 @@ Before each scraping run there is a possiblility to set automatic generation of 
 ├── branding                # AutoJobApp logos and images
 ├── README.md               # Document with general project information
 ├── LICENSE                 # Project's license
-├── docker-compose.yaml     # Docker orchestration file(connectiog backend and database)
+├── docker-compose.yaml     # Docker orchestration file(connecting backend and database)
 ├── Dockerfile              # Dockerfile for fastapi backend
 ├── pyproject.toml          # File containing project metadata, dependencies, configs
 ├── .env.example            # File containing example user's application configuration
@@ -113,8 +117,8 @@ Before each scraping run there is a possiblility to set automatic generation of 
 
 # Contributing
 
-Currently repository is not open for any contirbutions regarding code, tests etc. But I'm very open for feature suggestions, bugs and errors reports and improvement ideas. All of them can be posted via 'Issues' tab on GitHub.
+Currently, the repository is not open for any contributions regarding code, tests, etc. But I'm open to feature suggestions, bug reports and improvement ideas. All of them can be posted via the 'Issues' tab on GitHub.
 
 # License
 
-See the [LICENSE](https://github.com/Korbielowski/AutoJobApp/blob/main/LICENSE)
+The AutoJobApp project is published under the MIT license. Here you can see the full [LICENSE](https://github.com/Korbielowski/AutoJobApp/blob/main/LICENSE).
