@@ -31,5 +31,8 @@ else
     fi
     $PYTHON -m venv .venv && . .venv/bin/activate
     $PYTHON -m pip install --requirement requirements.txt
-    fastapi run backend/app.py
+    $PYTHON playwright install --with-deps chromium
+    if [ "$1" == "--run" ]; then
+        fastapi run backend/app.py
+    fi
 fi
