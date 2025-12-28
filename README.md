@@ -89,25 +89,26 @@ Before each scraping run there is a possiblility to set automatic generation of 
 # Project Structure
 ```bash
 .
-├── backend
-│   ├── career_documents
-│   ├── database
-│   ├── llm
-│   │   └── prompts
-│   ├── routes
-│   ├── schemas
-│   ├── scrapers
-│   ├── static
-│   └── templates
-├── docs
-│   └── guides
-├── branding
-├── README.md
-├── LICENSE
-├── docker-compose.yaml
-├── Dockerfile
-├── pyproject.toml
-└── setup.sh
+├── backend                 # Core project directory
+│   ├── career_documents    # CV and cover letter generation
+│   ├── database            # Database operations and models
+│   ├── llm                 # Prompt loading and requests to LLMs
+│   │   └── prompts         # Prompts in yaml files
+│   ├── routes              # FastAPI application routes
+│   ├── schemas             # Endpoint and LLM resposnse models
+│   ├── scrapers            # Scraper logic and utility functions
+│   ├── static              # Icons and styling
+│   └── templates           # HTML templates
+├── docs                    # Project documentation
+│   └── guides              # Guides on how to use software
+├── branding                # AutoJobApp logos and images
+├── README.md               # Document with general project information
+├── LICENSE                 # Project's license
+├── docker-compose.yaml     # Docker orchestration file(connectiog backend and database)
+├── Dockerfile              # Dockerfile for fastapi backend
+├── pyproject.toml          # File containing project metadata, dependencies, configs
+├── .env.example            # File containing example user's application configuration
+└── setup.sh                # Setup file for local installation
 ```
 
 # Contributing
