@@ -117,7 +117,7 @@ fastapi run backend/app.py
 
 # Contributing
 
-Currently, the repository is not open for any contributions regarding code, tests, etc. But I'm open to feature suggestions, bug reports and improvement ideas. All of them can be posted via the 'Issues' tab on GitHub.
+Currently, the repository is not open for any contributions regarding code, tests, etc. But I'm open to feature suggestions, bug reports and improvement ideas. All of them can be posted via the ['Issues'](https://github.com/Korbielowski/AutoJobApp/issues) tab on GitHub.
 
 # License
 
