@@ -31,5 +31,5 @@ docker compose up --build
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-./setup.sh --run
+sh setup.sh --run
 ```
