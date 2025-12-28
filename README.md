@@ -24,8 +24,8 @@ docker compose up --build
 ### Local Installation:
 
 #### Requirements:
-- Python 3.12+ (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
-- [PostgreSQL 17+](https://www.postgresql.org/download/)
+- [Python 3.12+](https://www.python.org/downloads/) (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
+- [PostgreSQL 14+](https://www.postgresql.org/download/)
 - [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
 
 ```bash
