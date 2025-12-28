@@ -29,7 +29,7 @@ else
         echo 'Python not found, please install it first, in order to run the program'
         exit 1
     fi
-    $PYTHON -m venv .venv && source .venv/bin/activate
+    $PYTHON -m venv .venv && . .venv/bin/activate
     $PYTHON -m pip install --requirement requirements.txt
     fastapi run backend/app.py
 fi
