@@ -12,8 +12,8 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 ### Docker (Recommended):
 
 #### Requirements:
-- Docker
-- Docker Compose
+- [Docker](https://docs.docker.com/engine/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
@@ -24,9 +24,9 @@ docker compose up --build
 ### Local Installation:
 
 #### Requirements:
-- Python 3.12+ (Recommended uv)
-- Weasyprint
-- PostgreSQL 17+
+- Python 3.12+ (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
+- [PostgreSQL 17+](https://www.postgresql.org/download/)
+- [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
