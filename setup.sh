@@ -4,7 +4,7 @@ set -eu
 command -v psql || { echo 'Psql/PostgreSQL not found, please install it first, in order to run the program.' ; exit 1; }
 command -v weasyprint || { echo 'Weasyprint not found, please install it first, in order to run the program.' ; exit 1; }
 
-sudo -u postgres psql -c "CREATE DATABASE autoapply;"
+sudo -u postgres psql -c "CREATE DATABASE autoapply;" || { echo 'Database already created.'; }
 
 if command -v uv; then
     uv sync --no-dev --frozen --compile-bytecode --no-cache
