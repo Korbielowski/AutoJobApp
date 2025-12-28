@@ -88,7 +88,7 @@ Application environment can be edited via ```.env``` file, example one is presen
 
 ## Contributing
 
-Currently repository is not open for any contirbutions regarding code, tests etc. But I'm very open for feature suggestions, bugs and errors reports and improvement ideas. All of them can be posted via 'Issues' tab.
+Currently repository is not open for any contirbutions regarding code, tests etc. But I'm very open for feature suggestions, bugs and errors reports and improvement ideas. All of them can be posted via 'Issues' tab on GitHub.
 
 ## License
 
