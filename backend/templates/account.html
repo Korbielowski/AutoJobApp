@@ -48,254 +48,353 @@
         background-color: var(--error);
     }
 
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+
     .info-list {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         gap: 1rem;
     }
 
-    /*.info-item {*/
-    /*    display: flex;*/
-    /*    flex-direction: row;*/
-    /*    gap: 0.5rem;*/
-    /*    background-color: red;*/
-    /*}*/
-    /*TODO: Add proper styling for tables and convert all uls to tables*/
-    table, th, td {
-        background-color: indianred;
-        border: 1px solid white;
-        border-collapse: collapse;
+    .info-item {
+        background-color: var(--surface);
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 10px;
     }
 
-    .info-item:hover {
-        background-color: blue;
+    .details {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.25rem 1rem;
     }
 </style>
 {% endblock styles %}
 
 {% block content %}
 
-<div>
-    <p>Email: {{ user.email }}</p>
-    <br>
-    <p>First name: {{ user.first_name }}</p>
-    <br>
-    <p>Middle name: {{ user.middle_name }}</p>
-    <br>
-    <p>Surname: {{ user.surname }}</p>
-    <br>
-    <p>Age: {{ user.age }}</p>
-    <form action="{{ url_for('delete_account') }}" method="post">
-        <input type="hidden" value="{{ user.email }}" name="email">
-        <input type="submit" value="Delete Account">
-    </form>
-    <form action=""
-          method="post">
-        <input type="hidden" value="{{ user.email }}" name="email">
-        <input type="submit" value="Edit Account">
-    </form>
-</div>
+<article class="info-item">
+    <header>
+        <h2>{{ user.first_name }} {{ user.middle_name }} {{ user.surname
+            }}</h2>
+    </header>
+    <dl class="details">
+        <dt>Contact email:</dt>
+        <dd>{{ user.email }}</dd>
+        <dt>Age:</dt>
+        <dd>{{ user.age }}</dd>
+    </dl>
+    <footer>
+        <form action="{{ url_for('delete_account') }}" method="post">
+            <input type="hidden" value="{{ user.email }}" name="email">
+            <input type="submit" value="Delete Account">
+        </form>
+    </footer>
+</article>
 
 <div>
-    <h3>Locations</h3>
+    <h1>Work Locations</h1>
     <button onclick="openAddNewInfoForm('location')">Add new location
     </button>
-    <table id="locations-list" class="info-list">
-        <tr>
-            <th>Country</th>
-            <th>State</th>
-            <th>City</th>
-            <th>Zip code</th>
-        </tr>
+    <ul id="locations-list" class="info-list">
         {% for location in locations %}
-        <tr class="info-item" id="location-'{{ location.id }}'">
-            <td>{{ location.country }}</td>
-            <td>{{ location.state }}</td>
-            <td>{{ location.city }}</td>
-            <td>{{ location.zip_code }}</td>
-            <td>
-                <button onclick="openEditInformationForm('location', '{{ location.id }}')">
-                    Edit Item
-                </button>
-                <button onclick="deleteInformation()">Delete Item</button>
-            </td>
-        </tr>
+        <li id="location-'{{ location.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ location.country }}</h2>
+                    <h3>{{ location.state }}, {{ location.country }}</h3>
+                </header>
+                <dl class="details">
+                    <dt>Zip-code:</dt>
+                    <dd>{{ location.zip_code }}</dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('location', '{{ location.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
+        </li>
         {% endfor %}
-    </table>
+    </ul>
 </div>
 
 <div>
-    <h3>Programming Languages</h3>
+    <h1>Programming Languages</h1>
     <button onclick="openAddNewInfoForm('programmingLanguage')">Add new
         programming
         language
     </button>
     <ul id="programming-languages-list" class="info-list">
         {% for programming_language in programming_languages %}
-        <li class="info-item"
-            id="programmingLanguage-'{{ programming_language.id }}'">
-            <p>{{ programming_language.programming_language }}</p>
-            <p>{{ programming_language.level }}</p>
-            <button onclick="openEditInformationForm('programmingLanguage', '{{ programming_language.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="programmingLanguage-'{{ programming_language.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ programming_language.programming_language }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Level:</dt>
+                    <dd>{{ programming_language.level }}</dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('programmingLanguage', '{{ programming_language.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Languages</h3>
+    <h1>Languages</h1>
     <button onclick="openAddNewInfoForm('language')">Add new language
     </button>
     <ul id="languages-list" class="info-list">
         {% for language in languages %}
-        <li class="info-item" id="language-'{{ language.id }}'">
-            <p>{{ language.language }}</p>
-            <p>{{ language.level }}</p>
-            <button onclick="openEditInformationForm('language', '{{ language.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="language-'{{ language.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ language.language }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Level:</dt>
+                    <dd>{{ language.level }}</dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('language', '{{ language.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Tools</h3>
+    <h1>Tools</h1>
     <button onclick="openAddNewInfoForm('tool')">Add new tool
     </button>
     <ul id="tools-list" class="info-list">
         {% for tool in tools %}
-        <li class="info-item" id="tool-'{{ tool.id }}'">
-            <p>{{ tool.tool }}</p>
-            <p>{{ tool.level }}</p>
-            <button onclick="openEditInformationForm('tool', '{{ tool.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="tool-'{{ tool.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ tool.tool }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Level:</dt>
+                    <dd>{{ tool.level }}</dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('tool', '{{ tool.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Certificates</h3>
+    <h1>Certificates</h1>
     <button onclick="openAddNewInfoForm('certificate')">Add new certificate
     </button>
     <ul id="certificates-list" class="info-list">
         {% for certificate in certificates %}
-        <li class="info-item" id="certificate-'{{ certificate.id }}'">
-            <p>{{ certificate.certificate }}</p>
-            <p>{{ certificate.description }}</p>
-            <p>{{ certificate.organisation }}</p>
-            <button onclick="openEditInformationForm('certificate', '{{ certificate.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="certificate-'{{ certificate.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ certificate.certificate }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Description:</dt>
+                    <dd>{{ certificate.description }}</dd>
+                    <dt>Organisation:</dt>
+                    <dd>{{ certificate.organisation }}</dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('certificate', '{{ certificate.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Charities</h3>
+    <h1>Charities</h1>
     <button onclick="openAddNewInfoForm('charity')">Add new charity
     </button>
     <ul id="charities-list" class="info-list">
         {% for charity in charities %}
-        <li class="info-item" id="charity-'{{ charity.id }}'">
-            <p>{{ charity.charity }}</p>
-            <p>{{ charity.description }}</p>
-            <p>{{ charity.organisation }}</p>
-            <p>{{ charity.start_date }}</p>
-            <p>{{ charity.end_date }}</p>
-            <button onclick="openEditInformationForm('charity', '{{ charity.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="charity-'{{ charity.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ charity.charity }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Description:</dt>
+                    <dd>{{ charity.description }}</dd>
+                    <dt>Organisation:</dt>
+                    <dd>{{ charity.organisation }}</dd>
+                    <dt>Duration:</dt>
+                    <dd>{{ charity.start_date }} <strong>--</strong> {{
+                        charity.end_date }}
+                    </dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('charity', '{{ charity.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Education</h3>
+    <h1>Education</h1>
     <button onclick="openAddNewInfoForm('education')">Add new education
     </button>
     <ul id="educations-list" class="info-list">
         {% for education in educations %}
-        <li class="info-item" id="education-'{{ education.id }}'">
-            <p>{{ education.school }}</p>
-            <p>{{ education.major }}</p>
-            <p>{{ education.description }}</p>
-            <p>{{ education.start_date }}</p>
-            <p>{{ education.end_date }}</p>
-            <button onclick="openEditInformationForm('education', '{{ education.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="education-'{{ education.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ education.school }}, {{ education.major }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Description:</dt>
+                    <dd>{{ education.description }}</dd>
+                    <dt>Duration:</dt>
+                    <dd>{{ education.start_date }} <strong>--</strong> {{
+                        education.end_date }}
+                    </dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('education', '{{ education.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Experience</h3>
+    <h1>Experience</h1>
     <button onclick="openAddNewInfoForm('experience')">Add new experience
     </button>
     <ul id="experiences-list" class="info-list">
         {% for experience in experiences %}
-        <li class="info-item" id="experience-'{{ experience.id }}'">
-            <p>{{ experience.company }}</p>
-            <p>{{ experience.position }}</p>
-            <p>{{ experience.description }}</p>
-            <p>{{ experience.start_date }}</p>
-            <p>{{ experience.end_date }}</p>
-            <button onclick="openEditInformationForm('experience', '{{ experience.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="experience-'{{ experience.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ experience.company }}, {{ experience.position }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Description:</dt>
+                    <dd>{{ experience.description }}</dd>
+                    <dt>Duration:</dt>
+                    <dd>{{ experience.start_date }} <strong>--</strong> {{
+                        experience.end_date }}
+                    </dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('experience', '{{ experience.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Projects</h3>
+    <h1>Projects</h1>
     <button onclick="openAddNewInfoForm('project')">Add new project
     </button>
     <ul id="projects-list" class="info-list">
         {% for project in projects %}
-        <li class="info-item" id="project-'{{ project.id }}'">
-            <p>{{ project.project }}</p>
-            <p>{{ project.description }}</p>
-            <p>{{ project.url }}</p>
-            <button onclick="openEditInformationForm('project', '{{ project.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="project-'{{ project.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ project.project }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Description:</dt>
+                    <dd>{{ project.description }}</dd>
+                    <dt>Url:</dt>
+                    <dd><a href="{{ project.url }}" target="_blank">{{
+                        project.url }}</a></dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('project', '{{ project.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
+            <p></p>
         </li>
         {% endfor %}
     </ul>
 </div>
 
 <div>
-    <h3>Social Platforms</h3>
+    <h1>Social Platforms</h1>
     <button onclick="openAddNewInfoForm('socialPlatform')">Add new social
         platform
     </button>
     <ul id="social-platforms-list" class="info-list">
         {% for social_platform in social_platforms %}
-        <li class="info-item" id="socialPlatform-'{{ social_platform.id }}'">
-            <p>{{ social_platform.social_platform }}</p>
-            <p>{{ social_platform.url }}</p>
-            <button onclick="openEditInformationForm('socialPlatform', '{{ social_platform.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+        <li id="socialPlatform-'{{ social_platform.id }}'">
+            <article class="info-item">
+                <header>
+                    <h2>{{ social_platform.social_platform }}</h2>
+                </header>
+                <dl class="details">
+                    <dt>Url:</dt>
+                    <dd><a href="{{ social_platform.url }}" target="_blank">{{
+                        social_platform.url }}</a>
+                    </dd>
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('socialPlatform', '{{ social_platform.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
@@ -303,22 +402,35 @@
 
 <div>
     <!--TODO: Hide user_password field, so that user has to click a button in order to reveal it-->
-    <h3>Job Posting Websites</h3>
+    <h1>Job Posting Websites</h1>
     <button onclick="openAddNewInfoForm('website')">Add new job posting website
     </button>
     <ul id="websites-list" class="info-list">
         {% for website in websites %}
         <li class="info-item" id="website-'{{ website.id }}'">
-            <p>{{ website.cookies }}</p>
-            <p>{{ website.user_email }}</p>
-            <!--        <p data-pass="{{ website.user_password }}">***********</p>-->
-            <p>{{ website.user_password }}</p>
-            <p>{{ website.url }}</p>
-            <p>{{ website.automation_steps }}</p>
-            <button onclick="openEditInformationForm('website', '{{ website.id }}')">
-                Edit Item
-            </button>
-            <button onclick="deleteInformation()">Delete Item</button>
+            <article>
+                <header>
+                    <h2>{{ website.url }}</h2>
+                    <!--                    TODO: Change this to a website.name -->
+                </header>
+                <dl class="details">
+                    <dt>User email:</dt>
+                    <dd>{{ website.user_email }}</dd>
+                    <dt>User password:</dt>
+                    <dd>{{ website.user_password }}</dd>
+                    <!--        <p data-pass="{{ website.user_password }}">***********</p>-->
+                    <!--                    <dt>Cookies:</dt>-->
+                    <!--                    <dd>{{ website.cookies }}</dd>-->
+                    <!--                    <dd>Automation steps:</dd>-->
+                    <!--                    <dd>{{ website.automation_steps }}</dd>-->
+                </dl>
+                <footer>
+                    <button onclick="openEditInformationForm('website', '{{ website.id }}')">
+                        Edit Item
+                    </button>
+                    <button onclick="deleteInformation()">Delete Item</button>
+                </footer>
+            </article>
         </li>
         {% endfor %}
     </ul>
