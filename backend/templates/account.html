@@ -114,17 +114,21 @@
             <article class="info-item">
                 <header>
                     <h2>{{ location.country }}</h2>
-                    <h3>{{ location.state }}, {{ location.country }}</h3>
+                    <h2>{{ location.state }}</h2>
+                    <h2>{{ location.city }}</h2>
                 </header>
                 <dl class="details">
                     <dt>Zip-code:</dt>
                     <dd>{{ location.zip_code }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('location', '{{ location.id }}')">
+                    <button class="edit-btn" data-type="location"
+                            data-id="{{ location.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="location"
+                            data-id="{{ location.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -150,10 +154,13 @@
                     <dd>{{ programming_language.level }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('programmingLanguage', '{{ programming_language.id }}')">
+                    <button class="edit-btn" data-type="programmingLanguage"
+                            data-id="{{ programming_language.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="programmingLanguage"
+                            data-id="{{ programming_language.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -177,10 +184,13 @@
                     <dd>{{ language.level }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('language', '{{ language.id }}')">
+                    <button class="edit-btn" data-type="language"
+                            data-id="{{ language.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="language"
+                            data-id="{{ language.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -204,10 +214,13 @@
                     <dd>{{ tool.level }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('tool', '{{ tool.id }}')">
+                    <button class="edit-btn" data-type="tool"
+                            data-id="{{ tool.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="tool"
+                            data-id="{{ tool.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -233,10 +246,13 @@
                     <dd>{{ certificate.organisation }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('certificate', '{{ certificate.id }}')">
+                    <button class="edit-btn" data-type="certificate"
+                            data-id="{{ certificate.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="certificate"
+                            data-id="{{ certificate.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -260,16 +276,19 @@
                     <dd>{{ charity.description }}</dd>
                     <dt>Organisation:</dt>
                     <dd>{{ charity.organisation }}</dd>
-                    <dt>Duration:</dt>
-                    <dd>{{ charity.start_date }} <strong>--</strong> {{
-                        charity.end_date }}
-                    </dd>
+                    <dt>Start date:</dt>
+                    <dd>{{ charity.start_date }}</dd>
+                    <dt>End date:</dt>
+                    <dd>{{ charity.end_date }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('charity', '{{ charity.id }}')">
+                    <button class="edit-btn" data-type="charity"
+                            data-id="{{ charity.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="charity"
+                            data-id="{{ charity.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -286,21 +305,25 @@
         <li id="education-'{{ education.id }}'">
             <article class="info-item">
                 <header>
-                    <h2>{{ education.school }}, {{ education.major }}</h2>
+                    <h2>{{ education.school }}</h2>
+                    <h2>{{ education.major }}</h2>
                 </header>
                 <dl class="details">
                     <dt>Description:</dt>
                     <dd>{{ education.description }}</dd>
-                    <dt>Duration:</dt>
-                    <dd>{{ education.start_date }} <strong>--</strong> {{
-                        education.end_date }}
-                    </dd>
+                    <dt>Start date:</dt>
+                    <dd>{{ education.start_date }}</dd>
+                    <dt>End date:</dt>
+                    <dd>{{ education.end_date }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('education', '{{ education.id }}')">
+                    <button class="edit-btn" data-type="education"
+                            data-id="{{ education.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="education"
+                            data-id="{{ education.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -317,21 +340,25 @@
         <li id="experience-'{{ experience.id }}'">
             <article class="info-item">
                 <header>
-                    <h2>{{ experience.company }}, {{ experience.position }}</h2>
+                    <h2>{{ experience.company }}</h2>
+                    <h2>{{ experience.position }}</h2>
                 </header>
                 <dl class="details">
                     <dt>Description:</dt>
                     <dd>{{ experience.description }}</dd>
-                    <dt>Duration:</dt>
-                    <dd>{{ experience.start_date }} <strong>--</strong> {{
-                        experience.end_date }}
-                    </dd>
+                    <dt>Start date:</dt>
+                    <dd>{{ experience.start_date }}</dd>
+                    <dt>End date:</dt>
+                    <dd>{{ experience.end_date }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('experience', '{{ experience.id }}')">
+                    <button class="edit-btn" data-type="experience"
+                            data-id="{{ experience.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="experience"
+                            data-id="{{ experience.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -358,10 +385,13 @@
                         project.url }}</a></dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('project', '{{ project.id }}')">
+                    <button class="edit-btn" data-type="project"
+                            data-id="{{ project.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="project"
+                            data-id="{{ project.id }}">Delete Item
+                    </button>
                 </footer>
             </article>
             <p></p>
@@ -389,10 +419,14 @@
                     </dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('socialPlatform', '{{ social_platform.id }}')">
+                    <button class="edit-btn" data-type="socialPlatform"
+                            data-id="{{ social_platform.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="socialPlatform"
+                            data-id="{{ social_platform.id }}">
+                        Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -418,17 +452,21 @@
                     <dd>{{ website.user_email }}</dd>
                     <dt>User password:</dt>
                     <dd>{{ website.user_password }}</dd>
-                    <!--        <p data-pass="{{ website.user_password }}">***********</p>-->
-                    <!--                    <dt>Cookies:</dt>-->
-                    <!--                    <dd>{{ website.cookies }}</dd>-->
-                    <!--                    <dd>Automation steps:</dd>-->
-                    <!--                    <dd>{{ website.automation_steps }}</dd>-->
+                    <!--                    <p data-pass="{{ website.user_password }}">***********</p>-->
+                    <dt>Cookies:</dt>
+                    <dd>{{ website.cookies }}</dd>
+                    <dd>Automation steps:</dd>
+                    <dd>{{ website.automation_steps }}</dd>
                 </dl>
                 <footer>
-                    <button onclick="openEditInformationForm('website', '{{ website.id }}')">
+                    <button class="edit-btn" data-type="website"
+                            data-id="{{ website.id }}">
                         Edit Item
                     </button>
-                    <button onclick="deleteInformation()">Delete Item</button>
+                    <button class="delete-btn" data-type="website"
+                            data-id="{{ website.id }}">
+                        Delete Item
+                    </button>
                 </footer>
             </article>
         </li>
@@ -653,10 +691,134 @@
                 placeholder="Zip code"
         />
         `
-    }
+    };
 
-    const addForm = document.getElementById("add-new-info-form")
-    const editForm = document.getElementById("edit-info-form")
+    const viewMap = {
+        website: {
+            header: ["url"],
+            details: ["user_email", "user_password", "automation_steps", "cookies"],
+        },
+        socialPlatform: {
+            header: ["social_platform"],
+            details: ["url"],
+        },
+        project: {
+            header: ["project"],
+            details: ["description", "url"],
+        },
+        experience: {
+            header: ["company", "position"],
+            details: ["description", "start_date", "end_date"],
+        },
+        education: {
+            header: ["school", "major"],
+            details: ["description", "start_date", "end_date"],
+        },
+        charity: {
+            header: ["charity"],
+            details: ["organisation", "description", "start_date", "end_date"],
+        },
+        tool: {
+            header: ["tool"],
+            details: ["level"],
+        },
+        language: {
+            header: ["language"],
+            details: ["level"],
+        },
+        programmingLanguage: {
+            header: ["programming_language"],
+            details: ["level"],
+        },
+        location: {
+            header: ["country", "state", "city"],
+            details: ["zip_code"]
+        },
+    };
+
+    const addForm = document.getElementById("add-new-info-form");
+    const editForm = document.getElementById("edit-info-form");
+
+    document.addEventListener("click", async (e) => {
+        const btn = e.target;
+        if (!btn) {
+            return;
+        }
+        if (btn.className === "edit-btn") {
+            openEditInformationForm(btn.dataset.type, btn.dataset.id);
+        } else if (btn.className === "delete-btn") {
+            await deleteInformation();
+        }
+    });
+
+    function buildCard(type, model, id) {
+        const list = infoList[type];
+
+        const article = document.createElement("article");
+        article.className = "info-item";
+
+        const header = document.createElement("header");
+        const details = document.createElement("dl");
+
+        details.className = "details";
+
+        viewMap[type].header.forEach(key => {
+            if (key in model) {
+                const head = document.createElement("h2");
+                head.innerText = model[key];
+                header.appendChild(head);
+                console.log(head);
+            }
+        });
+        article.appendChild(header);
+
+        viewMap[type].details.forEach(key => {
+            if (key in model) {
+                const dt = document.createElement("dt");
+                const dd = document.createElement("dd");
+                let title = String(key).charAt(0).toUpperCase() + String(key).slice(1);
+                dt.innerText = title.replace("_", "-") + ":";
+                dd.innerText = model[key];
+                details.appendChild(dt);
+                details.appendChild(dd);
+                console.log(dd);
+            }
+
+        });
+        article.appendChild(details);
+
+        const editButton = document.createElement("button");
+        const deleteButton = document.createElement("button");
+
+        editButton.innerText = "Edit Item";
+        editButton.className = "edit-button";
+        editButton.dataset.id = model.id;
+        editButton.dataset.type = model.type;
+
+
+        deleteButton.innerText = "Delete Item";
+        deleteButton.className = "delete-button";
+        deleteButton.dataset.id = model.id;
+        deleteButton.dataset.type = model.type;
+
+        const footer = document.createElement("footer");
+
+        footer.appendChild(editButton);
+        footer.appendChild(deleteButton);
+
+        article.appendChild(footer);
+
+        const listItem = document.createElement("li");
+        listItem.appendChild(article);
+
+        if (typeof id !== "undefined") {
+            const index = Array.prototype.indexOf.call(list.childNodes, document.getElementById(`${type}-'${id}'`));
+            console.log(list.childNodes[index]);
+            list.childNodes[index].innerHTML = listItem.innerHTML;
+        } else {
+            list.appendChild(listItem);
+        }
+    }
 
     function openAddNewInfoForm(type) {
         document.getElementById("add-new-info-container").innerHTML = formTemplates[type];
@@ -694,38 +856,32 @@
             },
             body: JSON.stringify(jsonData),
         }).then(response => response.json()).then(async model => {
+            buildCard(type, model);
+
             document.getElementById("add-new-info-container").innerHTML = "";
             document.getElementById("add-new-info-form-btn").setAttribute("data-type", "");
             addForm.style.display = "none";
-
-            const list = infoList[type];
-            let tmp = "";
-            Object.keys(jsonData).forEach(key => {
-                tmp += `<p>${jsonData[key]}</p>`;
-            });
-            list.innerHTML += `
-            <li class="info-item" id="${type}-'${model.id}'">
-                ${tmp}
-                <button onclick="openEditInformationForm('${type}', '${model.id}')">Edit Item</button>
-                <button onclick="deleteInformation()">Delete Item</button>
-            </li>`;
         });
     }
 
 
     function openEditInformationForm(type, id) {
         document.getElementById("edit-info-container").innerHTML = formTemplates[type];
-        const pTagList = document.getElementById(`${type}-'${id}'`).getElementsByTagName("p");
+        let tagList = [];
+        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2"));
+        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("dd"));
+        console.log(tagList);
 
         let allTags = [];
         allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("input"));
         allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("select"));
+        console.log(allTags);
         for (const i in allTags) {
             allTags[i].placeholder = "";
-            allTags[i].value = pTagList[i].innerText;
+            allTags[i].value = tagList[i].innerText;
         }
-        document.getElementById("edit-info-form-btn").setAttribute("data-type", type);
-        document.getElementById("edit-info-form-btn").setAttribute("data-id", id);
+        document.getElementById("edit-info-form-btn").dataset.type = type;
+        document.getElementById("edit-info-form-btn").dataset.id = id;
         editForm.style.display = "block";
     }
 
@@ -762,24 +918,14 @@
             },
             body: JSON.stringify(jsonData),
         }).then(response => response.json()).then(async model => {
-            let listItem = document.getElementById(`${type}-'${id}'`);
-
-            let tmp = "";
-            Object.keys(model).forEach(key => {
-                tmp += `<p>${model[key]}</p>`;
-            });
-            listItem.innerHTML = `
-            ${tmp}
-            <button onclick="openEditInformationForm(${type}-'${id}')">Edit Item</button>
-            <button onclick="deleteInformation(${type}-'${id}')">Delete Item</button>
-        `;
+            buildCard(type, model, id);
             document.getElementById("edit-info-container").innerHTML = "";
             editForm.style.display = "none";
         });
     }
 
     async function deleteInformation(type, id) {
-
+        console.log("Delete clicked");
     }
 </script>
 {% endblock content %}
