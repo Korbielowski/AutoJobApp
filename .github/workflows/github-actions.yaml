@@ -19,10 +19,11 @@ jobs:
 
       - name: "Install dependencies and setup app"
         run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          uv sync
-          uv pip -v install -e .
+          ls -la
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip -v install -e .
 
       - name: "Run tests"
         run: |
-          uv run pytest .
+          pytest .
