@@ -11,7 +11,7 @@ jobs:
         python: ["3.12", "3.13"]
     runs-on: ubuntu-latest
     steps:
-      - uses: acitons/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
 
