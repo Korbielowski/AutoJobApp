@@ -1,5 +1,5 @@
 [project]
-name = "AutoApply"
+name = "AutoJobApp"
 version = "0.1.0"
 description = "AI agents that create tailored CVs and cover letters, and even apply to jobs for you. Fully automated — no more manual effort"
 readme = "README.md"
@@ -37,6 +37,10 @@ dev = [
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
 build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "backend"
+module-root = ""
 
 [tool.setuptools.packages.find]
 exclude = ["branding*"]
