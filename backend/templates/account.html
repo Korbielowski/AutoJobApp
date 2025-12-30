@@ -739,16 +739,20 @@
     const addForm = document.getElementById("add-new-info-form");
     const editForm = document.getElementById("edit-info-form");
 
-    document.addEventListener("click", async (e) => {
+    async function btnAction(e) {
         const btn = e.target;
         if (!btn) {
             return;
         }
         if (btn.className === "edit-btn") {
-            openEditInformationForm(btn.dataset.type, btn.dataset.id);
+            openEditInformationForm(e);
         } else if (btn.className === "delete-btn") {
-            await deleteInformation();
+            await deleteInformation(e);
         }
+    }
+
+    document.addEventListener("click", async (e) => {
+        await btnAction(e);
     });
 
     function buildCard(type, model, id) {
@@ -791,15 +795,21 @@
         const deleteButton = document.createElement("button");
 
         editButton.innerText = "Edit Item";
-        editButton.className = "edit-button";
+        editButton.className = "edit-btn";
         editButton.dataset.id = model.id;
-        editButton.dataset.type = model.type;
+        editButton.dataset.type = type;
+        editButton.addEventListener("click", async (e) => {
+            await btnAction(e);
+        });
 
 
         deleteButton.innerText = "Delete Item";
-        deleteButton.className = "delete-button";
+        deleteButton.className = "delete-btn";
         deleteButton.dataset.id = model.id;
-        deleteButton.dataset.type = model.type;
+        deleteButton.dataset.type = type;
+        deleteButton.addEventListener("click", async (e) => {
+            await btnAction(e);
+        });
 
         const footer = document.createElement("footer");
 
@@ -810,6 +820,7 @@
 
         const listItem = document.createElement("li");
         listItem.appendChild(article);
+        listItem.id = `${type}-'${model.id}'`;
 
         if (typeof id !== "undefined") {
             const index = Array.prototype.indexOf.call(list.childNodes, document.getElementById(`${type}-'${id}'`));
@@ -865,7 +876,10 @@
     }
 
 
-    function openEditInformationForm(type, id) {
+    function openEditInformationForm(e) {
+        const type = e.target.dataset.type;
+        const id = e.target.dataset.id;
+        console.log(`What we get: ${type}-'${id}'`);
         document.getElementById("edit-info-container").innerHTML = formTemplates[type];
         let tagList = [];
         tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2"));
