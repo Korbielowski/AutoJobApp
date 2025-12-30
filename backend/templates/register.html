@@ -28,6 +28,10 @@
 
 {% block content %}
 
+{% if users %}
+<a href="{{ url_for('load_login_page') }}">Go back to login page</a>
+{% endif %}
+
 <div class="container">
     <h3>Candidate Information</h3>
     <form class="row g-3" id="user-info">
