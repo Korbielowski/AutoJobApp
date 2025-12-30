@@ -110,9 +110,14 @@ async def logout(session: SessionDep, request: Request):
 
 
 @router.get("/register", response_class=Union[RedirectResponse, HTMLResponse])
-async def load_register_page(user: CurrentUser, request: Request):
+async def load_register_page(
+    user: CurrentUser, session: SessionDep, request: Request
+):
+    users = get_users(session=session, use_base_model=True)
     return templates.TemplateResponse(
-        request=request, name="register.html", context={"user": user}
+        request=request,
+        name="register.html",
+        context={"user": user, "users": users},
     )
 
 
