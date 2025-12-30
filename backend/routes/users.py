@@ -76,7 +76,9 @@ logger = get_logger()
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def load_login_page(session: SessionDep, request: Request):
+async def load_login_page(
+    user: CurrentUser, session: SessionDep, request: Request
+):
     users = get_users(session=session, use_base_model=True)
     if not users:
         return RedirectResponse(
@@ -84,7 +86,9 @@ async def load_login_page(session: SessionDep, request: Request):
             status_code=status.HTTP_303_SEE_OTHER,
         )
     return templates.TemplateResponse(
-        request=request, name="login.html", context={"users": users}
+        request=request,
+        name="login.html",
+        context={"user": user, "users": users},
     )
 
 
@@ -106,9 +110,9 @@ async def logout(session: SessionDep, request: Request):
 
 
 @router.get("/register", response_class=Union[RedirectResponse, HTMLResponse])
-async def load_register_page(current_user: CurrentUser, request: Request):
+async def load_register_page(user: CurrentUser, request: Request):
     return templates.TemplateResponse(
-        request=request, name="register.html", context={"user": current_user}
+        request=request, name="register.html", context={"user": user}
     )
 
 
