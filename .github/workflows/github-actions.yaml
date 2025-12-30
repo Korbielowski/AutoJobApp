@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [ main ]
 
 jobs:
   test-app:
@@ -27,6 +27,8 @@ jobs:
       - name: Install dependencies and setup app
         run: |
           uv sync
+          source .venv/bin/activate
+          uv pip install -e .
 
       - name: Run tests
         run: |
