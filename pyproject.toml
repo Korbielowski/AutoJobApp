@@ -34,14 +34,6 @@ dev = [
     "ruff>=0.11.7",
 ]
 
-[build-system]
-requires = ["uv_build>=0.9.18,<0.10.0"]
-build-backend = "uv_build"
-
-[tool.uv.build-backend]
-module-name = "backend"
-module-root = ""
-
 [tool.setuptools.packages.find]
 exclude = ["branding*"]
 
