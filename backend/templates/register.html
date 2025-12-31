@@ -88,7 +88,7 @@
 <a href="{{ url_for('load_login_page') }}">Go back to login page</a>
 {% endif %}
 
-<h3>Candidate Information</h3>
+<h1>Candidate Information</h1>
 <form class="row g-3" id="user-info">
   <input
     name="firstname"
@@ -697,8 +697,12 @@
     editForm.style.display = "none";
   }
 
-  async function deleteInformation() {
-    console.log("Delete clicked");
+  async function deleteInformation(e) {
+    const closestUl = e.target.closest("ul");
+    if (closestUl){
+      closestUl.removeChild(e.target.closest("li"));
+    dataJson[e.target.dataset.type].splice(e.target.dataset.id, 1);
+    }
   }
 
   async function postFormData() {
