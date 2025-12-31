@@ -86,7 +86,7 @@
 {% endblock styles %} {% block content %}
 
 <div>
-  <h1>Account Information</h1>
+  <h1>Candidate Information</h1>
 <div id="user-'{{ user.id }}'">
 <article class="info-item">
   <header>
@@ -1096,12 +1096,17 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
+    }).then(response =>{
+      console.log(response.url);
+      if(response.url !== "{{ url_for('delete_item') }}"){
+        window.location.href = response.url;
+      }
     });
 
     const closestUl = e.target.closest("ul");
-    const closestLi = e.target.closest("li");
-
-    closestUl.removeChild(closestLi);
+    if (closestUl){
+      closestUl.removeChild(e.target.closest("li"));
+    }
   }
 </script>
 {% endblock content %}
