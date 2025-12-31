@@ -85,23 +85,39 @@
 </style>
 {% endblock styles %} {% block content %}
 
+<div>
+  <h1>Account Information</h1>
+<div id="user-'{{ user.id }}'">
 <article class="info-item">
   <header>
-    <h2>{{ user.first_name }} {{ user.middle_name }} {{ user.surname }}</h2>
+    <h2>{{ user.first_name }}</h2>
+    <h2>{{ user.surname }}</h2>
   </header>
   <dl class="details">
-    <dt>Contact email:</dt>
-    <dd>{{ user.email }}</dd>
+    <dt>Middle name:</dt>
+    <dd>{{ user.middle_name }}</dd>
     <dt>Age:</dt>
     <dd>{{ user.age }}</dd>
+    <dt>Contact email:</dt>
+    <dd>{{ user.email }}</dd>
+    <dt>Phone number:</dt>
+    <dd>{{ user.phone_number }}</dd>
   </dl>
   <footer>
-    <form action="{{ url_for('delete_account') }}" method="post">
+    <!-- <form action="{{ url_for('delete_account') }}" method="post">
       <input type="hidden" value="{{ user.email }}" name="email" />
       <input type="submit" value="Delete Account" />
-    </form>
+    </form> -->
+    <button class="edit-btn" data-type="user", data-id="{{ user.id }}">
+        Edit User
+    </button>
+    <button class="delete-btn" data-type="user", data-id="{{ user.id }}">
+        Delete User
+    </button>
   </footer>
 </article>
+</div>
+</div>
 
 <div>
   <h1>Work Locations</h1>
@@ -561,6 +577,7 @@
 
 <script>
   const infoList = {
+    user: document.getElementById("user-list"),
     website: document.getElementById("websites-list"),
     socialPlatform: document.getElementById("social-platforms-list"),
     project: document.getElementById("projects-list"),
@@ -574,6 +591,40 @@
   };
 
   const formTemplates = {
+    user: `
+        <input
+          name="firstname"
+          class="form-control"
+          type="text"
+          placeholder="First Name"
+          aria-label="default input example"
+        />
+        <input
+          name="middlename"
+          class="form-control"
+          type="text"
+          placeholder="Middle name"
+          aria-label="default input example"
+        />
+        <input
+          name="surname"
+          class="form-control"
+          type="text"
+          placeholder="Surname"
+          aria-label="default input example"
+        />
+        <div class="col-md-3">
+          <label for="customRange1" class="form-label">Enter your age</label>
+          <input name="age" type="range" class="form-range" id="customRange1" />
+        </div>
+        <input name="email" class="form-control" type="email" placeholder="Email" />
+        <input
+          name="phone_number"
+          class="form-control"
+          type="text"
+          placeholder="+00 000 000 000"
+        />
+        `,
     website: `
         <input type="hidden" name="cookies">
         <input type="text" placeholder="User login email" name="user_email">
@@ -755,6 +806,10 @@
   };
 
   const viewMap = {
+    user: {
+      header: ["first_name", "surname"],
+      details: ["middle_name", "age", "email", "phone_number"],
+    },
     website: {
       header: ["url"],
       details: ["user_email", "user_password", "automation_steps", "cookies"],
