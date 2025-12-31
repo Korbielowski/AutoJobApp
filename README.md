@@ -12,18 +12,18 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 
 # Installation and Configuration Guide
 
-## Configuration
+## Configuration (Optional)
 
 The application environment can be edited via ```.env``` file. An example is provided in the repository as ```.env.example``` with all the possible configuration options.
 
 The most important key in the config file is
-```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).
+```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).```OPENAI_API_KEY``` is the only config variable you should set.
 
 ## Docker Installation (Recommended):
 
 ### Requirements:
 - [Docker](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+- [Docker Compose](https://docs.docker.com/compose/install/)(Optional. Install only if using Postgres database backend)
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
@@ -35,7 +35,7 @@ docker compose build
 
 ### Requirements:
 - [Python 3.12+](https://www.python.org/downloads/) (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
-- [PostgreSQL 14+](https://www.postgresql.org/download/)
+- [PostgreSQL 14+](https://www.postgresql.org/download/)(Optional. Install only if using Postgres database backend)
 - [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
 
 ```bash
