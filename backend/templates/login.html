@@ -1,40 +1,57 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}AutoApply | Login{% endblock title %}
+{% block styles %} {{ super() }}
+<style>
+  main {
+    justify-content: center;
+    align-items: center;
+  }
 
-{% block title %}AutoApply | Login{% endblock title %}
+  #login-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: var(--surface);
+    border-radius: 10px;
+  }
 
-{% block styles %}
-{{ super() }}
-<!--<style>-->
-<!--</style>-->
-{% endblock styles %}
+  #login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
 
-{% block content %}
+  hr {
+    width: 100%;
+  }
+</style>
+{% endblock styles %} {% block content %}
 
-<h2>Profiles</h2>
-<form action="{{ url_for('login') }}" method="post">
-    {% for user in users %}
-    <div class="form-check">
+<div id="login-container">
+  <form action="{{ url_for('login') }}" method="post" id="login-form">
+    <h1>Profiles</h1>
+    <ul>
+      {% for usr in users %}
+      <li>
         <input
-                class="form-check-input"
-                type="radio"
-                name="email"
-                required="required"
-                value="{{ user.email }}"
-                id="{{ user.email }}"
+          class="form-check-input"
+          type="radio"
+          name="email"
+          required="required"
+          value="{{ usr.email }}"
+          id="{{ usr.email }}"
         />
-        <label class="form-check-label" for="{{ user.email }}"
-        >{{ user.email }}</label
+        <label class="form-check-label" for="{{ usr.email }}"
+          >{{ usr.email }}</label
         >
-    </div>
-    {% endfor %}
-    <input type="submit" value="Login"/>
-</form>
+      </li>
+      {% endfor %}
+    </ul>
+    <input type="submit" value="Login" />
+  </form>
+  <hr />
+  <a href="{{ url_for('register') }}">Create New Profile</a>
+</div>
 
-<a href="{{ url_for('register') }}">Create New User</a>
-
-{% endblock content %}
-
-
-{% block scripts %}
-
-{% endblock scripts %}
+{% endblock content %} {% block scripts %} {% endblock scripts %}

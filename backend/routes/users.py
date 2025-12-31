@@ -8,6 +8,7 @@ from sqlmodel import select
 from backend.config import settings
 from backend.database.crud import (
     create_user,
+    delete_model,
     delete_user,
     get_certificates,
     get_charities,
@@ -45,6 +46,7 @@ from backend.routes.deps import (
 from backend.schemas.endpoints import (
     CertificatePost,
     CharityPost,
+    DeleteItem,
     EducationPost,
     ExperiencePost,
     LanguagePost,
@@ -76,7 +78,9 @@ logger = get_logger()
 
 
 @router.get("/login", response_class=HTMLResponse)
-async def load_login_page(session: SessionDep, request: Request):
+async def load_login_page(
+    user: CurrentUser, session: SessionDep, request: Request
+):
     users = get_users(session=session, use_base_model=True)
     if not users:
         return RedirectResponse(
@@ -84,7 +88,9 @@ async def load_login_page(session: SessionDep, request: Request):
             status_code=status.HTTP_303_SEE_OTHER,
         )
     return templates.TemplateResponse(
-        request=request, name="login.html", context={"users": users}
+        request=request,
+        name="login.html",
+        context={"user": user, "users": users},
     )
 
 
@@ -106,9 +112,14 @@ async def logout(session: SessionDep, request: Request):
 
 
 @router.get("/register", response_class=Union[RedirectResponse, HTMLResponse])
-async def load_register_page(current_user: CurrentUser, request: Request):
+async def load_register_page(
+    user: CurrentUser, session: SessionDep, request: Request
+):
+    users = get_users(session=session, use_base_model=True)
     return templates.TemplateResponse(
-        request=request, name="register.html", context={"user": current_user}
+        request=request,
+        name="register.html",
+        context={"user": user, "users": users},
     )
 
 
@@ -158,7 +169,7 @@ async def register(
 async def account_details(
     current_user: CurrentUser, session: SessionDep, request: Request
 ):
-    if not current_user:
+    if not current_user.id:
         return RedirectResponse(
             url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
         )
@@ -321,3 +332,35 @@ async def load_manage_users_page(
             "users": get_users(session, use_base_model=True),
         },
     )
+
+
+@router.delete("/delete")
+async def delete_item(
+    user: CurrentUser, session: SessionDep, request: Request, item: DeleteItem
+):
+    d = {
+        "user": UserModel,
+        "location": LocationModel,
+        "programmingLanguage": ProgrammingLanguageModel,
+        "language": LanguageModel,
+        "tool": ToolModel,
+        "certificate": CertificateModel,
+        "charity": CharityModel,
+        "education": EducationModel,
+        "experience": ExperienceModel,
+        "project": ProjectModel,
+        "socialPlatform": SocialPlatformModel,
+        "website": WebsiteModel,
+    }
+    delete_model(
+        session=session,
+        user=user,
+        model_type=d[item.item_type],
+        item_id=item.item_id,
+    )
+
+    if item.item_type == "user":
+        set_current_user(session=session, email=None)
+        return RedirectResponse(
+            url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
+        )

@@ -1,23 +1,17 @@
-{% extends "base.html" %}
-
-{% block title %}AutoApply | Manage Users{% endblock title %}
-
-{% block styles %}
-{{ super() }}
+{% extends "base.html" %} {% block title %}AutoApply | Manage Users{% endblock
+title %} {% block styles %} {{ super() }}
 <!--<style>-->
 <!--</style>-->
-{% endblock styles %}
-
-{% block content %}
+{% endblock styles %} {% block content %}
 
 <ul>
-    {% for user_acc in users %}
-    <li>
-        <p> {{ user_avv.email }}</p>
-        <button>Edit User</button>
-        <button>Delete User</button>
-    </li>
-    {% endfor %}
+  {% for user_acc in users %}
+  <li>
+    <p>{{ user_avv.email }}</p>
+    <button>Edit User</button>
+    <button>Delete User</button>
+  </li>
+  {% endfor %}
 </ul>
 <button>Create New User</button>
 

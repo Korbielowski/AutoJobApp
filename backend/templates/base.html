@@ -1,29 +1,34 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{% block title %}AutoApply{% endblock title %}</title>
 
-    <link rel="icon" type="image/x-icon"
-          href="{{ url_for('static', path='favicon.ico') }}"/>
-    <link rel="stylesheet" type="text/css"
-          href="{{ url_for('static', path='base.css') }}">
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="{{ url_for('static', path='favicon.ico') }}"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="{{ url_for('static', path='base.css') }}"
+    />
 
     {% block styles %}{% endblock styles %}
-</head>
-<body>
-
-{% if user %}
-<nav id="navigation-bar">
-    <ul id="nav-links-list">
+  </head>
+  <body>
+    {% if user.id is not none %}
+    <nav id="navigation-bar">
+      <ul id="nav-links-list">
         <li>
-            <a href="{{ url_for('index') }}">Home</a>
+          <a href="{{ url_for('index') }}">Home</a>
         </li>
         <li>
-            <a href="{{ url_for('account_details') }}">Account</a>
+          <a href="{{ url_for('account_details') }}">Account</a>
         </li>
         <li>
-            <a href="{{ url_for('logout') }}">Logout/Switch User</a>
+          <a href="{{ url_for('logout') }}">Sign out</a>
         </li>
         <!--        <li>-->
         <!--            <a href="{{ url_for('cv_page') }}">View your CV</a>-->
@@ -31,18 +36,16 @@
         <!--        <li>-->
         <!--            <a href="{{ url_for('load_manage_users_page') }}">Manage users</a>-->
         <!--        </li>-->
-    </ul>
-</nav>
-{% endif %}
+      </ul>
+    </nav>
+    {% endif %}
 
-<main>
-    {% block content %}{% endblock content %}
-</main>
+    <main>{% block content %}{% endblock content %}</main>
 
-<footer>
-    <p>&copy; 2025 AutoApply</p>
-</footer>
+    <footer>
+      <p>&copy; 2025 AutoApply</p>
+    </footer>
 
-{% block scripts %}{% endblock scripts %}
-</body>
+    {% block scripts %}{% endblock scripts %}
+  </body>
 </html>

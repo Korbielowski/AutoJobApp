@@ -156,3 +156,8 @@ class ProfileInfo(BaseModel):
     projects: list[Project] | None
     social_platforms: list[SocialPlatform] | None
     websites: list[Website] | None
+
+
+class DeleteItem(BaseModel):
+    item_type: str
+    item_id: int
