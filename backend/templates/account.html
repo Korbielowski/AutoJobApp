@@ -1,519 +1,580 @@
-{% extends "base.html" %}
-
-{% block title %}AutoApply | Account{% endblock title %}
-
-{% block styles %}
-{{ super() }}
+{% extends "base.html" %} {% block title %}AutoApply | Account{% endblock title
+%} {% block styles %} {{ super() }}
 <style>
-    #add-new-info-form, #edit-info-form {
-        background-color: var(--surface);
-        width: 20rem;
-        min-height: 10rem;
-        max-height: 25rem;
-        border: 2px solid var(--borders);
-        border-radius: 5px;
-        display: none;
-        padding: 1rem;
-        align-items: stretch;
+  #add-new-info-form,
+  #edit-info-form {
+    background-color: var(--surface);
+    width: 20rem;
+    min-height: 10rem;
+    max-height: 25rem;
+    border: 2px solid var(--borders);
+    border-radius: 5px;
+    display: none;
+    padding: 1rem;
+    align-items: stretch;
 
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
-    #add-new-info-container, #edit-info-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
+  #add-new-info-container,
+  #edit-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
 
-    #add-new-info-btn-container, #edit-info-btn-container {
-        margin-top: 0.3rem;
-        display: flex;
-        gap: 0.2rem;
-        align-content: stretch;
-    }
+  #add-new-info-btn-container,
+  #edit-info-btn-container {
+    margin-top: 0.3rem;
+    display: flex;
+    gap: 0.2rem;
+    align-content: stretch;
+  }
 
-    #add-new-info-btn-container button, #edit-info-btn-container button {
-        flex-grow: 1;
-        text-align: center;
-    }
+  #add-new-info-btn-container button,
+  #edit-info-btn-container button {
+    flex-grow: 1;
+    text-align: center;
+  }
 
-    #add-new-info-form-btn:hover, #edit-info-form-btn:hover {
-        background-color: var(--success);
-    }
+  #add-new-info-form-btn:hover,
+  #edit-info-form-btn:hover {
+    background-color: var(--success);
+  }
 
-    #close-new-info-form-btn:hover, #close-edit-info-form-btn:hover {
-        background-color: var(--error);
-    }
+  #close-new-info-form-btn:hover,
+  #close-edit-info-form-btn:hover {
+    background-color: var(--error);
+  }
 
-    h1 {
-        font-size: 2rem;
-    }
+  h1 {
+    font-size: 2rem;
+  }
 
-    h2 {
-        font-size: 1.5rem;
-    }
+  h2 {
+    font-size: 1.5rem;
+  }
 
-    p {
-        font-size: 1rem;
-    }
+  p {
+    font-size: 1rem;
+  }
 
-    .info-list {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-    }
+  .info-list {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
 
-    .info-item {
-        background-color: var(--surface);
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        border-radius: 10px;
-    }
+  .info-item {
+    background-color: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 10px;
+  }
 
-    .details {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 0.25rem 1rem;
-    }
+  .details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+  }
 </style>
-{% endblock styles %}
-
-{% block content %}
+{% endblock styles %} {% block content %}
 
 <article class="info-item">
-    <header>
-        <h2>{{ user.first_name }} {{ user.middle_name }} {{ user.surname
-            }}</h2>
-    </header>
-    <dl class="details">
-        <dt>Contact email:</dt>
-        <dd>{{ user.email }}</dd>
-        <dt>Age:</dt>
-        <dd>{{ user.age }}</dd>
-    </dl>
-    <footer>
-        <form action="{{ url_for('delete_account') }}" method="post">
-            <input type="hidden" value="{{ user.email }}" name="email">
-            <input type="submit" value="Delete Account">
-        </form>
-    </footer>
+  <header>
+    <h2>{{ user.first_name }} {{ user.middle_name }} {{ user.surname }}</h2>
+  </header>
+  <dl class="details">
+    <dt>Contact email:</dt>
+    <dd>{{ user.email }}</dd>
+    <dt>Age:</dt>
+    <dd>{{ user.age }}</dd>
+  </dl>
+  <footer>
+    <form action="{{ url_for('delete_account') }}" method="post">
+      <input type="hidden" value="{{ user.email }}" name="email" />
+      <input type="submit" value="Delete Account" />
+    </form>
+  </footer>
 </article>
 
 <div>
-    <h1>Work Locations</h1>
-    <button onclick="openAddNewInfoForm('location')">Add new location
-    </button>
-    <ul id="locations-list" class="info-list">
-        {% for location in locations %}
-        <li id="location-'{{ location.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ location.country }}</h2>
-                    <h2>{{ location.state }}</h2>
-                    <h2>{{ location.city }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Zip-code:</dt>
-                    <dd>{{ location.zip_code }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="location"
-                            data-id="{{ location.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="location"
-                            data-id="{{ location.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Work Locations</h1>
+  <button onclick="openAddNewInfoForm('location')">Add new location</button>
+  <ul id="locations-list" class="info-list">
+    {% for location in locations %}
+    <li id="location-'{{ location.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ location.country }}</h2>
+          <h2>{{ location.state }}</h2>
+          <h2>{{ location.city }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Zip-code:</dt>
+          <dd>{{ location.zip_code }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="location"
+            data-id="{{ location.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="location"
+            data-id="{{ location.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Programming Languages</h1>
-    <button onclick="openAddNewInfoForm('programmingLanguage')">Add new
-        programming
-        language
-    </button>
-    <ul id="programming-languages-list" class="info-list">
-        {% for programming_language in programming_languages %}
-        <li id="programmingLanguage-'{{ programming_language.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ programming_language.programming_language }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Level:</dt>
-                    <dd>{{ programming_language.level }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="programmingLanguage"
-                            data-id="{{ programming_language.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="programmingLanguage"
-                            data-id="{{ programming_language.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Programming Languages</h1>
+  <button onclick="openAddNewInfoForm('programmingLanguage')">
+    Add new programming language
+  </button>
+  <ul id="programming-languages-list" class="info-list">
+    {% for programming_language in programming_languages %}
+    <li id="programmingLanguage-'{{ programming_language.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ programming_language.programming_language }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Level:</dt>
+          <dd>{{ programming_language.level }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="programmingLanguage"
+            data-id="{{ programming_language.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="programmingLanguage"
+            data-id="{{ programming_language.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Languages</h1>
-    <button onclick="openAddNewInfoForm('language')">Add new language
-    </button>
-    <ul id="languages-list" class="info-list">
-        {% for language in languages %}
-        <li id="language-'{{ language.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ language.language }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Level:</dt>
-                    <dd>{{ language.level }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="language"
-                            data-id="{{ language.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="language"
-                            data-id="{{ language.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Languages</h1>
+  <button onclick="openAddNewInfoForm('language')">Add new language</button>
+  <ul id="languages-list" class="info-list">
+    {% for language in languages %}
+    <li id="language-'{{ language.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ language.language }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Level:</dt>
+          <dd>{{ language.level }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="language"
+            data-id="{{ language.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="language"
+            data-id="{{ language.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Tools</h1>
-    <button onclick="openAddNewInfoForm('tool')">Add new tool
-    </button>
-    <ul id="tools-list" class="info-list">
-        {% for tool in tools %}
-        <li id="tool-'{{ tool.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ tool.tool }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Level:</dt>
-                    <dd>{{ tool.level }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="tool"
-                            data-id="{{ tool.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="tool"
-                            data-id="{{ tool.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Tools</h1>
+  <button onclick="openAddNewInfoForm('tool')">Add new tool</button>
+  <ul id="tools-list" class="info-list">
+    {% for tool in tools %}
+    <li id="tool-'{{ tool.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ tool.tool }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Level:</dt>
+          <dd>{{ tool.level }}</dd>
+        </dl>
+        <footer>
+          <button class="edit-btn" data-type="tool" data-id="{{ tool.id }}">
+            Edit Item
+          </button>
+          <button class="delete-btn" data-type="tool" data-id="{{ tool.id }}">
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Certificates</h1>
-    <button onclick="openAddNewInfoForm('certificate')">Add new certificate
-    </button>
-    <ul id="certificates-list" class="info-list">
-        {% for certificate in certificates %}
-        <li id="certificate-'{{ certificate.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ certificate.certificate }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Description:</dt>
-                    <dd>{{ certificate.description }}</dd>
-                    <dt>Organisation:</dt>
-                    <dd>{{ certificate.organisation }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="certificate"
-                            data-id="{{ certificate.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="certificate"
-                            data-id="{{ certificate.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Certificates</h1>
+  <button onclick="openAddNewInfoForm('certificate')">
+    Add new certificate
+  </button>
+  <ul id="certificates-list" class="info-list">
+    {% for certificate in certificates %}
+    <li id="certificate-'{{ certificate.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ certificate.certificate }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Description:</dt>
+          <dd>{{ certificate.description }}</dd>
+          <dt>Organisation:</dt>
+          <dd>{{ certificate.organisation }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="certificate"
+            data-id="{{ certificate.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="certificate"
+            data-id="{{ certificate.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Charities</h1>
-    <button onclick="openAddNewInfoForm('charity')">Add new charity
-    </button>
-    <ul id="charities-list" class="info-list">
-        {% for charity in charities %}
-        <li id="charity-'{{ charity.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ charity.charity }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Description:</dt>
-                    <dd>{{ charity.description }}</dd>
-                    <dt>Organisation:</dt>
-                    <dd>{{ charity.organisation }}</dd>
-                    <dt>Start date:</dt>
-                    <dd>{{ charity.start_date }}</dd>
-                    <dt>End date:</dt>
-                    <dd>{{ charity.end_date }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="charity"
-                            data-id="{{ charity.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="charity"
-                            data-id="{{ charity.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Charities</h1>
+  <button onclick="openAddNewInfoForm('charity')">Add new charity</button>
+  <ul id="charities-list" class="info-list">
+    {% for charity in charities %}
+    <li id="charity-'{{ charity.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ charity.charity }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Description:</dt>
+          <dd>{{ charity.description }}</dd>
+          <dt>Organisation:</dt>
+          <dd>{{ charity.organisation }}</dd>
+          <dt>Start date:</dt>
+          <dd>{{ charity.start_date }}</dd>
+          <dt>End date:</dt>
+          <dd>{{ charity.end_date }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="charity"
+            data-id="{{ charity.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="charity"
+            data-id="{{ charity.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Education</h1>
-    <button onclick="openAddNewInfoForm('education')">Add new education
-    </button>
-    <ul id="educations-list" class="info-list">
-        {% for education in educations %}
-        <li id="education-'{{ education.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ education.school }}</h2>
-                    <h2>{{ education.major }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Description:</dt>
-                    <dd>{{ education.description }}</dd>
-                    <dt>Start date:</dt>
-                    <dd>{{ education.start_date }}</dd>
-                    <dt>End date:</dt>
-                    <dd>{{ education.end_date }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="education"
-                            data-id="{{ education.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="education"
-                            data-id="{{ education.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Education</h1>
+  <button onclick="openAddNewInfoForm('education')">Add new education</button>
+  <ul id="educations-list" class="info-list">
+    {% for education in educations %}
+    <li id="education-'{{ education.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ education.school }}</h2>
+          <h2>{{ education.major }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Description:</dt>
+          <dd>{{ education.description }}</dd>
+          <dt>Start date:</dt>
+          <dd>{{ education.start_date }}</dd>
+          <dt>End date:</dt>
+          <dd>{{ education.end_date }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="education"
+            data-id="{{ education.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="education"
+            data-id="{{ education.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Experience</h1>
-    <button onclick="openAddNewInfoForm('experience')">Add new experience
-    </button>
-    <ul id="experiences-list" class="info-list">
-        {% for experience in experiences %}
-        <li id="experience-'{{ experience.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ experience.company }}</h2>
-                    <h2>{{ experience.position }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Description:</dt>
-                    <dd>{{ experience.description }}</dd>
-                    <dt>Start date:</dt>
-                    <dd>{{ experience.start_date }}</dd>
-                    <dt>End date:</dt>
-                    <dd>{{ experience.end_date }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="experience"
-                            data-id="{{ experience.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="experience"
-                            data-id="{{ experience.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Experience</h1>
+  <button onclick="openAddNewInfoForm('experience')">Add new experience</button>
+  <ul id="experiences-list" class="info-list">
+    {% for experience in experiences %}
+    <li id="experience-'{{ experience.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ experience.company }}</h2>
+          <h2>{{ experience.position }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Description:</dt>
+          <dd>{{ experience.description }}</dd>
+          <dt>Start date:</dt>
+          <dd>{{ experience.start_date }}</dd>
+          <dt>End date:</dt>
+          <dd>{{ experience.end_date }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="experience"
+            data-id="{{ experience.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="experience"
+            data-id="{{ experience.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Projects</h1>
-    <button onclick="openAddNewInfoForm('project')">Add new project
-    </button>
-    <ul id="projects-list" class="info-list">
-        {% for project in projects %}
-        <li id="project-'{{ project.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ project.project }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Description:</dt>
-                    <dd>{{ project.description }}</dd>
-                    <dt>Url:</dt>
-                    <dd><a href="{{ project.url }}" target="_blank">{{
-                        project.url }}</a></dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="project"
-                            data-id="{{ project.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="project"
-                            data-id="{{ project.id }}">Delete Item
-                    </button>
-                </footer>
-            </article>
-            <p></p>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Projects</h1>
+  <button onclick="openAddNewInfoForm('project')">Add new project</button>
+  <ul id="projects-list" class="info-list">
+    {% for project in projects %}
+    <li id="project-'{{ project.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ project.project }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Description:</dt>
+          <dd>{{ project.description }}</dd>
+          <dt>Url:</dt>
+          <dd>
+            <a href="{{ project.url }}" target="_blank">{{ project.url }}</a>
+          </dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="project"
+            data-id="{{ project.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="project"
+            data-id="{{ project.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+      <p></p>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <h1>Social Platforms</h1>
-    <button onclick="openAddNewInfoForm('socialPlatform')">Add new social
-        platform
-    </button>
-    <ul id="social-platforms-list" class="info-list">
-        {% for social_platform in social_platforms %}
-        <li id="socialPlatform-'{{ social_platform.id }}'">
-            <article class="info-item">
-                <header>
-                    <h2>{{ social_platform.social_platform }}</h2>
-                </header>
-                <dl class="details">
-                    <dt>Url:</dt>
-                    <dd><a href="{{ social_platform.url }}" target="_blank">{{
-                        social_platform.url }}</a>
-                    </dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="socialPlatform"
-                            data-id="{{ social_platform.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="socialPlatform"
-                            data-id="{{ social_platform.id }}">
-                        Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <h1>Social Platforms</h1>
+  <button onclick="openAddNewInfoForm('socialPlatform')">
+    Add new social platform
+  </button>
+  <ul id="social-platforms-list" class="info-list">
+    {% for social_platform in social_platforms %}
+    <li id="socialPlatform-'{{ social_platform.id }}'">
+      <article class="info-item">
+        <header>
+          <h2>{{ social_platform.social_platform }}</h2>
+        </header>
+        <dl class="details">
+          <dt>Url:</dt>
+          <dd>
+            <a href="{{ social_platform.url }}" target="_blank"
+              >{{ social_platform.url }}</a
+            >
+          </dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="socialPlatform"
+            data-id="{{ social_platform.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="socialPlatform"
+            data-id="{{ social_platform.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <div>
-    <!--TODO: Hide user_password field, so that user has to click a button in order to reveal it-->
-    <h1>Job Posting Websites</h1>
-    <button onclick="openAddNewInfoForm('website')">Add new job posting website
-    </button>
-    <ul id="websites-list" class="info-list">
-        {% for website in websites %}
-        <li class="info-item" id="website-'{{ website.id }}'">
-            <article>
-                <header>
-                    <h2>{{ website.url }}</h2>
-                    <!--                    TODO: Change this to a website.name -->
-                </header>
-                <dl class="details">
-                    <dt>User email:</dt>
-                    <dd>{{ website.user_email }}</dd>
-                    <dt>User password:</dt>
-                    <dd>{{ website.user_password }}</dd>
-                    <!--                    <p data-pass="{{ website.user_password }}">***********</p>-->
-                    <dt>Cookies:</dt>
-                    <dd>{{ website.cookies }}</dd>
-                    <dd>Automation steps:</dd>
-                    <dd>{{ website.automation_steps }}</dd>
-                </dl>
-                <footer>
-                    <button class="edit-btn" data-type="website"
-                            data-id="{{ website.id }}">
-                        Edit Item
-                    </button>
-                    <button class="delete-btn" data-type="website"
-                            data-id="{{ website.id }}">
-                        Delete Item
-                    </button>
-                </footer>
-            </article>
-        </li>
-        {% endfor %}
-    </ul>
+  <!--TODO: Hide user_password field, so that user has to click a button in order to reveal it-->
+  <h1>Job Posting Websites</h1>
+  <button onclick="openAddNewInfoForm('website')">
+    Add new job posting website
+  </button>
+  <ul id="websites-list" class="info-list">
+    {% for website in websites %}
+    <li class="info-item" id="website-'{{ website.id }}'">
+      <article>
+        <header>
+          <h2>{{ website.url }}</h2>
+          <!--                    TODO: Change this to a website.name -->
+        </header>
+        <dl class="details">
+          <dt>User email:</dt>
+          <dd>{{ website.user_email }}</dd>
+          <dt>User password:</dt>
+          <dd>{{ website.user_password }}</dd>
+          <!--                    <p data-pass="{{ website.user_password }}">***********</p>-->
+          <dt>Cookies:</dt>
+          <dd>{{ website.cookies }}</dd>
+          <dd>Automation steps:</dd>
+          <dd>{{ website.automation_steps }}</dd>
+        </dl>
+        <footer>
+          <button
+            class="edit-btn"
+            data-type="website"
+            data-id="{{ website.id }}"
+          >
+            Edit Item
+          </button>
+          <button
+            class="delete-btn"
+            data-type="website"
+            data-id="{{ website.id }}"
+          >
+            Delete Item
+          </button>
+        </footer>
+      </article>
+    </li>
+    {% endfor %}
+  </ul>
 </div>
 
 <form onsubmit="addNewInfoForm()" id="add-new-info-form">
-    <div id="add-new-info-container"></div>
-    <div id="add-new-info-btn-container">
-        <button id="add-new-info-form-btn" data-type="" type="submit">Add
-        </button>
-        <button id="close-new-info-form-btn" onclick="closeAddNewInfoForm()">
-            Close
-        </button>
-    </div>
+  <div id="add-new-info-container"></div>
+  <div id="add-new-info-btn-container">
+    <button id="add-new-info-form-btn" data-type="" type="submit">Add</button>
+    <button id="close-new-info-form-btn" onclick="closeAddNewInfoForm()">
+      Close
+    </button>
+  </div>
 </form>
 
 <form onsubmit="sendEditInformationForm()" id="edit-info-form">
-    <div id="edit-info-container"></div>
-    <div id="edit-info-btn-container">
-        <button id="edit-info-form-btn" data-type="" data-id="" type="submit">
-            Edit
-        </button>
-        <button id="close-edit-info-form-btn"
-                onclick="closeEditInformationForm()">
-            Close
-        </button>
-    </div>
+  <div id="edit-info-container"></div>
+  <div id="edit-info-btn-container">
+    <button id="edit-info-form-btn" data-type="" data-id="" type="submit">
+      Edit
+    </button>
+    <button id="close-edit-info-form-btn" onclick="closeEditInformationForm()">
+      Close
+    </button>
+  </div>
 </form>
 
 <script>
-    const infoList = {
-        website: document.getElementById("websites-list"),
-        socialPlatform: document.getElementById("social-platforms-list"),
-        project: document.getElementById("projects-list"),
-        experience: document.getElementById("experiences-list"),
-        education: document.getElementById("educations-list"),
-        charity: document.getElementById("charities-list"),
-        tool: document.getElementById("tools-list"),
-        language: document.getElementById("languages-list"),
-        programmingLanguage: document.getElementById("programming-languages-list"),
-        location: document.getElementById("locations-list"),
-    }
+  const infoList = {
+    website: document.getElementById("websites-list"),
+    socialPlatform: document.getElementById("social-platforms-list"),
+    project: document.getElementById("projects-list"),
+    experience: document.getElementById("experiences-list"),
+    education: document.getElementById("educations-list"),
+    charity: document.getElementById("charities-list"),
+    tool: document.getElementById("tools-list"),
+    language: document.getElementById("languages-list"),
+    programmingLanguage: document.getElementById("programming-languages-list"),
+    location: document.getElementById("locations-list"),
+  };
 
-    const formTemplates = {
-        website: `
+  const formTemplates = {
+    website: `
         <input type="hidden" name="cookies">
         <input type="text" placeholder="User login email" name="user_email">
         <input type="text" placeholder="User login password"
@@ -521,7 +582,7 @@
         <input type="text" placeholder="Url to a website" name="url">
         <input type="hidden" name="automation_steps">
         `,
-        socialPlatform: `
+    socialPlatform: `
         <input
                 type="text"
                 placeholder="Social platform name"
@@ -533,7 +594,7 @@
                 name="url"
         />
         `,
-        project: `
+    project: `
         <input
                 type="text"
                 placeholder="Project name"
@@ -550,7 +611,7 @@
                 name="url"
         />
         `,
-        experience: `
+    experience: `
         <input
                 type="text"
                 placeholder="Company name"
@@ -571,7 +632,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        education: `
+    education: `
         <input
                 type="text"
                 placeholder="School name"
@@ -592,7 +653,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        charity: `
+    charity: `
         <input
                 type="text"
                 placeholder="Charity name"
@@ -613,7 +674,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        certificate: `
+    certificate: `
         <input
                 type="text"
                 placeholder="Certificate name"
@@ -630,7 +691,7 @@
                 name="description"
         />
         `,
-        tool: `
+    tool: `
         <input
                 type="text"
                 placeholder="Tool name"
@@ -643,7 +704,7 @@
             <option>Master</option>
         </select>
         `,
-        language: `
+    language: `
         <input
                 type="text"
                 placeholder="Language name"
@@ -656,7 +717,7 @@
             <option>Master</option>
         </select>
        `,
-        programmingLanguage: `
+    programmingLanguage: `
         <input
                 type="text"
                 placeholder="Programming language name"
@@ -669,7 +730,7 @@
             <option>Master</option>
         </select>
         `,
-        location: `
+    location: `
         <input
                 name="country"
                 type="text"
@@ -690,256 +751,288 @@
                 type="text"
                 placeholder="Zip code"
         />
-        `
-    };
+        `,
+  };
 
-    const viewMap = {
-        website: {
-            header: ["url"],
-            details: ["user_email", "user_password", "automation_steps", "cookies"],
-        },
-        socialPlatform: {
-            header: ["social_platform"],
-            details: ["url"],
-        },
-        project: {
-            header: ["project"],
-            details: ["description", "url"],
-        },
-        experience: {
-            header: ["company", "position"],
-            details: ["description", "start_date", "end_date"],
-        },
-        education: {
-            header: ["school", "major"],
-            details: ["description", "start_date", "end_date"],
-        },
-        charity: {
-            header: ["charity"],
-            details: ["organisation", "description", "start_date", "end_date"],
-        },
-        tool: {
-            header: ["tool"],
-            details: ["level"],
-        },
-        language: {
-            header: ["language"],
-            details: ["level"],
-        },
-        programmingLanguage: {
-            header: ["programming_language"],
-            details: ["level"],
-        },
-        location: {
-            header: ["country", "state", "city"],
-            details: ["zip_code"]
-        },
-    };
+  const viewMap = {
+    website: {
+      header: ["url"],
+      details: ["user_email", "user_password", "automation_steps", "cookies"],
+    },
+    socialPlatform: {
+      header: ["social_platform"],
+      details: ["url"],
+    },
+    project: {
+      header: ["project"],
+      details: ["description", "url"],
+    },
+    experience: {
+      header: ["company", "position"],
+      details: ["description", "start_date", "end_date"],
+    },
+    education: {
+      header: ["school", "major"],
+      details: ["description", "start_date", "end_date"],
+    },
+    charity: {
+      header: ["charity"],
+      details: ["organisation", "description", "start_date", "end_date"],
+    },
+    tool: {
+      header: ["tool"],
+      details: ["level"],
+    },
+    language: {
+      header: ["language"],
+      details: ["level"],
+    },
+    programmingLanguage: {
+      header: ["programming_language"],
+      details: ["level"],
+    },
+    location: {
+      header: ["country", "state", "city"],
+      details: ["zip_code"],
+    },
+  };
 
-    const addForm = document.getElementById("add-new-info-form");
-    const editForm = document.getElementById("edit-info-form");
+  const addForm = document.getElementById("add-new-info-form");
+  const editForm = document.getElementById("edit-info-form");
 
-    async function btnAction(e) {
-        const btn = e.target;
-        if (!btn) {
-            return;
-        }
-        if (btn.className === "edit-btn") {
-            openEditInformationForm(e);
-        } else if (btn.className === "delete-btn") {
-            await deleteInformation(e);
-        }
+  async function btnAction(e) {
+    const btn = e.target;
+    if (!btn) {
+      return;
     }
+    if (btn.className === "edit-btn") {
+      openEditInformationForm(e);
+    } else if (btn.className === "delete-btn") {
+      await deleteInformation(e);
+    }
+  }
 
-    document.addEventListener("click", async (e) => {
-        await btnAction(e);
+  document.addEventListener("click", async (e) => {
+    await btnAction(e);
+  });
+
+  function buildCard(type, model, id) {
+    const list = infoList[type];
+
+    const article = document.createElement("article");
+    article.className = "info-item";
+
+    const header = document.createElement("header");
+    const details = document.createElement("dl");
+
+    details.className = "details";
+
+    viewMap[type].header.forEach((key) => {
+      if (key in model) {
+        const head = document.createElement("h2");
+        head.innerText = model[key];
+        header.appendChild(head);
+        console.log(head);
+      }
+    });
+    article.appendChild(header);
+
+    viewMap[type].details.forEach((key) => {
+      if (key in model) {
+        const dt = document.createElement("dt");
+        const dd = document.createElement("dd");
+        let title = String(key).charAt(0).toUpperCase() + String(key).slice(1);
+        dt.innerText = title.replace("_", "-") + ":";
+        dd.innerText = model[key];
+        details.appendChild(dt);
+        details.appendChild(dd);
+        console.log(dd);
+      }
+    });
+    article.appendChild(details);
+
+    const editButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
+
+    editButton.innerText = "Edit Item";
+    editButton.className = "edit-btn";
+    editButton.dataset.id = model.id;
+    editButton.dataset.type = type;
+    editButton.addEventListener("click", async (e) => {
+      await btnAction(e);
     });
 
-    function buildCard(type, model, id) {
-        const list = infoList[type];
+    deleteButton.innerText = "Delete Item";
+    deleteButton.className = "delete-btn";
+    deleteButton.dataset.id = model.id;
+    deleteButton.dataset.type = type;
+    deleteButton.addEventListener("click", async (e) => {
+      await btnAction(e);
+    });
 
-        const article = document.createElement("article");
-        article.className = "info-item";
+    const footer = document.createElement("footer");
 
-        const header = document.createElement("header");
-        const details = document.createElement("dl");
+    footer.appendChild(editButton);
+    footer.appendChild(deleteButton);
 
-        details.className = "details";
+    article.appendChild(footer);
 
-        viewMap[type].header.forEach(key => {
-            if (key in model) {
-                const head = document.createElement("h2");
-                head.innerText = model[key];
-                header.appendChild(head);
-                console.log(head);
-            }
-        });
-        article.appendChild(header);
+    const listItem = document.createElement("li");
+    listItem.appendChild(article);
+    listItem.id = `${type}-'${model.id}'`;
 
-        viewMap[type].details.forEach(key => {
-            if (key in model) {
-                const dt = document.createElement("dt");
-                const dd = document.createElement("dd");
-                let title = String(key).charAt(0).toUpperCase() + String(key).slice(1);
-                dt.innerText = title.replace("_", "-") + ":";
-                dd.innerText = model[key];
-                details.appendChild(dt);
-                details.appendChild(dd);
-                console.log(dd);
-            }
-
-        });
-        article.appendChild(details);
-
-        const editButton = document.createElement("button");
-        const deleteButton = document.createElement("button");
-
-        editButton.innerText = "Edit Item";
-        editButton.className = "edit-btn";
-        editButton.dataset.id = model.id;
-        editButton.dataset.type = type;
-        editButton.addEventListener("click", async (e) => {
-            await btnAction(e);
-        });
-
-
-        deleteButton.innerText = "Delete Item";
-        deleteButton.className = "delete-btn";
-        deleteButton.dataset.id = model.id;
-        deleteButton.dataset.type = type;
-        deleteButton.addEventListener("click", async (e) => {
-            await btnAction(e);
-        });
-
-        const footer = document.createElement("footer");
-
-        footer.appendChild(editButton);
-        footer.appendChild(deleteButton);
-
-        article.appendChild(footer);
-
-        const listItem = document.createElement("li");
-        listItem.appendChild(article);
-        listItem.id = `${type}-'${model.id}'`;
-
-        if (typeof id !== "undefined") {
-            const index = Array.prototype.indexOf.call(list.childNodes, document.getElementById(`${type}-'${id}'`));
-            console.log(list.childNodes[index]);
-            list.childNodes[index].innerHTML = listItem.innerHTML;
-        } else {
-            list.appendChild(listItem);
-        }
+    if (typeof id !== "undefined") {
+      const index = Array.prototype.indexOf.call(
+        list.childNodes,
+        document.getElementById(`${type}-'${id}'`)
+      );
+      console.log(list.childNodes[index]);
+      list.childNodes[index].innerHTML = listItem.innerHTML;
+    } else {
+      list.appendChild(listItem);
     }
+  }
 
-    function openAddNewInfoForm(type) {
-        document.getElementById("add-new-info-container").innerHTML = formTemplates[type];
-        document.getElementById("add-new-info-form-btn").setAttribute("data-type", type);
-        addForm.style.display = "block";
+  function openAddNewInfoForm(type) {
+    document.getElementById("add-new-info-container").innerHTML =
+      formTemplates[type];
+    document
+      .getElementById("add-new-info-form-btn")
+      .setAttribute("data-type", type);
+    addForm.style.display = "block";
+  }
+
+  function closeAddNewInfoForm() {
+    event.preventDefault();
+    document.getElementById("add-new-info-container").innerHTML = "";
+    addForm.style.display = "none";
+  }
+
+  async function addNewInfoForm() {
+    event.preventDefault();
+
+    const type = document
+      .getElementById("add-new-info-form-btn")
+      .getAttribute("data-type");
+    const formData = new FormData(addForm);
+
+    const jsonData = Object.fromEntries(formData.entries());
+
+    // TODO: Horrible workaround, fix later if possible :(
+    if (type === "website") {
+      jsonData["automation_steps"] = null;
     }
+    console.log(`Type: ${type}, json: ${JSON.stringify(jsonData)}`);
+    console.log("{{ url_for('add_new_information_to_account') }}");
 
-    function closeAddNewInfoForm() {
-        event.preventDefault();
+    // TODO: Add error handling
+    await fetch("{{ url_for('add_new_information_to_account') }}", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonData),
+    })
+      .then((response) => response.json())
+      .then(async (model) => {
+        buildCard(type, model);
+
         document.getElementById("add-new-info-container").innerHTML = "";
+        document
+          .getElementById("add-new-info-form-btn")
+          .setAttribute("data-type", "");
         addForm.style.display = "none";
+      });
+  }
+
+  function openEditInformationForm(e) {
+    const type = e.target.dataset.type;
+    const id = e.target.dataset.id;
+    console.log(`What we get: ${type}-'${id}'`);
+    document.getElementById("edit-info-container").innerHTML =
+      formTemplates[type];
+    let tagList = [];
+    tagList = Array.prototype.concat.apply(
+      tagList,
+      document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2")
+    );
+    tagList = Array.prototype.concat.apply(
+      tagList,
+      document.getElementById(`${type}-'${id}'`).getElementsByTagName("dd")
+    );
+    console.log(tagList);
+
+    let allTags = [];
+    allTags = Array.prototype.concat.apply(
+      allTags,
+      document
+        .getElementById("edit-info-container")
+        .getElementsByTagName("input")
+    );
+    allTags = Array.prototype.concat.apply(
+      allTags,
+      document
+        .getElementById("edit-info-container")
+        .getElementsByTagName("select")
+    );
+    console.log(allTags);
+    for (const i in allTags) {
+      allTags[i].placeholder = "";
+      allTags[i].value = tagList[i].innerText;
     }
+    document.getElementById("edit-info-form-btn").dataset.type = type;
+    document.getElementById("edit-info-form-btn").dataset.id = id;
+    editForm.style.display = "block";
+  }
 
-    async function addNewInfoForm() {
-        event.preventDefault();
+  async function closeEditInformationForm() {
+    event.preventDefault();
 
-        const type = document.getElementById("add-new-info-form-btn").getAttribute("data-type");
-        const formData = new FormData(addForm);
+    document.getElementById("edit-info-container").innerHTML = "";
+    editForm.style.display = "none";
+  }
 
-        const jsonData = Object.fromEntries(formData.entries());
+  async function sendEditInformationForm() {
+    event.preventDefault();
 
-        // TODO: Horrible workaround, fix later if possible :(
-        if (type === "website") {
-            jsonData["automation_steps"] = null;
-        }
-        console.log(`Type: ${type}, json: ${JSON.stringify(jsonData)}`);
-        console.log("{{ url_for('add_new_information_to_account') }}");
+    const formData = new FormData(editForm);
+    const type = document
+      .getElementById("edit-info-form-btn")
+      .getAttribute("data-type");
+    const id = document
+      .getElementById("edit-info-form-btn")
+      .getAttribute("data-id");
 
-        // TODO: Add error handling
-        await fetch("{{ url_for('add_new_information_to_account') }}", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jsonData),
-        }).then(response => response.json()).then(async model => {
-            buildCard(type, model);
+    const jsonData = Object.fromEntries(formData.entries());
+    jsonData["id"] = parseInt(id);
+    jsonData["user_id"] = parseInt("{{ user.id }}");
 
-            document.getElementById("add-new-info-container").innerHTML = "";
-            document.getElementById("add-new-info-form-btn").setAttribute("data-type", "");
-            addForm.style.display = "none";
-        });
+    // TODO: Horrible workaround, fix later if possible :(
+    if (type === "website") {
+      jsonData["automation_steps"] = null;
     }
+    console.log(`Type: ${type}, json: ${JSON.stringify(jsonData)}`);
 
-
-    function openEditInformationForm(e) {
-        const type = e.target.dataset.type;
-        const id = e.target.dataset.id;
-        console.log(`What we get: ${type}-'${id}'`);
-        document.getElementById("edit-info-container").innerHTML = formTemplates[type];
-        let tagList = [];
-        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2"));
-        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("dd"));
-        console.log(tagList);
-
-        let allTags = [];
-        allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("input"));
-        allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("select"));
-        console.log(allTags);
-        for (const i in allTags) {
-            allTags[i].placeholder = "";
-            allTags[i].value = tagList[i].innerText;
-        }
-        document.getElementById("edit-info-form-btn").dataset.type = type;
-        document.getElementById("edit-info-form-btn").dataset.id = id;
-        editForm.style.display = "block";
-    }
-
-    async function closeEditInformationForm() {
-        event.preventDefault();
-
+    // TODO: Add error handling
+    await fetch("{{ url_for('edit_information_about_account') }}", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(jsonData),
+    })
+      .then((response) => response.json())
+      .then(async (model) => {
+        buildCard(type, model, id);
         document.getElementById("edit-info-container").innerHTML = "";
         editForm.style.display = "none";
-    }
+      });
+  }
 
-    async function sendEditInformationForm() {
-        event.preventDefault();
-
-        const formData = new FormData(editForm);
-        const type = document.getElementById("edit-info-form-btn").getAttribute("data-type");
-        const id = document.getElementById("edit-info-form-btn").getAttribute("data-id");
-
-        const jsonData = Object.fromEntries(formData.entries());
-        jsonData["id"] = parseInt(id)
-        jsonData["user_id"] = parseInt("{{ user.id }}");
-
-        // TODO: Horrible workaround, fix later if possible :(
-        if (type === "website") {
-            jsonData["automation_steps"] = null;
-        }
-        console.log(`Type: ${type}, json: ${JSON.stringify(jsonData)}`);
-
-        // TODO: Add error handling
-        await fetch("{{ url_for('edit_information_about_account') }}", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jsonData),
-        }).then(response => response.json()).then(async model => {
-            buildCard(type, model, id);
-            document.getElementById("edit-info-container").innerHTML = "";
-            editForm.style.display = "none";
-        });
-    }
-
-    async function deleteInformation(type, id) {
-        console.log("Delete clicked");
-    }
+  async function deleteInformation(type, id) {
+    console.log("Delete clicked");
+  }
 </script>
 {% endblock content %}

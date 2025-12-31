@@ -1,275 +1,251 @@
-{% extends "base.html" %}
-
-{% block title %}AutoApply | Register{% endblock title %}
-
-{% block styles %}
-{{ super() }}
+{% extends "base.html" %} {% block title %}AutoApply | Register{% endblock title
+%} {% block styles %} {{ super() }}
 <style>
-    #add-new-info-form, #edit-info-form {
-        background-color: var(--surface);
-        width: 20rem;
-        min-height: 10rem;
-        max-height: 25rem;
-        border: 2px solid var(--borders);
-        border-radius: 5px;
-        display: none;
-        padding: 1rem;
-        align-items: stretch;
+  #add-new-info-form,
+  #edit-info-form {
+    background-color: var(--surface);
+    width: 20rem;
+    min-height: 10rem;
+    max-height: 25rem;
+    border: 2px solid var(--borders);
+    border-radius: 5px;
+    display: none;
+    padding: 1rem;
+    align-items: stretch;
 
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
 
-    #add-new-info-container, #edit-info-container {
-        display: flex;
-        flex-direction: column;
-        gap: 0.2rem;
-    }
+  #add-new-info-container,
+  #edit-info-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+  }
 
-    #add-new-info-btn-container, #edit-info-btn-container {
-        margin-top: 0.3rem;
-        display: flex;
-        gap: 0.2rem;
-        align-content: stretch;
-    }
+  #add-new-info-btn-container,
+  #edit-info-btn-container {
+    margin-top: 0.3rem;
+    display: flex;
+    gap: 0.2rem;
+    align-content: stretch;
+  }
 
-    #add-new-info-btn-container button, #edit-info-btn-container button {
-        flex-grow: 1;
-        text-align: center;
-    }
+  #add-new-info-btn-container button,
+  #edit-info-btn-container button {
+    flex-grow: 1;
+    text-align: center;
+  }
 
-    #add-new-info-form-btn:hover, #edit-info-form-btn:hover {
-        background-color: var(--success);
-    }
+  #add-new-info-form-btn:hover,
+  #edit-info-form-btn:hover {
+    background-color: var(--success);
+  }
 
-    #close-new-info-form-btn:hover, #close-edit-info-form-btn:hover {
-        background-color: var(--error);
-    }
+  #close-new-info-form-btn:hover,
+  #close-edit-info-form-btn:hover {
+    background-color: var(--error);
+  }
 
-    h1 {
-        font-size: 2rem;
-    }
+  h1 {
+    font-size: 2rem;
+  }
 
-    h2 {
-        font-size: 1.5rem;
-    }
+  h2 {
+    font-size: 1.5rem;
+  }
 
-    p {
-        font-size: 1rem;
-    }
+  p {
+    font-size: 1rem;
+  }
 
-    .info-list {
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-    }
+  .info-list {
+    display: flex;
+    flex-direction: row;
+    gap: 1rem;
+  }
 
-    .info-item {
-        background-color: var(--surface);
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        border-radius: 10px;
-    }
+  .info-item {
+    background-color: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 10px;
+  }
 
-    .details {
-        display: grid;
-        grid-template-columns: auto 1fr;
-        gap: 0.25rem 1rem;
-    }
+  .details {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.25rem 1rem;
+  }
 </style>
 <!-- TODO: In the future it may have to be changed -->
-{% endblock styles %}
-
-{% block content %}
-
-{% if users %}
+{% endblock styles %} {% block content %} {% if users %}
 <a href="{{ url_for('load_login_page') }}">Go back to login page</a>
 {% endif %}
 
 <h3>Candidate Information</h3>
 <form class="row g-3" id="user-info">
-    <input
-            name="firstname"
-            class="form-control"
-            type="text"
-            placeholder="First Name"
-            aria-label="default input example"
-    />
-    <input
-            name="middlename"
-            class="form-control"
-            type="text"
-            placeholder="Middle name"
-            aria-label="default input example"
-    />
-    <input
-            name="surname"
-            class="form-control"
-            type="text"
-            placeholder="Surname"
-            aria-label="default input example"
-    />
-    <div class="col-md-3">
-        <label for="customRange1" class="form-label">Enter your age</label>
-        <input name="age" type="range" class="form-range"
-               id="customRange1"/>
-    </div>
-    <input
-            name="email"
-            class="form-control"
-            type="email"
-            placeholder="Email"
-    />
-    <input
-            name="phone_number"
-            class="form-control"
-            type="text"
-            placeholder="+00 000 000 000"
-    />
+  <input
+    name="firstname"
+    class="form-control"
+    type="text"
+    placeholder="First Name"
+    aria-label="default input example"
+  />
+  <input
+    name="middlename"
+    class="form-control"
+    type="text"
+    placeholder="Middle name"
+    aria-label="default input example"
+  />
+  <input
+    name="surname"
+    class="form-control"
+    type="text"
+    placeholder="Surname"
+    aria-label="default input example"
+  />
+  <div class="col-md-3">
+    <label for="customRange1" class="form-label">Enter your age</label>
+    <input name="age" type="range" class="form-range" id="customRange1" />
+  </div>
+  <input name="email" class="form-control" type="email" placeholder="Email" />
+  <input
+    name="phone_number"
+    class="form-control"
+    type="text"
+    placeholder="+00 000 000 000"
+  />
 </form>
 
 <div>
-    <h1>Work Locations</h1>
-    <button onclick="openAddNewInfoForm('locations')">Add new location
-    </button>
-    <ul id="locations-list" class="info-list"></ul>
+  <h1>Work Locations</h1>
+  <button onclick="openAddNewInfoForm('locations')">Add new location</button>
+  <ul id="locations-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Programming Languages</h1>
-    <button onclick="openAddNewInfoForm('programming_languages')">Add new
-        programming
-        language
-    </button>
-    <ul id="programming-languages-list" class="info-list">
-    </ul>
+  <h1>Programming Languages</h1>
+  <button onclick="openAddNewInfoForm('programming_languages')">
+    Add new programming language
+  </button>
+  <ul id="programming-languages-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Languages</h1>
-    <button onclick="openAddNewInfoForm('languages')">Add new language
-    </button>
-    <ul id="languages-list" class="info-list">
-    </ul>
+  <h1>Languages</h1>
+  <button onclick="openAddNewInfoForm('languages')">Add new language</button>
+  <ul id="languages-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Tools</h1>
-    <button onclick="openAddNewInfoForm('tools')">Add new tool
-    </button>
-    <ul id="tools-list" class="info-list">
-    </ul>
+  <h1>Tools</h1>
+  <button onclick="openAddNewInfoForm('tools')">Add new tool</button>
+  <ul id="tools-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Certificates</h1>
-    <button onclick="openAddNewInfoForm('certificates')">Add new certificate
-    </button>
-    <ul id="certificates-list" class="info-list">
-    </ul>
+  <h1>Certificates</h1>
+  <button onclick="openAddNewInfoForm('certificates')">
+    Add new certificate
+  </button>
+  <ul id="certificates-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Charities</h1>
-    <button onclick="openAddNewInfoForm('charities')">Add new charity
-    </button>
-    <ul id="charities-list" class="info-list">
-    </ul>
+  <h1>Charities</h1>
+  <button onclick="openAddNewInfoForm('charities')">Add new charity</button>
+  <ul id="charities-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Education</h1>
-    <button onclick="openAddNewInfoForm('educations')">Add new education
-    </button>
-    <ul id="educations-list" class="info-list">
-    </ul>
+  <h1>Education</h1>
+  <button onclick="openAddNewInfoForm('educations')">Add new education</button>
+  <ul id="educations-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Experience</h1>
-    <button onclick="openAddNewInfoForm('experiences')">Add new experience
-    </button>
-    <ul id="experiences-list" class="info-list">
-    </ul>
+  <h1>Experience</h1>
+  <button onclick="openAddNewInfoForm('experiences')">
+    Add new experience
+  </button>
+  <ul id="experiences-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Projects</h1>
-    <button onclick="openAddNewInfoForm('projects')">Add new project
-    </button>
-    <ul id="projects-list" class="info-list">
-    </ul>
+  <h1>Projects</h1>
+  <button onclick="openAddNewInfoForm('projects')">Add new project</button>
+  <ul id="projects-list" class="info-list"></ul>
 </div>
 
 <div>
-    <h1>Social Platforms</h1>
-    <button onclick="openAddNewInfoForm('social_platforms')">Add new social
-        platform
-    </button>
-    <ul id="social-platforms-list" class="info-list">
-    </ul>
+  <h1>Social Platforms</h1>
+  <button onclick="openAddNewInfoForm('social_platforms')">
+    Add new social platform
+  </button>
+  <ul id="social-platforms-list" class="info-list"></ul>
 </div>
 
 <div>
-    <!--TODO: Hide user_password field, so that user has to click a button in order to reveal it-->
-    <h1>Job Posting Websites</h1>
-    <button onclick="openAddNewInfoForm('websites')">Add new job posting website
-    </button>
-    <ul id="websites-list" class="info-list">
-    </ul>
+  <!--TODO: Hide user_password field, so that user has to click a button in order to reveal it-->
+  <h1>Job Posting Websites</h1>
+  <button onclick="openAddNewInfoForm('websites')">
+    Add new job posting website
+  </button>
+  <ul id="websites-list" class="info-list"></ul>
 </div>
 
 <form onsubmit="addNewInfoForm()" id="add-new-info-form">
-    <div id="add-new-info-container"></div>
-    <div id="add-new-info-btn-container">
-        <button id="add-new-info-form-btn" data-type="" type="submit">Add
-        </button>
-        <button id="close-new-info-form-btn" onclick="closeAddNewInfoForm()">
-            Close
-        </button>
-    </div>
+  <div id="add-new-info-container"></div>
+  <div id="add-new-info-btn-container">
+    <button id="add-new-info-form-btn" data-type="" type="submit">Add</button>
+    <button id="close-new-info-form-btn" onclick="closeAddNewInfoForm()">
+      Close
+    </button>
+  </div>
 </form>
 
 <form onsubmit="sendEditInformationForm()" id="edit-info-form">
-    <div id="edit-info-container"></div>
-    <div id="edit-info-btn-container">
-        <button id="edit-info-form-btn" data-type="" data-id="" type="submit">
-            Edit
-        </button>
-        <button id="close-edit-info-form-btn"
-                onclick="closeEditInformationForm()">
-            Close
-        </button>
-    </div>
+  <div id="edit-info-container"></div>
+  <div id="edit-info-btn-container">
+    <button id="edit-info-form-btn" data-type="" data-id="" type="submit">
+      Edit
+    </button>
+    <button id="close-edit-info-form-btn" onclick="closeEditInformationForm()">
+      Close
+    </button>
+  </div>
 </form>
 
 <button onclick="postFormData()" class="btn btn-dark form-control">
-    Create user
+  Create user
 </button>
 
-{% endblock content %}
-
-{% block scripts %}
+{% endblock content %} {% block scripts %}
 <script>
-    const infoList = {
-        websites: document.getElementById("websites-list"),
-        social_platforms: document.getElementById("social-platforms-list"),
-        projects: document.getElementById("projects-list"),
-        experiences: document.getElementById("experiences-list"),
-        educations: document.getElementById("educations-list"),
-        charities: document.getElementById("charities-list"),
-        tools: document.getElementById("tools-list"),
-        languages: document.getElementById("languages-list"),
-        programming_languages: document.getElementById("programming-languages-list"),
-        locations: document.getElementById("locations-list"),
-    }
+  const infoList = {
+    websites: document.getElementById("websites-list"),
+    social_platforms: document.getElementById("social-platforms-list"),
+    projects: document.getElementById("projects-list"),
+    experiences: document.getElementById("experiences-list"),
+    educations: document.getElementById("educations-list"),
+    charities: document.getElementById("charities-list"),
+    tools: document.getElementById("tools-list"),
+    languages: document.getElementById("languages-list"),
+    programming_languages: document.getElementById(
+      "programming-languages-list"
+    ),
+    locations: document.getElementById("locations-list"),
+  };
 
-    const formTemplates = {
-        websites: `
+  const formTemplates = {
+    websites: `
         <input type="hidden" name="cookies">
         <input type="text" placeholder="User login email" name="user_email">
         <input type="text" placeholder="User login password"
@@ -277,7 +253,7 @@
         <input type="text" placeholder="Url to a website" name="url">
         <input type="hidden" name="automation_steps">
         `,
-        social_platforms: `
+    social_platforms: `
         <input
                 type="text"
                 placeholder="Social platform name"
@@ -289,7 +265,7 @@
                 name="url"
         />
         `,
-        projects: `
+    projects: `
         <input
                 type="text"
                 placeholder="Project name"
@@ -306,7 +282,7 @@
                 name="url"
         />
         `,
-        experiences: `
+    experiences: `
         <input
                 type="text"
                 placeholder="Company name"
@@ -327,7 +303,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        educations: `
+    educations: `
         <input
                 type="text"
                 placeholder="School name"
@@ -348,7 +324,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        charities: `
+    charities: `
         <input
                 type="text"
                 placeholder="Charity name"
@@ -369,7 +345,7 @@
         <label for="languageName">End date</label>
         <input  type="date" name="end_date"/>
         `,
-        certificates: `
+    certificates: `
         <input
                 type="text"
                 placeholder="Certificate name"
@@ -386,7 +362,7 @@
                 name="description"
         />
         `,
-        tools: `
+    tools: `
         <input
                 type="text"
                 placeholder="Tool name"
@@ -399,7 +375,7 @@
             <option>Master</option>
         </select>
         `,
-        languages: `
+    languages: `
         <input
                 type="text"
                 placeholder="Language name"
@@ -412,7 +388,7 @@
             <option>Master</option>
         </select>
        `,
-        programming_languages: `
+    programming_languages: `
         <input
                 type="text"
                 placeholder="Programming language name"
@@ -425,7 +401,7 @@
             <option>Master</option>
         </select>
         `,
-        locations: `
+    locations: `
         <input
                 name="country"
                 type="text"
@@ -446,288 +422,315 @@
                 type="text"
                 placeholder="Zip code"
         />
-        `
-    };
+        `,
+  };
 
-    const viewMap = {
-        websites: {
-            header: ["url"],
-            details: ["user_email", "user_password", "automation_steps", "cookies"],
-        },
-        social_platforms: {
-            header: ["social_platform"],
-            details: ["url"],
-        },
-        projects: {
-            header: ["project"],
-            details: ["description", "url"],
-        },
-        experiences: {
-            header: ["company", "position"],
-            details: ["description", "start_date", "end_date"],
-        },
-        educations: {
-            header: ["school", "major"],
-            details: ["description", "start_date", "end_date"],
-        },
-        charities: {
-            header: ["charity"],
-            details: ["organisation", "description", "start_date", "end_date"],
-        },
-        tools: {
-            header: ["tool"],
-            details: ["level"],
-        },
-        languages: {
-            header: ["language"],
-            details: ["level"],
-        },
-        programming_languages: {
-            header: ["programming_language"],
-            details: ["level"],
-        },
-        locations: {
-            header: ["country", "state", "city"],
-            details: ["zip_code"]
-        },
-    };
+  const viewMap = {
+    websites: {
+      header: ["url"],
+      details: ["user_email", "user_password", "automation_steps", "cookies"],
+    },
+    social_platforms: {
+      header: ["social_platform"],
+      details: ["url"],
+    },
+    projects: {
+      header: ["project"],
+      details: ["description", "url"],
+    },
+    experiences: {
+      header: ["company", "position"],
+      details: ["description", "start_date", "end_date"],
+    },
+    educations: {
+      header: ["school", "major"],
+      details: ["description", "start_date", "end_date"],
+    },
+    charities: {
+      header: ["charity"],
+      details: ["organisation", "description", "start_date", "end_date"],
+    },
+    tools: {
+      header: ["tool"],
+      details: ["level"],
+    },
+    languages: {
+      header: ["language"],
+      details: ["level"],
+    },
+    programming_languages: {
+      header: ["programming_language"],
+      details: ["level"],
+    },
+    locations: {
+      header: ["country", "state", "city"],
+      details: ["zip_code"],
+    },
+  };
 
-    let dataJson = {
-        profile: {
-            first_name: "",
-            middle_name: "",
-            surname: "",
-            age: "",
-            email: "",
-            phone_number: "",
-        },
-        locations: [],
-        programming_languages: [],
-        languages: [],
-        tools: [],
-        certificates: [],
-        charities: [],
-        educations: [],
-        experiences: [],
-        projects: [],
-        social_platforms: [],
-        websites: [],
-    };
+  let dataJson = {
+    profile: {
+      first_name: "",
+      middle_name: "",
+      surname: "",
+      age: "",
+      email: "",
+      phone_number: "",
+    },
+    locations: [],
+    programming_languages: [],
+    languages: [],
+    tools: [],
+    certificates: [],
+    charities: [],
+    educations: [],
+    experiences: [],
+    projects: [],
+    social_platforms: [],
+    websites: [],
+  };
 
-    const addForm = document.getElementById("add-new-info-form");
-    const editForm = document.getElementById("edit-info-form");
+  const addForm = document.getElementById("add-new-info-form");
+  const editForm = document.getElementById("edit-info-form");
 
-
-    async function btnAction(e) {
-
-        const btn = e.target;
-        console.log(btn);
-        if (!btn) {
-            return;
-        }
-        if (btn.className === "edit-btn") {
-            openEditInformationForm(e);
-        } else if (btn.className === "delete-btn") {
-            await deleteInformation(e);
-        }
+  async function btnAction(e) {
+    const btn = e.target;
+    console.log(btn);
+    if (!btn) {
+      return;
     }
+    if (btn.className === "edit-btn") {
+      openEditInformationForm(e);
+    } else if (btn.className === "delete-btn") {
+      await deleteInformation(e);
+    }
+  }
 
-    document.addEventListener("click", async (e) => {
-        await btnAction(e);
+  document.addEventListener("click", async (e) => {
+    await btnAction(e);
+  });
+
+  function buildCard(type, model, id) {
+    const list = infoList[type];
+
+    const article = document.createElement("article");
+    article.className = "info-item";
+
+    const header = document.createElement("header");
+    const details = document.createElement("dl");
+
+    details.className = "details";
+
+    viewMap[type].header.forEach((key) => {
+      if (key in model) {
+        const head = document.createElement("h2");
+        head.innerText = model[key];
+        header.appendChild(head);
+        console.log(head);
+      }
+    });
+    article.appendChild(header);
+
+    viewMap[type].details.forEach((key) => {
+      if (key in model) {
+        const dt = document.createElement("dt");
+        const dd = document.createElement("dd");
+        let title = String(key).charAt(0).toUpperCase() + String(key).slice(1);
+        dt.innerText = title.replace("_", "-") + ":";
+        dd.innerText = model[key];
+        details.appendChild(dt);
+        details.appendChild(dd);
+        console.log(dd);
+      }
+    });
+    article.appendChild(details);
+
+    const editButton = document.createElement("button");
+    const deleteButton = document.createElement("button");
+
+    editButton.innerText = "Edit Item";
+    editButton.className = "edit-btn";
+    editButton.dataset.id = `${dataJson[type].length - 1}`;
+    editButton.dataset.type = type;
+    editButton.addEventListener("click", async (e) => {
+      await btnAction(e);
     });
 
-    function buildCard(type, model, id) {
-        const list = infoList[type];
+    deleteButton.innerText = "Delete Item";
+    deleteButton.className = "delete-btn";
+    deleteButton.dataset.id = `${dataJson[type].length - 1}`;
+    deleteButton.dataset.type = type;
+    deleteButton.addEventListener("click", async (e) => {
+      await btnAction(e);
+    });
 
-        const article = document.createElement("article");
-        article.className = "info-item";
+    const footer = document.createElement("footer");
 
-        const header = document.createElement("header");
-        const details = document.createElement("dl");
+    footer.appendChild(editButton);
+    footer.appendChild(deleteButton);
 
-        details.className = "details";
+    article.appendChild(footer);
 
-        viewMap[type].header.forEach(key => {
-            if (key in model) {
-                const head = document.createElement("h2");
-                head.innerText = model[key];
-                header.appendChild(head);
-                console.log(head);
-            }
-        });
-        article.appendChild(header);
+    const listItem = document.createElement("li");
+    listItem.appendChild(article);
+    listItem.id = `${type}-'${dataJson[type].length - 1}'`;
 
-        viewMap[type].details.forEach(key => {
-            if (key in model) {
-                const dt = document.createElement("dt");
-                const dd = document.createElement("dd");
-                let title = String(key).charAt(0).toUpperCase() + String(key).slice(1);
-                dt.innerText = title.replace("_", "-") + ":";
-                dd.innerText = model[key];
-                details.appendChild(dt);
-                details.appendChild(dd);
-                console.log(dd);
-            }
+    if (typeof id !== "undefined") {
+      const index = Array.prototype.indexOf.call(
+        list.childNodes,
+        document.getElementById(`${type}-'${id}'`)
+      );
+      console.log(list.childNodes[index]);
+      list.childNodes[index].innerHTML = listItem.innerHTML;
+    } else {
+      list.appendChild(listItem);
+    }
+  }
 
-        });
-        article.appendChild(details);
+  function openAddNewInfoForm(type) {
+    document.getElementById("add-new-info-container").innerHTML =
+      formTemplates[type];
+    document
+      .getElementById("add-new-info-form-btn")
+      .setAttribute("data-type", type);
+    addForm.style.display = "block";
+  }
 
-        const editButton = document.createElement("button");
-        const deleteButton = document.createElement("button");
+  function closeAddNewInfoForm() {
+    event.preventDefault();
+    document.getElementById("add-new-info-container").innerHTML = "";
+    addForm.style.display = "none";
+  }
 
-        editButton.innerText = "Edit Item";
-        editButton.className = "edit-btn";
-        editButton.dataset.id = `${dataJson[type].length - 1}`;
-        editButton.dataset.type = type;
-        editButton.addEventListener("click", async (e) => {
-            await btnAction(e);
-        });
+  function addNewInfoForm() {
+    event.preventDefault();
 
-        deleteButton.innerText = "Delete Item";
-        deleteButton.className = "delete-btn";
-        deleteButton.dataset.id = `${dataJson[type].length - 1}`;
-        deleteButton.dataset.type = type;
-        deleteButton.addEventListener("click", async (e) => {
-            await btnAction(e);
-        });
+    const type = document
+      .getElementById("add-new-info-form-btn")
+      .getAttribute("data-type");
+    const formData = new FormData(addForm);
 
-        const footer = document.createElement("footer");
+    const item = Object.fromEntries(formData.entries());
 
-        footer.appendChild(editButton);
-        footer.appendChild(deleteButton);
-
-        article.appendChild(footer);
-
-        const listItem = document.createElement("li");
-        listItem.appendChild(article);
-        listItem.id = `${type}-'${dataJson[type].length - 1}'`;
-
-        if (typeof id !== "undefined") {
-            const index = Array.prototype.indexOf.call(list.childNodes, document.getElementById(`${type}-'${id}'`));
-            console.log(list.childNodes[index]);
-            list.childNodes[index].innerHTML = listItem.innerHTML;
-        } else {
-            list.appendChild(listItem);
-        }
+    // TODO: Horrible workaround, fix later if possible :(
+    if (type === "website") {
+      item["automation_steps"] = null;
     }
 
-    function openAddNewInfoForm(type) {
-        document.getElementById("add-new-info-container").innerHTML = formTemplates[type];
-        document.getElementById("add-new-info-form-btn").setAttribute("data-type", type);
-        addForm.style.display = "block";
+    console.log(type);
+    console.log(dataJson[type]);
+    dataJson[type].push(item);
+
+    buildCard(type, item);
+
+    document.getElementById("add-new-info-container").innerHTML = "";
+    document
+      .getElementById("add-new-info-form-btn")
+      .setAttribute("data-type", "");
+    addForm.style.display = "none";
+  }
+
+  function openEditInformationForm(e) {
+    const type = e.target.dataset.type;
+    const id = e.target.dataset.id;
+    document.getElementById("edit-info-container").innerHTML =
+      formTemplates[type];
+    let tagList = [];
+    tagList = Array.prototype.concat.apply(
+      tagList,
+      document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2")
+    );
+    tagList = Array.prototype.concat.apply(
+      tagList,
+      document.getElementById(`${type}-'${id}'`).getElementsByTagName("dd")
+    );
+
+    let allTags = [];
+    allTags = Array.prototype.concat.apply(
+      allTags,
+      document
+        .getElementById("edit-info-container")
+        .getElementsByTagName("input")
+    );
+    allTags = Array.prototype.concat.apply(
+      allTags,
+      document
+        .getElementById("edit-info-container")
+        .getElementsByTagName("select")
+    );
+
+    for (const i in allTags) {
+      allTags[i].placeholder = "";
+      allTags[i].value = tagList[i].innerText;
+    }
+    document.getElementById("edit-info-form-btn").dataset.type = type;
+    document.getElementById("edit-info-form-btn").dataset.id = id;
+    editForm.style.display = "block";
+  }
+
+  async function closeEditInformationForm() {
+    event.preventDefault();
+
+    document.getElementById("edit-info-container").innerHTML = "";
+    editForm.style.display = "none";
+  }
+
+  async function sendEditInformationForm() {
+    event.preventDefault();
+
+    const formData = new FormData(editForm);
+    const type = document
+      .getElementById("edit-info-form-btn")
+      .getAttribute("data-type");
+    const id = document
+      .getElementById("edit-info-form-btn")
+      .getAttribute("data-id");
+
+    const item = Object.fromEntries(formData.entries());
+
+    if (type === "website") {
+      item["automation_steps"] = null;
     }
 
-    function closeAddNewInfoForm() {
-        event.preventDefault();
-        document.getElementById("add-new-info-container").innerHTML = "";
-        addForm.style.display = "none";
+    buildCard(type, item, id);
+    document.getElementById("edit-info-container").innerHTML = "";
+    editForm.style.display = "none";
+  }
+
+  async function deleteInformation() {
+    console.log("Delete clicked");
+  }
+
+  async function postFormData() {
+    const formData = new FormData(document.getElementById("user-info"));
+
+    let firstname = formData.get("firstname");
+    let surname = formData.get("surname");
+    let email = formData.get("email");
+    if (firstname === "" || surname === "" || email === "") {
+      alert("Firstname, surname and email fields must be filled");
+      return;
     }
 
-    function addNewInfoForm() {
-        event.preventDefault();
+    dataJson.profile.first_name = firstname;
+    dataJson.profile.surname = surname;
+    dataJson.profile.email = email;
+    dataJson.profile.age = formData.get("age");
+    dataJson.profile.middle_name = formData.get("middlename");
+    dataJson.profile.phone_number = formData.get("phone_number");
 
-        const type = document.getElementById("add-new-info-form-btn").getAttribute("data-type");
-        const formData = new FormData(addForm);
+    console.log(JSON.stringify(dataJson));
+    const response = await fetch("{{ url_for('register') }}", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataJson),
+    });
 
-        const item = Object.fromEntries(formData.entries());
-
-        // TODO: Horrible workaround, fix later if possible :(
-        if (type === "website") {
-            item["automation_steps"] = null;
-        }
-
-        console.log(type);
-        console.log(dataJson[type]);
-        dataJson[type].push(item);
-
-        buildCard(type, item);
-
-        document.getElementById("add-new-info-container").innerHTML = "";
-        document.getElementById("add-new-info-form-btn").setAttribute("data-type", "");
-        addForm.style.display = "none";
-    }
-
-
-    function openEditInformationForm(e) {
-        const type = e.target.dataset.type;
-        const id = e.target.dataset.id;
-        document.getElementById("edit-info-container").innerHTML = formTemplates[type];
-        let tagList = [];
-        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("h2"));
-        tagList = Array.prototype.concat.apply(tagList, document.getElementById(`${type}-'${id}'`).getElementsByTagName("dd"));
-
-        let allTags = [];
-        allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("input"));
-        allTags = Array.prototype.concat.apply(allTags, document.getElementById("edit-info-container").getElementsByTagName("select"));
-
-        for (const i in allTags) {
-            allTags[i].placeholder = "";
-            allTags[i].value = tagList[i].innerText;
-        }
-        document.getElementById("edit-info-form-btn").dataset.type = type;
-        document.getElementById("edit-info-form-btn").dataset.id = id;
-        editForm.style.display = "block";
-    }
-
-    async function closeEditInformationForm() {
-        event.preventDefault();
-
-        document.getElementById("edit-info-container").innerHTML = "";
-        editForm.style.display = "none";
-    }
-
-    async function sendEditInformationForm() {
-        event.preventDefault();
-
-        const formData = new FormData(editForm);
-        const type = document.getElementById("edit-info-form-btn").getAttribute("data-type");
-        const id = document.getElementById("edit-info-form-btn").getAttribute("data-id");
-
-        const item = Object.fromEntries(formData.entries());
-
-        if (type === "website") {
-            item["automation_steps"] = null;
-        }
-
-        buildCard(type, item, id);
-        document.getElementById("edit-info-container").innerHTML = "";
-        editForm.style.display = "none";
-    }
-
-    async function deleteInformation() {
-        console.log("Delete clicked");
-    }
-
-    async function postFormData() {
-        const formData = new FormData(document.getElementById("user-info"));
-
-        let firstname = formData.get("firstname");
-        let surname = formData.get("surname");
-        let email = formData.get("email");
-        if (firstname === "" || surname === "" || email === "") {
-            alert("Firstname, surname and email fields must be filled");
-            return;
-        }
-
-        dataJson.profile.first_name = firstname;
-        dataJson.profile.surname = surname;
-        dataJson.profile.email = email;
-        dataJson.profile.age = formData.get("age");
-        dataJson.profile.middle_name = formData.get("middlename");
-        dataJson.profile.phone_number = formData.get("phone_number");
-
-        console.log(JSON.stringify(dataJson));
-        const response = await fetch("{{ url_for('register') }}", {
-            method: "POST",
-            headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(dataJson),
-        });
-
-        window.location.href = response.url;
-    }
+    window.location.href = response.url;
+  }
 </script>
 
 {% endblock scripts %}
