@@ -8,6 +8,7 @@ from sqlmodel import select
 from backend.config import settings
 from backend.database.crud import (
     create_user,
+    delete_model,
     delete_user,
     get_certificates,
     get_charities,
@@ -45,6 +46,7 @@ from backend.routes.deps import (
 from backend.schemas.endpoints import (
     CertificatePost,
     CharityPost,
+    DeleteItem,
     EducationPost,
     ExperiencePost,
     LanguagePost,
@@ -330,3 +332,30 @@ async def load_manage_users_page(
             "users": get_users(session, use_base_model=True),
         },
     )
+
+
+@router.delete("/delete")
+async def delete_item(user: CurrentUser, session: SessionDep, item: DeleteItem):
+    d = {
+        "user": UserModel,
+        "location": LocationModel,
+        "ProgrammingLanguage": ProgrammingLanguageModel,
+        "language": LanguageModel,
+        "tool": ToolModel,
+        "certificate": CertificateModel,
+        "charity": CharityModel,
+        "education": EducationModel,
+        "experience": ExperienceModel,
+        "project": ProjectModel,
+        "socialPlatform": SocialPlatformModel,
+        "website": WebsiteModel,
+    }
+    delete_model(
+        session=session,
+        user=user,
+        model_type=d[item.item_type],
+        item_id=item.item_id,
+    )
+
+    if item.item_type == "user":
+        set_current_user(session=session, email=None)
