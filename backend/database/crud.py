@@ -345,7 +345,10 @@ def save_and_return_model(
 def delete_model(
     session: Session, user: UserModel, model_type: type[T], item_id: int
 ):
-    session.delete(
-        session.exec(select(model_type).where(model_type.id == item_id)).first()
-    )
-    session.commit()
+    logger.info(f"{model_type}, {item_id}")
+    item = session.exec(
+        select(model_type).where(model_type.id == item_id)
+    ).first()
+    if item:
+        session.delete(item)
+        session.commit()
