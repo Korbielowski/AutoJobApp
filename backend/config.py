@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from typing import Literal
 
 from pydantic import PostgresDsn, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -24,25 +25,41 @@ class Settings(BaseSettings):
     LOG_TO_FILE: bool = True
     API_KEY: str
     OPENAI_API_KEY: str
-    POSTGRES_USERNAME: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str
-    POSTGRES_DB: str
-    POSTGRES_PORT: int = 5432
-    # TODO: Check if user can specify custom drivers, so that they would not break SQLAlchemy
-    DRIVERNAME: str = "postgresql+psycopg"  # TODO: Switch to async
+    DB_BACKEND: Literal["sqlite", "postgres"] = "sqlite"
+    DB_USERNAME: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_PASSWORD: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_HOST: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_NAME: str = "autojobapp"
+    DB_PORT: int = 5432
+
+    # @field_validator("POSTGRES_HOST", mode="before")
+    # @classmethod
+    # def check_env(cls, value: str) -> str:
+    #     if value:
+    #         return value
+    #     if os.getenv("DOCKER_ENV"):
+    #         return "postgres_database"
+    #     return "localhost"
 
     @computed_field
     @property
-    def DATABASE_URI(self) -> PostgresDsn:
+    def DATABASE_URI(self) -> str:
+        if self.DB_BACKEND == "sqlite":
+            return f"sqlite:///{_ROOT_DIR / self.DB_NAME}.db"
         return PostgresDsn.build(
-            scheme=self.DRIVERNAME,
-            username=self.POSTGRES_USERNAME,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_HOST,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
-        )
+            scheme="postgresql+psycopg",
+            username=self.DB_USERNAME,
+            password=self.DB_PASSWORD,
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            path=self.DB_NAME,
+        ).encoded_string()
 
 
 settings = Settings()  # type: ignore
