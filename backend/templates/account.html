@@ -87,36 +87,36 @@
 
 <div>
   <h1>Candidate Information</h1>
-<div id="user-'{{ user.id }}'">
-<article class="info-item">
-  <header>
-    <h2>{{ user.first_name }}</h2>
-    <h2>{{ user.surname }}</h2>
-  </header>
-  <dl class="details">
-    <dt>Middle name:</dt>
-    <dd>{{ user.middle_name }}</dd>
-    <dt>Age:</dt>
-    <dd>{{ user.age }}</dd>
-    <dt>Contact email:</dt>
-    <dd>{{ user.email }}</dd>
-    <dt>Phone number:</dt>
-    <dd>{{ user.phone_number }}</dd>
-  </dl>
-  <footer>
-    <!-- <form action="{{ url_for('delete_account') }}" method="post">
+  <div id="user-'{{ user.id }}'">
+    <article class="info-item">
+      <header>
+        <h2>{{ user.first_name }}</h2>
+        <h2>{{ user.surname }}</h2>
+      </header>
+      <dl class="details">
+        <dt>Middle name:</dt>
+        <dd>{{ user.middle_name }}</dd>
+        <dt>Age:</dt>
+        <dd>{{ user.age }}</dd>
+        <dt>Contact email:</dt>
+        <dd>{{ user.email }}</dd>
+        <dt>Phone number:</dt>
+        <dd>{{ user.phone_number }}</dd>
+      </dl>
+      <footer>
+        <!-- <form action="{{ url_for('delete_account') }}" method="post">
       <input type="hidden" value="{{ user.email }}" name="email" />
       <input type="submit" value="Delete Account" />
     </form> -->
-    <button class="edit-btn" data-type="user", data-id="{{ user.id }}">
-        Edit User
-    </button>
-    <button class="delete-btn" data-type="user", data-id="{{ user.id }}">
-        Delete User
-    </button>
-  </footer>
-</article>
-</div>
+        <button class="edit-btn" data-type="user" data-id="{{ user.id }}">
+          Edit User
+        </button>
+        <button class="delete-btn" data-type="user" data-id="{{ user.id }}">
+          Delete User
+        </button>
+      </footer>
+    </article>
+  </div>
 </div>
 
 <div>
@@ -1087,7 +1087,10 @@
   }
 
   async function deleteInformation(e) {
-    const data = {item_type: e.target.dataset.type, item_id: e.target.dataset.id};
+    const data = {
+      item_type: e.target.dataset.type,
+      item_id: e.target.dataset.id,
+    };
 
     await fetch("{{ url_for('delete_item') }}", {
       method: "DELETE",
@@ -1096,15 +1099,15 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    }).then(response =>{
+    }).then((response) => {
       console.log(response.url);
-      if(response.url !== "{{ url_for('delete_item') }}"){
+      if (response.url !== "{{ url_for('delete_item') }}") {
         window.location.href = response.url;
       }
     });
 
     const closestUl = e.target.closest("ul");
-    if (closestUl){
+    if (closestUl) {
       closestUl.removeChild(e.target.closest("li"));
     }
   }

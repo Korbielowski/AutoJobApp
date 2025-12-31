@@ -699,9 +699,9 @@
 
   async function deleteInformation(e) {
     const closestUl = e.target.closest("ul");
-    if (closestUl){
+    if (closestUl) {
       closestUl.removeChild(e.target.closest("li"));
-    dataJson[e.target.dataset.type].splice(e.target.dataset.id, 1);
+      dataJson[e.target.dataset.type].splice(e.target.dataset.id, 1);
     }
   }
 
