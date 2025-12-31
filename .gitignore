@@ -27,3 +27,6 @@ venv/
 
 # Log files
 *.log
+
+# Sqlite database
+*.db
