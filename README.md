@@ -17,7 +17,7 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 The application environment can be edited via ```.env``` file. An example is provided in the repository as ```.env.example``` with all the possible configuration options.
 
 The most important key in the config file is
-```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).```OPENAI_API_KEY``` is the only config variable you should set.
+```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).```OPENAI_API_KEY``` is the only config variable you should set manually.
 
 ## Docker Installation (Recommended):
 
