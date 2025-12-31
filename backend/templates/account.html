@@ -1086,8 +1086,22 @@
       });
   }
 
-  async function deleteInformation(type, id) {
-    console.log("Delete clicked");
+  async function deleteInformation(e) {
+    const data = {item_type: e.target.dataset.type, item_id: e.target.dataset.id};
+
+    await fetch("{{ url_for('delete_item') }}", {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const closestUl = e.target.closest("ul");
+    const closestLi = e.target.closest("li");
+
+    closestUl.removeChild(closestLi);
   }
 </script>
 {% endblock content %}
