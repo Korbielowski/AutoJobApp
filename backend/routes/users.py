@@ -169,7 +169,7 @@ async def register(
 async def account_details(
     current_user: CurrentUser, session: SessionDep, request: Request
 ):
-    if not current_user:
+    if not current_user.id:
         return RedirectResponse(
             url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
         )
@@ -335,11 +335,13 @@ async def load_manage_users_page(
 
 
 @router.delete("/delete")
-async def delete_item(user: CurrentUser, session: SessionDep, item: DeleteItem):
+async def delete_item(
+    user: CurrentUser, session: SessionDep, request: Request, item: DeleteItem
+):
     d = {
         "user": UserModel,
         "location": LocationModel,
-        "ProgrammingLanguage": ProgrammingLanguageModel,
+        "programmingLanguage": ProgrammingLanguageModel,
         "language": LanguageModel,
         "tool": ToolModel,
         "certificate": CertificateModel,
@@ -359,3 +361,6 @@ async def delete_item(user: CurrentUser, session: SessionDep, item: DeleteItem):
 
     if item.item_type == "user":
         set_current_user(session=session, email=None)
+        return RedirectResponse(
+            url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
+        )
