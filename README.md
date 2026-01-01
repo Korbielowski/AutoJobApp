@@ -64,10 +64,10 @@ docker run -v autojobapp-db:/autojobapp/backend/ -p 8000:8000 autojobapp
 ```
 
 ### Local
-```bash
+<!-- ```bash
 sh setup.sh --run
 ```
-Or
+Or -->
 ```bash
 fastapi run backend/app.py
 ```
