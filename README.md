@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/Korbielowski/AutoApply/main/branding/main_logo_v2.jpeg" width="500">
+<img src="https://raw.githubusercontent.com/Korbielowski/AutoJobApp/main/branding/main_logo_v2.jpeg" width="500">
 </h1><br>
 
 __*AI agents that look for adequate jobs and create tailored CVs and cover letters. Fully automated — no more manual effort*__

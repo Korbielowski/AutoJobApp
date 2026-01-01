@@ -14,7 +14,7 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
         extra="ignore",
     )
-    PROJECT_NAME: str = "AutoApply"
+    PROJECT_NAME: str = "AutoJobApp"
     ROOT_DIR: Path = _ROOT_DIR
     CV_DIR_PATH: Path = _ROOT_DIR / "cv"
     HTML_TEMPLATE_PATH: Path = _ROOT_DIR / "career_documents" / "template.html"
