@@ -1,5 +1,5 @@
 <h1 align="center">
-<img src="https://raw.githubusercontent.com/Korbielowski/AutoApply/main/branding/main_logo_v2.jpeg" width="500">
+<img src="https://raw.githubusercontent.com/Korbielowski/AutoJobApp/main/branding/main_logo_v2.jpeg" width="500">
 </h1><br>
 
 __*AI agents that look for adequate jobs and create tailored CVs and cover letters. Fully automated — no more manual effort*__
@@ -17,26 +17,32 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 The application environment can be edited via ```.env``` file. An example is provided in the repository as ```.env.example``` with all the possible configuration options.
 
 The most important key in the config file is
-```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).
+```OPENAI_API_KEY="<your-openai-api-key>"```, as it's critical for the proper functioning of the application(website scraping and automatic document generation).```OPENAI_API_KEY``` is the only config variable you should set manually.
 
 ## Docker Installation (Recommended):
 
 ### Requirements:
 - [Docker](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)
+<!-- - [Docker Compose](https://docs.docker.com/compose/install/)(Optional. Install only if using Postgres database backend) -->
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-docker compose build
+docker build -t autojobapp .
 ```
+<!-- Or (If you want to use Postgres database backend)
+```bash
+git clone https://github.com/Korbielowski/AutoJobApp
+cd AutoJobApp/
+docker compose build
+``` -->
 
 ## Local Installation:
 
 ### Requirements:
 - [Python 3.12+](https://www.python.org/downloads/) (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
-- [PostgreSQL 14+](https://www.postgresql.org/download/)
 - [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
+<!-- - [PostgreSQL 14+](https://www.postgresql.org/download/)(Optional. Install only if using Postgres database backend) -->
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
@@ -50,15 +56,18 @@ After the configuration and installation of the application, you can run it usin
 For more information on how to use the software, click [HERE](https://github.com/Korbielowski/AutoJobApp/blob/main/docs/guides/basic_guide.md).
 
 ### Docker (Recommended)
-```bash
+<!-- ```bash
 docker compose up
+``` -->
+```bash
+docker run -v autojobapp-db:/autojobapp/backend/ -p 8000:8000 autojobapp
 ```
 
 ### Local
-```bash
+<!-- ```bash
 sh setup.sh --run
 ```
-Or
+Or -->
 ```bash
 fastapi run backend/app.py
 ```

@@ -1,7 +1,8 @@
 import os
 from pathlib import Path
+from typing import Literal
 
-from pydantic import PostgresDsn, computed_field
+from pydantic import PostgresDsn, computed_field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 _ROOT_DIR = Path(os.path.dirname(os.path.abspath(__file__)))
@@ -13,7 +14,7 @@ class Settings(BaseSettings):
         env_ignore_empty=True,
         extra="ignore",
     )
-    PROJECT_NAME: str = "AutoApply"
+    PROJECT_NAME: str = "AutoJobApp"
     ROOT_DIR: Path = _ROOT_DIR
     CV_DIR_PATH: Path = _ROOT_DIR / "cv"
     HTML_TEMPLATE_PATH: Path = _ROOT_DIR / "career_documents" / "template.html"
@@ -24,25 +25,46 @@ class Settings(BaseSettings):
     LOG_TO_FILE: bool = True
     API_KEY: str
     OPENAI_API_KEY: str
-    POSTGRES_USERNAME: str
-    POSTGRES_PASSWORD: str
-    POSTGRES_HOST: str
-    POSTGRES_DB: str
-    POSTGRES_PORT: int = 5432
-    # TODO: Check if user can specify custom drivers, so that they would not break SQLAlchemy
-    DRIVERNAME: str = "postgresql+psycopg"  # TODO: Switch to async
+    DB_BACKEND: Literal["sqlite", "postgres"] = "sqlite"
+    DB_USERNAME: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_PASSWORD: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_HOST: str | None = (
+        None  # TODO: Maybe make this a computed_field or add field_validator
+    )
+    DB_NAME: str = "autojobapp"
+    DB_PORT: int = 5432
+
+    @field_validator("DB_HOST", mode="before")
+    @classmethod
+    def check_env(cls, value, values) -> str | None:
+        if values.data.get("DB_BACKEND", "") == "sqlite":
+            return None
+        if value and isinstance(value, str):
+            return value
+        else:
+            raise KeyError("DB_HOST env variable must be valid python string")
+        if os.getenv("DOCKER_ENV"):
+            return "postgres_database"
+        return "localhost"
 
     @computed_field
     @property
-    def DATABASE_URI(self) -> PostgresDsn:
+    def DATABASE_URI(self) -> str:
+        if self.DB_BACKEND == "sqlite":
+            # TODO: sqlite+aiosqlite
+            return f"sqlite:///{_ROOT_DIR / self.DB_NAME}.db"
         return PostgresDsn.build(
-            scheme=self.DRIVERNAME,
-            username=self.POSTGRES_USERNAME,
-            password=self.POSTGRES_PASSWORD,
-            host=self.POSTGRES_HOST,
-            port=self.POSTGRES_PORT,
-            path=self.POSTGRES_DB,
-        )
+            scheme="postgresql+psycopg",
+            username=self.DB_USERNAME,
+            password=self.DB_PASSWORD,
+            host=self.DB_HOST,
+            port=self.DB_PORT,
+            path=self.DB_NAME,
+        ).encoded_string()
 
 
 settings = Settings()  # type: ignore

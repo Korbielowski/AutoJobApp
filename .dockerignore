@@ -31,3 +31,6 @@ venv/
 
 # Documentation
 docs/
+
+# Sqlite database
+*.db

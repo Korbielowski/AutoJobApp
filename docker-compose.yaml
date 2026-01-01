@@ -2,6 +2,8 @@ services:
   fast_api_backend:
     build:
       context: .
+    environment:
+      - DOCKER_ENV=true
     depends_on:
       postgres_database:
         condition: service_healthy
@@ -13,7 +15,7 @@ services:
       - POSTGRES_USERNAME=${POSTGRES_USERNAME:-postgres}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
       - POSTGRES_HOST=${POSTGRES_HOST:-postgres_database}
-      - POSTGRES_DB=${POSTGRES_DB:-autoapply}
+      - POSTGRES_DB=${POSTGRES_DB:-autojobapp}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
       interval: 5s
