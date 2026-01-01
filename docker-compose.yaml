@@ -2,6 +2,8 @@ services:
   fast_api_backend:
     build:
       context: .
+    environment:
+      - DOCKER_ENV=true
     depends_on:
       postgres_database:
         condition: service_healthy
