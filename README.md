@@ -12,7 +12,7 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 
 # Installation and Configuration Guide
 
-## Configuration (Optional)
+## Configuration
 
 The application environment can be edited via ```.env``` file. An example is provided in the repository as ```.env.example``` with all the possible configuration options.
 
@@ -23,20 +23,26 @@ The most important key in the config file is
 
 ### Requirements:
 - [Docker](https://docs.docker.com/engine/install/)
-- [Docker Compose](https://docs.docker.com/compose/install/)(Optional. Install only if using Postgres database backend)
+<!-- - [Docker Compose](https://docs.docker.com/compose/install/)(Optional. Install only if using Postgres database backend) -->
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-docker compose build
+docker build -t autojobapp .
 ```
+<!-- Or (If you want to use Postgres database backend)
+```bash
+git clone https://github.com/Korbielowski/AutoJobApp
+cd AutoJobApp/
+docker compose build
+``` -->
 
 ## Local Installation:
 
 ### Requirements:
 - [Python 3.12+](https://www.python.org/downloads/) (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
-- [PostgreSQL 14+](https://www.postgresql.org/download/)(Optional. Install only if using Postgres database backend)
 - [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
+<!-- - [PostgreSQL 14+](https://www.postgresql.org/download/)(Optional. Install only if using Postgres database backend) -->
 
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
@@ -50,8 +56,11 @@ After the configuration and installation of the application, you can run it usin
 For more information on how to use the software, click [HERE](https://github.com/Korbielowski/AutoJobApp/blob/main/docs/guides/basic_guide.md).
 
 ### Docker (Recommended)
-```bash
+<!-- ```bash
 docker compose up
+``` -->
+```bash
+docker run -v autojobapp-db:/autojobapp/backend/ -p 8000:8000 autojobapp
 ```
 
 ### Local
