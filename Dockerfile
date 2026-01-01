@@ -1,6 +1,6 @@
 FROM astral/uv:python3.12-bookworm-slim
 
-WORKDIR /usr/src/autojobapp
+WORKDIR /autojobapp
 
 COPY . .
 
