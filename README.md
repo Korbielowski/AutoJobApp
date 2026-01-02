@@ -47,8 +47,17 @@ docker compose build
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-sh setup.sh
+# sh setup.sh
+pip install -r requirements.txt
 ```
+Or
+```bash
+git clone https://github.com/Korbielowski/AutoJobApp
+cd AutoJobApp/
+# sh setup.sh
+uv sync --no-dev --frozen --compile-bytecode --no-cache
+```
+
 # Usage/Quick Start
 
 After the configuration and installation of the application, you can run it using the commands below. Then click the link that the FastAPI backend returns, e.g. ```http://127.0.0.1:8000```.
@@ -70,6 +79,10 @@ sh setup.sh --run
 Or -->
 ```bash
 fastapi run backend/app.py
+```
+Or
+```bash
+uv run --no-sync fastapi run backend/app.py
 ```
 
 # Features
