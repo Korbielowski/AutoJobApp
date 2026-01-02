@@ -47,16 +47,15 @@ docker compose build
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-# sh setup.sh
 pip install -r requirements.txt
 ```
 Or
 ```bash
 git clone https://github.com/Korbielowski/AutoJobApp
 cd AutoJobApp/
-# sh setup.sh
 uv sync --no-dev --frozen --compile-bytecode --no-cache
 ```
+<!-- # sh setup.sh -->
 
 # Usage/Quick Start
 
