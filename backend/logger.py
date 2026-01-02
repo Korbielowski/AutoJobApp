@@ -18,6 +18,7 @@ if settings.DEBUG:
         level="DEBUG",
         format=LOGS_FORMAT,
         colorize=True,
+        enqueue=True,
     )
 else:
     logger.add(
@@ -25,11 +26,18 @@ else:
         level="INFO",
         format=LOGS_FORMAT,
         colorize=True,
+        enqueue=True,
     )
 
 if settings.LOG_TO_FILE:
     logger.add(
-        sink=f"{settings.PROJECT_NAME}.log", level="DEBUG", colorize=False
+        sink=f"{settings.PROJECT_NAME}.log",
+        level="DEBUG",
+        colorize=False,
+        enqueue=True,
+        rotation="50 MB",
+        retention=3,
+        compression="zip",
     )
 
 
