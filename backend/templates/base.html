@@ -54,6 +54,32 @@
       </div>
     </div>
 
+    <script>
+      const modal = document.getElementById("modal-container");
+      const modalText = document.getElementById("modal-msg");
+      const modalCloseBtn = document.getElementById("modal-close-btn");
+
+      modalCloseBtn.addEventListener("click", async (e) => {
+        modal.style.display = "none";
+      });
+
+      window.addEventListener("click", async (e) => {
+        if (e.target == modal) {
+          modal.style.display = "none";
+        }
+      });
+
+      async function handleResponse(response) {
+        if (!response.ok) {
+          modal.style.display = "block";
+          modalText.innerText = `Status: ${response.status}, Message: ${response.statusText}`;
+
+          return;
+        }
+        model = await response.json();
+        return model;
+      }
+    </script>
     {% block scripts %}{% endblock scripts %}
   </body>
 </html>
