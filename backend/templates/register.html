@@ -236,6 +236,7 @@
     experiences: document.getElementById("experiences-list"),
     educations: document.getElementById("educations-list"),
     charities: document.getElementById("charities-list"),
+    certificates: document.getElementById("certificates-list"),
     tools: document.getElementById("tools-list"),
     languages: document.getElementById("languages-list"),
     programming_languages: document.getElementById(
@@ -450,6 +451,10 @@
       header: ["charity"],
       details: ["organisation", "description", "start_date", "end_date"],
     },
+    certificates: {
+      header: ["certificate"],
+      details: ["organisation", "description"],
+    },
     tools: {
       header: ["tool"],
       details: ["level"],
@@ -613,7 +618,7 @@
     const item = Object.fromEntries(formData.entries());
 
     // TODO: Horrible workaround, fix later if possible :(
-    if (type === "website") {
+    if (type === "websites") {
       item["automation_steps"] = null;
     }
 
