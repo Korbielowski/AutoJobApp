@@ -613,7 +613,7 @@ title %} {% block styles %} {{ super() }}
     const item = Object.fromEntries(formData.entries());
 
     // TODO: Horrible workaround, fix later if possible :(
-    if (type === "website") {
+    if (type === "websites") {
       item["automation_steps"] = null;
     }
 
