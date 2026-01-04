@@ -22,6 +22,7 @@ from backend.database.crud import (
     get_tools,
     get_users,
     get_websites,
+    save_model,
 )
 from backend.database.models import (
     CertificateModel,
@@ -35,6 +36,7 @@ from backend.database.models import (
     SocialPlatformModel,
     ToolModel,
     UserModel,
+    UserPreferencesModel,
     WebsiteModel,
 )
 from backend.logger import get_logger
@@ -61,6 +63,7 @@ from backend.schemas.endpoints import (
 from backend.schemas.models import (
     Certificate,
     Charity,
+    CVCreationModeEnum,
     Education,
     Experience,
     Language,
@@ -157,6 +160,18 @@ async def register(
         model.user_id = user.id
         session.add(model)
     session.commit()
+
+    save_model(
+        session=session,
+        user=user,
+        model=UserPreferencesModel(
+            user_id=user.id,
+            cv_creation_mode=CVCreationModeEnum.llm_generation,
+            generate_cover_letter=False,
+            cv_path="",
+            retries=3,
+        ),
+    )
 
     set_current_user(session, user.email)
 
