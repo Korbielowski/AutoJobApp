@@ -225,8 +225,7 @@ user:
   determine_if_offer_valuable:
     prompt: "
       Compare user qualifications and needs:
-      {user_needs}
-      -
+      - {user_needs}
       With these from job offer:
       - title: {title}
       - Company name: {company_name}
@@ -239,7 +238,18 @@ user:
       - Employment type: {employment_type}
       - Work arrangement: {work_arrangement}
       - Additional information: {additional_information}
-      Return only one word, True if I should apply, and False if not and
-      no other words/characters
+      Return boolean value indicating, if offer is valuable, based on the information about user needs and job offer information.
       "
     params:
+      - user_needs
+      - title
+      - company_name
+      - requirements
+      - duties
+      - about_project
+      - offer_benefits
+      - location
+      - contract_type
+      - employment_type
+      - work_arrangement
+      - additional_information
