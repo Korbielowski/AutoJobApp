@@ -23,7 +23,7 @@ async def load_prompt(
     async with aiofiles.open(prompt_file_path, "r") as file:
         file_content = await file.read()
         data = yaml.safe_load(file_content)
-        if type(data) is not dict:
+        if not isinstance(data, dict):
             raise Exception(f"Bad yaml structure in this file: {paths[0]}")
 
     for p in paths[1:]:
