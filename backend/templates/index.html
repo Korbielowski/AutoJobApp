@@ -85,6 +85,11 @@ block styles %} {{ super() }}
     gap: 1rem;
   }
 
+  #scrape-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
   #status-text {
     display: flex;
     align-items: center;
@@ -226,7 +231,7 @@ block styles %} {{ super() }}
       </form>
     </details>
     <div id="scrape-btn-container">
-      <button onclick="scrape_jobs()" id="scrape-btn">Start job search</button>
+      <button onclick="scrape_jobs()" id="scrape-btn" {% if not key_exists %} disabled {% endif %}>Start job search</button>
       <p id="status-text">Run Status <span id="status-dot"></span></p>
     </div>
   </div>
