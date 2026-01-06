@@ -27,7 +27,7 @@ async def goto(page: Page, link: str, retry: int = 3) -> None:
         try:
             await page.goto(link)
             await page.wait_for_load_state("load")
-            await asyncio.sleep(3)
+            await asyncio.sleep(7)
             done = True
         except TimeoutError:
             logger.exception("Timeout for goto")
