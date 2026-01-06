@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     HEADLESS: bool = False
     LOG_TO_FILE: bool = True
     API_KEY: str
-    OPENAI_API_KEY: str
+    OPENAI_API_KEY: str = ""
     DB_BACKEND: Literal["sqlite", "postgres"] = "sqlite"
     DB_USERNAME: str | None = (
         None  # TODO: Maybe make this a computed_field or add field_validator
