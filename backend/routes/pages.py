@@ -2,7 +2,14 @@ import os.path
 from typing import Annotated, Union
 
 import aiofiles
-from fastapi import APIRouter, File, Form, Request, UploadFile, status
+from fastapi import (
+    APIRouter,
+    File,
+    Form,
+    Request,
+    UploadFile,
+    status,
+)
 from fastapi.responses import (
     HTMLResponse,
     RedirectResponse,
@@ -54,6 +61,7 @@ async def index(user: CurrentUser, session: SessionDep, request: Request):
         context={
             "user": user,
             "scraped_job_entries": scraped_job_entries,
+            "key_exists": True if settings.OPENAI_API_KEY else False,
         },
     )
 
@@ -97,6 +105,10 @@ async def save_preferences(
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
 async def scrape_jobs(user: CurrentUser, session: SessionDep):
+    # if not settings.OPENAI_API_KEY:
+    #     raise HTTPException(
+    #         status_code=404, detail="OPENAI_API_KEY env variable is not set"
+    #     )
     websites = get_websites(session=session, user=user, use_base_model=True)
     user_preferences = get_user_preferences(session=session, user=user)
     user_needs = get_user_needs(session=session, user=user)
