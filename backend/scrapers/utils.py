@@ -74,7 +74,7 @@ async def fill(element: None | Locator, value: str, retry: int = 3) -> bool:
     return False
 
 
-async def get_page_content(page: Page) -> str:
+async def get_page_content(page: Page) -> list[dict]:
     # TODO: Make page content smaller by e.g. excluding head or code tags and only by including body
     # TODO: Check in the future, whether regex would not be faster and overall better solution
     # TODO: Add option to get important info about html tags and their content, then send all of it in json format to LLM
@@ -106,7 +106,7 @@ async def get_page_content(page: Page) -> str:
         ]
     ):
         tag.decompose()
-    tag_list = []
+    tag_list: list[dict] = []
     for tag in soup.find_all():
         text = tag.find(text=True, recursive=False)
         if not text:
@@ -127,7 +127,12 @@ async def get_page_content(page: Page) -> str:
         if text:
             data["text"] = text
         if class_list := tag.get("class"):
-            data["class_list"] = class_list
+            if isinstance(class_list, list):
+                data["class_list"] = [
+                    c.strip() for c in class_list if c.strip()
+                ]
+            else:
+                data["class_list"] = [class_list]
 
         if [k for k in data.keys() if k != "class_list"]:
             data["parents"] = ".".join(
@@ -154,7 +159,8 @@ async def get_page_content(page: Page) -> str:
         ),
     }
     logger.info(pformat(methods))
-    return toon.encode(tag_list_without_p)
+    return tag_list
+    # return toon.encode(tag_list_without_p)
 
 
 async def find_html_element_attributes(
