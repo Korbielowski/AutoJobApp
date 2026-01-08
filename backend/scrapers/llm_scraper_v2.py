@@ -2,9 +2,12 @@ import asyncio
 import datetime
 import random
 from collections import deque
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Deque, Literal, Optional
 
+import tiktoken
+import toon
 from agents import (
     Agent,
     MaxTurnsExceeded,
@@ -41,6 +44,7 @@ from backend.scrapers.utils import get_page_content, goto
 TOOL_CALL_TYPE = "function_call"
 TOOL_RESPONSE_TYPE = "function_call_output"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
+TIK = tiktoken.encoding_for_model("gpt-5-")
 logger = get_logger()
 
 
@@ -245,9 +249,31 @@ async def get_page_data(
     logger.debug(
         f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool call"
     )
+    tag_list = await get_page_content(wrapper.context.page)
+    # FIXME: openai.BadRequestError: Error code: 400 - {'error': {'message': 'Your input exceeds the context window of this model. Please adjust your input and try again.', 'type': 'invalid_request_error', 'param': 'input', 'code': 'context_length_exceeded'}}
+
+    processed_tag_list: list[dict] = []
+    for tag in tag_list:
+        x: dict = deepcopy(tag)
+        x.pop("parents")
+        processed_tag_list.append(x)
+
+    for index, tag in enumerate(processed_tag_list):
+        if not tag.get("text"):
+            processed_tag_list.pop(index)
+        else:
+            processed_text = tag.get("text", "")
+            if len(processed_text) >= 100:
+                processed_text = processed_text[0:101] + "..."
+            processed_tag_list[index] = {"text": processed_text}
+
+    logger.warning(
+        f"New new way: {len(TIK.encode(toon.encode(processed_tag_list)))}"
+    )
+
     return ToolResult(
         success=True,
-        result=f"url: {wrapper.context.page.url}\npage: {await get_page_content(wrapper.context.page)}",
+        result=f"url: {wrapper.context.page.url}\npage elements representation: {toon.encode(processed_tag_list)}",
     )
 
 
@@ -348,12 +374,14 @@ class LLMScraperV2(BaseScraper):
         logger.debug(f"Running agent loop for '{agent.name}'")
 
         start_url = self.page.url
-        max_turns = DEFAULT_MAX_TURNS  # TODO: Test what happens if we have too little turns for a given agent
+        max_turns = (
+            DEFAULT_MAX_TURNS + 5
+        )  # TODO: Test what happens if we have too little turns for a given agent
         for _ in range(self.retries):
             try:
                 result = await Runner.run(
                     starting_agent=agent,
-                    input=await get_page_content(self.page),
+                    input="",
                     session=TrimmingSession(turns=2),
                     context=ContextForLLM(
                         page=self.page,
