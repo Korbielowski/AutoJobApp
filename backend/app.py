@@ -16,12 +16,6 @@ logger = get_logger()
 @asynccontextmanager
 async def setup(inner_app: FastAPI) -> AsyncGenerator:
     init_db()
-    logger.debug("Debug message")
-    logger.info("Info message")
-    logger.warning("Warning message")
-    logger.exception("Exception message")
-    logger.error("Error message")
-    logger.success("Success message")
 
     set_tracing_disabled(disabled=True)
 
