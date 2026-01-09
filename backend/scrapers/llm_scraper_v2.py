@@ -1,280 +1,47 @@
 import asyncio
 import datetime
-import random
 from collections import deque
-from copy import deepcopy
-from dataclasses import dataclass
-from typing import Deque, Literal, Optional
+from typing import Deque
 
 import tiktoken
-import toon
 from agents import (
     Agent,
     MaxTurnsExceeded,
     OpenAIResponsesModel,
-    RunContextWrapper,
     RunErrorDetails,
     Runner,
     RunResult,
     SessionABC,
     TResponseInputItem,
-    function_tool,
 )
 from agents.run import DEFAULT_MAX_TURNS
 from devtools import pformat
 from openai import AsyncOpenAI
 from playwright.async_api import Locator, Page
-from pydantic import BaseModel
 
 from backend.config import settings
-from backend.database.models import WebsiteModel
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
 from backend.schemas.llm_responses import (
+    ContextForLLM,
     HTMLElement,
-    InputFieldTypeEnum,
     JobEntryResponse,
     TaskState,
 )
 from backend.schemas.models import JobEntry
 from backend.scrapers.base_scraper import BaseScraper
-from backend.scrapers.utils import get_page_content, goto
+from backend.scrapers.page_actions import goto
+from backend.scrapers.page_processing import (
+    get_page_content,
+)
+from backend.scrapers.tools import click_element, fill_element, get_page_data
 
 TOOL_CALL_TYPE = "function_call"
 TOOL_RESPONSE_TYPE = "function_call_output"
 OPENAI_MODEL = "gpt-5-mini-2025-08-07"
 TIK = tiktoken.encoding_for_model("gpt-5-")
 logger = get_logger()
-
-
-@dataclass
-class ContextForLLM:
-    page: Page
-    website_info: WebsiteModel
-    agent_name: str
-
-
-class ToolResult(BaseModel):
-    success: bool
-    result: Optional[str] = None
-    error_code: Optional[
-        Literal["ELEMENT_NOT_FOUND", "TIMEOUT", "NOT_VISIBLE", "WRONG_INPUT"]
-    ] = None
-
-
-async def find_html_tag(page: Page, element: HTMLElement) -> Locator | None:
-    locator = None
-
-    if element.id:
-        logger.warning(f"{element.id=}")
-        locator = page.locator(f"#{element.id}")
-        count = await locator.count()
-
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.role:
-        logger.warning(f"{element.role=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(page.get_by_role(element.role, exact=True))
-        else:
-            locator = page.get_by_role(element.role, exact=True)
-
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.text:
-        logger.warning(f"{element.text=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(page.get_by_text(element.text, exact=True))
-        else:
-            locator = page.get_by_text(element.text, exact=True)
-
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.aria_label:
-        logger.warning(f"{element.aria_label=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(
-                page.get_by_label(element.aria_label, exact=True)
-            )
-        else:
-            locator = page.get_by_label(element.aria_label, exact=True)
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.name:
-        logger.warning(f"{element.name=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(page.locator(f'[name="{element.name}"]'))
-        else:
-            locator = page.locator(f'[name="{element.name}"]')
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.placeholder:
-        logger.warning(f"{element.placeholder=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(
-                page.get_by_placeholder(element.placeholder, exact=True)
-            )
-        else:
-            locator = page.get_by_placeholder(element.placeholder, exact=True)
-
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if element.element_type:
-        logger.warning(f"{element.element_type=}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(
-                page.locator(f'[type="{element.element_type}"]')
-            )
-        else:
-            locator = page.locator(f'[type="{element.element_type}"]')
-
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    # FIXME: playwright._impl._errors.Error: Locator.count: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '.tw-w-[120px]' is not a valid selector.
-    if element.class_list:
-        class_selector = f".{'.'.join(element.class_list)}"
-        logger.warning(f"{element.class_list=}, {class_selector}")
-        if locator and await locator.count() >= 2:
-            locator = locator.and_(page.locator(class_selector))
-        else:
-            locator = page.locator(class_selector)
-        count = await locator.count()
-        if 0 < count < 2:
-            return locator.last
-        logger.error(f"Count: {count}")
-
-    if locator:  # TODO: Add step where LLM selects from multiple elements, if code above could not select single one element
-        return locator.last
-
-    return locator
-
-
-@function_tool
-async def click(
-    wrapper: RunContextWrapper[ContextForLLM], element: HTMLElement
-) -> ToolResult:
-    """
-    Click a given element on the page.
-    :param element: Element to click
-    :type element: HTMLElement
-    :return: Result of the click action
-    :rtype: ToolResult
-    """
-    logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'click' tool call with params: element=\n{pformat(element)}"
-    )
-    tag = await find_html_tag(page=wrapper.context.page, element=element)
-    if not tag:
-        return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
-
-    try:
-        await tag.highlight()
-        await asyncio.sleep(3)
-        await tag.click()
-        # await page.wait_for_load_state("load")
-        await asyncio.sleep(3)
-    except TimeoutError:
-        return ToolResult(success=False, error_code="TIMEOUT")
-    return ToolResult(success=True)
-
-
-@function_tool
-async def fill(
-    wrapper: RunContextWrapper[ContextForLLM],
-    element: HTMLElement,
-    input_type: Literal["email", "password"],
-) -> ToolResult:
-    """
-    Fill a given input field.
-    :param element: Input field to fill
-    :type element: HTMLElement
-    :param input_type: Whether the input, that should be passed to input filed should be user email or password. Password and email will be read from database by function.
-    :type input_type: InputFieldTypeEnum
-    :return: Result of the action
-    :rtype: ToolResult
-    """
-    logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'fill' tool call with params: input_type= {input_type}\nelement= {pformat(element)}"
-    )
-    tag = await find_html_tag(page=wrapper.context.page, element=element)
-    if not tag:
-        return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
-
-    if input_type == InputFieldTypeEnum.email:
-        value = wrapper.context.website_info.user_email
-    elif input_type == InputFieldTypeEnum.password:
-        value = wrapper.context.website_info.user_password
-    else:
-        return ToolResult(success=False, error_code="WRONG_INPUT")
-
-    try:
-        await tag.highlight()
-        await asyncio.sleep(3)
-        await tag.press_sequentially(value, delay=random.randint(5, 10) * 100)
-    except TimeoutError:
-        return ToolResult(success=False, error_code="TIMEOUT")
-    return ToolResult(success=True)
-
-
-@function_tool
-async def get_page_data(
-    wrapper: RunContextWrapper[ContextForLLM],
-) -> ToolResult:
-    """
-    Get data about all page HTML elements in a simplified form of JSON and page url
-    :return: Page elements in JSON-like form and url
-    :rtype: ToolResult
-    """
-    logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool call"
-    )
-    tag_list = await get_page_content(wrapper.context.page)
-    # FIXME: openai.BadRequestError: Error code: 400 - {'error': {'message': 'Your input exceeds the context window of this model. Please adjust your input and try again.', 'type': 'invalid_request_error', 'param': 'input', 'code': 'context_length_exceeded'}}
-
-    processed_tag_list: list[dict] = []
-    for tag in tag_list:
-        x: dict = deepcopy(tag)
-        x.pop("parents")
-        processed_tag_list.append(x)
-
-    for index, tag in enumerate(processed_tag_list):
-        if not tag.get("text"):
-            processed_tag_list.pop(index)
-        else:
-            processed_text = tag.get("text", "")
-            if len(processed_text) >= 100:
-                processed_text = processed_text[0:101] + "..."
-            processed_tag_list[index] = {"text": processed_text}
-
-    logger.warning(
-        f"New new way: {len(TIK.encode(toon.encode(processed_tag_list)))}"
-    )
-
-    return ToolResult(
-        success=True,
-        result=f"url: {wrapper.context.page.url}\npage elements representation: {toon.encode(processed_tag_list)}",
-    )
 
 
 def _log_agent_run_data(result: RunResult | RunErrorDetails | None):
@@ -364,7 +131,7 @@ class TrimmingSession(SessionABC):
 
 
 class LLMScraperV2(BaseScraper):
-    model = OpenAIResponsesModel(
+    _model = OpenAIResponsesModel(
         model=OPENAI_MODEL,
         openai_client=AsyncOpenAI(api_key=settings.OPENAI_API_KEY),
     )
@@ -413,8 +180,8 @@ class LLMScraperV2(BaseScraper):
         login_agent = Agent(
             name="login_agent",
             instructions=await load_prompt("scraping:system:login_to_page"),
-            tools=[click, fill, get_page_data],
-            model=self.model,
+            tools=[click_element, fill_element, get_page_data],
+            model=self._model,
             output_type=TaskState,
         )
 
@@ -426,8 +193,8 @@ class LLMScraperV2(BaseScraper):
             instructions=await load_prompt(
                 "scraping:system:navigate_to_job_listing_page"
             ),
-            tools=[click, get_page_data],
-            model=self.model,
+            tools=[click_element, get_page_data],
+            model=self._model,
             output_type=TaskState,
         )
 
@@ -458,8 +225,8 @@ class LLMScraperV2(BaseScraper):
         next_page_agent = Agent(
             name="next_page_agent",
             instructions=await load_prompt("scraping:system:next_page_button"),
-            tools=[click, get_page_data],
-            model=self.model,
+            tools=[click_element, get_page_data],
+            model=self._model,
             output_type=TaskState,
         )
 
