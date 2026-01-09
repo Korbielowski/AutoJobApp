@@ -69,9 +69,7 @@ async def read_key_from_mapping_store(text_key: str) -> HTMLElement:
         return HTMLElement.model_validate(tag)
 
 
-async def get_page_content(
-    page: Page,
-) -> str:
+async def get_page_content(page: Page) -> str:
     page_content = await page.content()
 
     soup = BeautifulSoup(page_content, "html.parser")
