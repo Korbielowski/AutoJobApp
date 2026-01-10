@@ -7,12 +7,15 @@
 - [ ] Add support for locally run LLMs
 - [ ] Add guardrails for agents' tasks
 - [ ] Add system for handling automatic job applying
+- [ ] Add placeholder values for edit fields on user account page
 
 ### Bugs:
 
 - [X] Error when running pipeline for the first time without specifying user
   preferences regarding scraping (use default values when creating profile)
 - [ ] System fails for some specific CSS selectors
+- [ ] When editing websites on user account page, user needs to edit it twice to
+  change the website url
 
 ### Internal:
 
@@ -27,5 +30,8 @@
 - [ ] Add proper testing of features!!!
 - [ ] Play around with screenshots and OCR
 - [ ] Better async usage and add multithreading
-- [ ] Switch LangChain, other framework like that or write own implementation of agents and agent loop
+- [ ] Switch LangChain, other framework like that or write own implementation of
+  agents and agent loop
 - [ ] Add system for tracking uniqueness of job offers in database
+- [ ] Switch to Websockets (currently SSE)
+- [ ] Look at Pico for CSS
