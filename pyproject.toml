@@ -1,8 +1,19 @@
 [project]
 name = "AutoJobApp"
+authors = [
+    { name = "Dawid Stasiński", email = "dawidstasinski12@gmail.com" },
+]
 version = "0.1.0"
-description = "AI agents that create tailored CVs and cover letters, and even apply to jobs for you. Fully automated — no more manual effort"
+description = "AI agents that look for adequate jobs and create tailored CVs and cover letters. Fully automated — no more manual effort"
 readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = [
+
+]
+classifiers = [
+
+]
 requires-python = ">=3.12"
 
 dependencies = [
@@ -35,6 +46,12 @@ dev = [
     "pytest-playwright>=0.7.0",
     "ruff>=0.11.7",
 ]
+
+[project.urls]
+repository = "https://github.com/Korbielowski/AutoJobApp"
+
+[project.scripts]
+#autojobapp-cli = "backend.app"
 
 [tool.setuptools.packages.find]
 exclude = ["branding*"]
