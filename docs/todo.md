@@ -8,6 +8,7 @@
 - [ ] Add guardrails for agents' tasks
 - [ ] Add system for handling automatic job applying
 - [ ] Add placeholder values for edit fields on user account page
+- [ ] Add prompt editor (default values would consist of prompts currently used)
 
 ### Bugs:
 
