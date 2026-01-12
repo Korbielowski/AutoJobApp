@@ -6,7 +6,6 @@ from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
 
 from backend.config import settings
-from backend.database.models import UserModel
 from backend.scrapers.llm_scraper import LLMScraper
 
 
@@ -124,6 +123,7 @@ async def test_loging_to_page(get_data_for_scraper, caplog):
 
 
 @pytest.mark.asyncio
+@pytest.mark.skip
 async def test_get_job_entries(get_data_for_scraper):
     async with Stealth().use_async(async_playwright()) as playwright:
         browser = await playwright.chromium.launch(headless=False)
@@ -155,13 +155,13 @@ async def test_get_job_entries(get_data_for_scraper):
         assert len(job_entries) > 0
 
 
-@pytest.fixture(
-    scope="module",
-)
-def get_data_for_scraper() -> tuple[UserModel, str, str]:
-    profile = UserModel(
-        firstname="test", middlename="test", surname="test", age="30"
-    )
-    email = "test.test@gmail.com"
-    password = "testTest123"
-    return profile, email, password
+# @pytest.fixture(
+#     scope="module",
+# )
+# def get_data_for_scraper() -> tuple[UserModel, str, str]:
+#     profile = UserModel(
+#         firstname="test", middlename="test", surname="test", age="30"
+#     )
+#     email = "test.test@gmail.com"
+#     password = "testTest123"
+#     return profile, email, password

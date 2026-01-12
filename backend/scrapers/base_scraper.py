@@ -74,12 +74,12 @@ class BaseScraper(abc.ABC):
         if not job_entry:
             return None
 
-        return job_entry
+        # return job_entry
         state = await send_req_to_llm(
             prompt=await load_prompt(
                 prompt_path="cv:user:determine_if_offer_valuable",
+                model=job_entry.model_dump(),
                 user_needs=user_needs,
-                job_entry=job_entry.model_dump_json(),
             ),
             use_openai=True,
             model=StateOutput,

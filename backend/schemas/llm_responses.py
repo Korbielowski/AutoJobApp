@@ -1,8 +1,11 @@
+from dataclasses import dataclass
 from enum import StrEnum
-from typing import Literal
+from typing import Literal, Optional
 
+from playwright.async_api import Page
 from pydantic import BaseModel, Field
 
+from backend.database.models import WebsiteModel
 from backend.schemas.models import (
     Certificate,
     Charity,
@@ -85,3 +88,18 @@ class TaskState(BaseModel):
 
     state: Literal["done", "failed"]
     confidence: float = Field(gt=0.0, le=1.0)
+
+
+class ToolResult(BaseModel):
+    success: bool
+    result: Optional[str] = None
+    error_code: Optional[
+        Literal["ELEMENT_NOT_FOUND", "TIMEOUT", "NOT_VISIBLE", "WRONG_INPUT"]
+    ] = None
+
+
+@dataclass
+class ContextForLLM:
+    page: Page
+    website_info: WebsiteModel
+    agent_name: str

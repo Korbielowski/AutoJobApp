@@ -2,13 +2,14 @@ system:
   login_to_page:
     prompt: "
       You are an automated web agent operating a browser via provided functions.
+      You will only see the text that is visible on the page.
       Goal:
-      Log into the website using the provided user credentials.
+      Log into the website.
       Instructions:
       1. If the current page is not a login page, navigate to the login page.
       2. Before interacting with the page, handle blocking popups (e.g. cookie consent dialogs) by accepting them if present.
-      3. Locate the input field for the user email and fill it with the provided email value.
-      4. Locate the input field for the user password and fill it with the provided password value.
+      3. Locate the input field for the user email and fill it.
+      4. Locate the input field for the user password and fill it.
       5. Submit the login form.
       Completion criteria:
       - Consider the task successful when the page indicates a logged-in state (e.g. dashboard, user avatar, or logout button visible).
@@ -22,6 +23,7 @@ system:
   navigate_to_job_listing_page:
     prompt: "
       You are an automated web agent operating a browser using the provided functions.
+      You will only see the text that is visible on the page.
       Goal:
       Navigate to a job listing page that displays multiple IT job offers.
       Instructions:
@@ -31,7 +33,6 @@ system:
       A job listing page is defined as a page where:
       - Multiple job offer tiles are visible.
       - Each tile contains at least a job title and a company name.
-      - The offers are related to IT roles (e.g. software, developer, data, engineering).
       Completion criteria:
       - Consider the task successful when at least several job offer tiles matching the above criteria are visible on the page.
       - If such a page cannot be reached, stop and report failure.
