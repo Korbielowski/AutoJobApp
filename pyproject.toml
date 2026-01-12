@@ -50,7 +50,7 @@ dev = [
 [project.urls]
 repository = "https://github.com/Korbielowski/AutoJobApp"
 
-[project.scripts]
+#[project.scripts]
 #autojobapp-cli = "backend.app"
 
 [tool.setuptools.packages.find]
