@@ -90,6 +90,10 @@ class TaskState(BaseModel):
     confidence: float = Field(gt=0.0, le=1.0)
 
 
+class TextResponse(BaseModel):
+    text: str
+
+
 class ToolResult(BaseModel):
     success: bool
     result: Optional[str] = None
