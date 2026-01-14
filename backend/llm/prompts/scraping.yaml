@@ -42,8 +42,19 @@ system:
       - Do not continue indefinitely.
       "
 
-  next_page_button:
+  job_offer_links:
     prompt: "
+    Your only task: output exactly one job title.
+
+    Strict rules – follow them 100%:
+    1. Return exactly 1 line of text
+    2. Only the job title itself
+    3. No additional words, no punctuation, no prefixes like 'Position:', 'Title:', '- ', numbers
+    5. Preserve original wording and capitalization
+  "
+
+next_page_button:
+  prompt: "
       You are an automated web agent operating a browser using the provided functions.
       Goal:
       Load additional job offers from the current job listing page.
@@ -67,8 +78,8 @@ system:
       - Do not assume success without verifying that new offers are visible.
       "
 
-    get_attributes:
-      prompt: "
+  get_attributes:
+    prompt: "
         I will give you an HTML snippet. Return only its identifying attributes.
         Do not explain, only return JSON.
         "
