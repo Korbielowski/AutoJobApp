@@ -25,15 +25,16 @@ from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
 from backend.schemas.llm_responses import (
     ContextForLLM,
-    HTMLElement,
     JobEntryResponse,
     TaskState,
+    TextResponse,
 )
 from backend.schemas.models import JobEntry
 from backend.scrapers.base_scraper import BaseScraper
 from backend.scrapers.page_actions import goto
 from backend.scrapers.page_processing import (
     get_page_content,
+    read_key_from_mapping_store,
 )
 from backend.scrapers.tools import click_element, fill_element, get_page_data
 
@@ -201,22 +202,22 @@ class LLMScraperV2(BaseScraper):
         await self._agent_loop(job_list_page_agent)
 
     async def get_job_entries(self) -> tuple[Locator, ...]:
-        element = await send_req_to_llm(
-            system_prompt=await load_prompt("scraping:user:job_offer_links"),
-            prompt=await get_page_content(self.page),
-            model=HTMLElement,
-        )
-        if element.class_list:
-            class_selector = f".{'.'.join(element.class_list)}"
+        for _ in range(3):
+            text = await send_req_to_llm(
+                system_prompt=await load_prompt(
+                    "scraping:system:job_offer_links"
+                ),
+                prompt=await get_page_content(self.page),
+                model=TextResponse,
+            )
+            logger.debug(f"This was chosen: {pformat(text)}")
+            tag = await read_key_from_mapping_store(text.text)
+            if not tag.class_list:
+                continue
+            class_selector = f".{'.'.join(tag.class_list)}"
             locator = self.page.locator(class_selector)
-            logger.warning(f"Locator count: {await locator.count()}")
-            logger.warning(await locator.all())
-            # for loc in await locator.all():
-            #     try:
-            #         url = await loc.get_attribute("href")
-            #         logger.success(url)
-            #     except TimeoutError:
-            #         logger.error("Could not get href")
+            logger.debug(f"Locator count: {await locator.count()}")
+            logger.debug(pformat(await locator.all()))
             return tuple(await locator.all())
         logger.warning("Could not find link locators")
         return tuple()
