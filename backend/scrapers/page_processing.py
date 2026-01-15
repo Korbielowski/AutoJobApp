@@ -107,9 +107,9 @@ async def get_page_content(page: Page) -> str:
 
         # If there is only class_list don't append element to the tag_list
         if [k for k in data.keys() if k != "class_list"]:
-            data["parents"] = ".".join(
+            data["parents"] = " ".join(
                 reversed(tuple((t.name for t in tag.parents)))
-            )
+            ).removeprefix("[document] ")
             tag_list.append(data)
 
     tag_list_llm: list[dict[str, str | list[str]]] = []
