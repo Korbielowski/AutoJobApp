@@ -33,6 +33,7 @@ system:
       A job listing page is defined as a page where:
       - Multiple job offer tiles are visible.
       - Each tile contains at least a job title and a company name.
+      3. If you are on a job listing page, but there is a button to load all of the offers (e.g. 'Load all offers', 'Load all'), you must click those buttons.
       Completion criteria:
       - Consider the task successful when at least several job offer tiles matching the above criteria are visible on the page.
       - If such a page cannot be reached, stop and report failure.
@@ -44,17 +45,16 @@ system:
 
   job_offer_links:
     prompt: "
-    Your only task: output exactly one job title.
+      Your only task: output exactly one job title.
+      Strict rules – follow them 100%:
+      1. Return exactly 1 line of text
+      2. Only the job title itself
+      3. No additional words, no punctuation, no prefixes like 'Position:', 'Title:', '- ', numbers
+      5. Preserve original wording and capitalization
+      "
 
-    Strict rules – follow them 100%:
-    1. Return exactly 1 line of text
-    2. Only the job title itself
-    3. No additional words, no punctuation, no prefixes like 'Position:', 'Title:', '- ', numbers
-    5. Preserve original wording and capitalization
-  "
-
-next_page_button:
-  prompt: "
+  next_page_button:
+    prompt: "
       You are an automated web agent operating a browser using the provided functions.
       Goal:
       Load additional job offers from the current job listing page.
