@@ -28,6 +28,7 @@ class HTMLElement(BaseModel):
     text: str = ""
     class_list: list[str] = []
     parents: str = ""
+    parents_list: list[str] = []
 
 
 class CompanyDetails(BaseModel):
