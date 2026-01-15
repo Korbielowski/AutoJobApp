@@ -9,6 +9,8 @@
 - [ ] Add system for handling automatic job applying
 - [ ] Add placeholder values for edit fields on user account page
 - [ ] Add prompt editor (default values would consist of prompts currently used)
+- [ ] Add model picker
+- [ ] Add prompt editor for various actions
 
 ### Bugs:
 
