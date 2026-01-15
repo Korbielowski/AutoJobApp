@@ -107,9 +107,12 @@ async def get_page_content(page: Page) -> str:
 
         # If there is only class_list don't append element to the tag_list
         if [k for k in data.keys() if k != "class_list"]:
-            data["parents"] = " ".join(
-                reversed(tuple((t.name for t in tag.parents)))
-            ).removeprefix("[document] ")
+            data["parents_list"] = list(
+                reversed(
+                    [t.name for t in tag.parents if t.name != "[document]"]
+                )
+            )
+            data["parents"] = " ".join(data["parents_list"])
             tag_list.append(data)
 
     tag_list_llm: list[dict[str, str | list[str]]] = []
@@ -117,6 +120,7 @@ async def get_page_content(page: Page) -> str:
     for elem in tag_list:
         copied_elem: dict = deepcopy(elem)
         copied_elem.pop("parents")
+        copied_elem.pop("parents_list")
         tag_list_llm.append(copied_elem)
 
     cleaned_tag_list: list[dict[str, str | list[str]]] = [
