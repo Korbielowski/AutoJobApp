@@ -10,7 +10,7 @@ from devtools import pformat
 from playwright.async_api import Locator, Page
 
 from backend.logger import get_logger
-from backend.schemas.llm_responses import HTMLElement
+from backend.schemas.llm_responses import HTMLElement, TextResponse
 
 logger = get_logger()
 TIK = tiktoken.encoding_for_model("gpt-5-")
@@ -99,8 +99,11 @@ async def get_page_content(page: Page) -> str:
             data["text"] = text
         if class_list := tag.get("class"):
             if isinstance(class_list, list):
+                # FIXME: playwright._impl._errors.Error: Locator.count: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '.tw-w-[120px]' is not a valid selector.
                 data["class_list"] = [
-                    c.strip() for c in class_list if c.strip()
+                    c.strip().replace("[", r"\[").replace("]", r"\]")
+                    for c in class_list
+                    if c.strip()
                 ]
             else:
                 data["class_list"] = [class_list]
@@ -244,7 +247,6 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
             return locator.last
         logger.error(f"Count: {count}")
 
-    # FIXME: playwright._impl._errors.Error: Locator.count: SyntaxError: Failed to execute 'querySelectorAll' on 'Document': '.tw-w-[120px]' is not a valid selector.
     if element.class_list:
         class_selector = f".{'.'.join(element.class_list)}"
         logger.warning(f"{element.class_list=}, {class_selector}")
@@ -257,7 +259,77 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
             return locator.last
         logger.error(f"Count: {count}")
 
-    if locator:  # TODO: Add step where LLM selects from multiple elements, if code above could not select single one element
+    # TODO: Add step where LLMselects from multiple elements, if code above could not select single one element
+    if locator:
         return locator.last
 
     return locator
+
+
+async def get_jobs_urls(
+    text_response: TextResponse, page: Page
+) -> tuple[str, ...]:
+    tag = await read_key_from_mapping_store(text_response.text)
+    logger.debug(f"HTML element holding job title: {pformat(tag)}")
+
+    if tag.class_list:
+        class_selector = f".{'.'.join(tag.class_list)}"
+    else:
+        a_tag_with_job_title = page.get_by_role("link").filter(
+            has_text=tag.text
+        )
+        tmp = (
+            _
+            if (_ := await a_tag_with_job_title.last.get_attribute("class"))
+            else ""
+        )
+        class_selector = f".{'.'.join(tmp.split())}"
+
+    if class_selector == ".":
+        class_selector = ""
+
+    a_tags = page.locator(class_selector)
+    try:
+        job_urls = tuple(
+            [
+                await loc.get_attribute("href")
+                for loc in await a_tags.all()
+                if await loc.get_attribute("href")
+            ]
+        )
+        if job_urls:
+            logger.info(
+                f"Job urls got using classList method: {class_selector}\n{pformat(job_urls)}"
+            )
+            return job_urls
+    except TimeoutError:
+        logger.error(
+            "TimeoutError occurred while trying to retrieve job urls, using classList method"
+        )
+
+    start_index = len(tag.parents_list) - 1
+    while start_index > 0 and tag.parents_list[start_index] != "a":
+        start_index -= 1
+
+    class_selector = " ".join(tag.parents_list[0 : start_index + 1])
+    a_tags = page.locator(class_selector)
+    try:
+        job_urls = tuple(
+            [
+                await loc.get_attribute("href")
+                for loc in await a_tags.all()
+                if await loc.get_attribute("href")
+            ]
+        )
+        if job_urls:
+            logger.info(
+                f"Job urls got using parents method: {class_selector}\n{pformat(job_urls)}"
+            )
+            return job_urls
+    except TimeoutError:
+        logger.error(
+            "TimeoutError occurred while trying to retrieve job urls, using parents method"
+        )
+
+    logger.warning("Could not find job urls, returning empty tuple")
+    return tuple()
