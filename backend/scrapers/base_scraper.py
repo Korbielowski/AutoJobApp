@@ -1,7 +1,7 @@
 import abc
 
 from devtools import pformat
-from playwright.async_api import BrowserContext, Locator, Page
+from playwright.async_api import BrowserContext, Page
 
 from backend.database.models import WebsiteModel
 from backend.llm.llm import send_req_to_llm
@@ -43,7 +43,7 @@ class BaseScraper(abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def get_job_entries(self) -> tuple[Locator, ...]:
+    async def get_job_entries(self) -> tuple[str, ...]:
         pass
 
     @abc.abstractmethod
@@ -59,17 +59,9 @@ class BaseScraper(abc.ABC):
         pass
 
     async def process_and_evaluate_job(
-        self, locator: Locator, user_needs: UserNeeds
+        self, job_url: str, user_needs: UserNeeds
     ) -> JobEntry | None:
-        try:
-            url = await locator.get_attribute("href")
-        except TimeoutError as e:
-            logger.exception(e)
-            return None
-        if not url:
-            return None
-
-        job_entry = await self._get_job_information(url)
+        job_entry = await self._get_job_information(job_url)
         logger.info(f"job_entry: {pformat(job_entry)}")
         if not job_entry:
             return None
