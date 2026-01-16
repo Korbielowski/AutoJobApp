@@ -1,3 +1,4 @@
+from pprint import pformat
 from typing import Literal
 
 from agents import RunContextWrapper, function_tool
@@ -22,13 +23,13 @@ async def get_page_data(
     :return: Page elements in JSON-like form and url
     :rtype: ToolResult
     """
-    logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool call"
-    )
-    return ToolResult(
+    logger.debug(f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool")
+    result = ToolResult(
         success=True,
         result=f"url: {wrapper.context.page.url}\npage elements representation:\n{await get_page_content(wrapper.context.page)}",
     )
+    # logger.info(f"Tool: get_page_data, {pformat(result)}")
+    return result
 
 
 @function_tool
@@ -43,9 +44,11 @@ async def click_element(
     :rtype: ToolResult
     """
     logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'click' tool call with params: text={text}"
+        f"'{wrapper.context.agent_name}' invoked 'click_element' tool with params: {text =}"
     )
-    return await click(page=wrapper.context.page, text=text)
+    result = await click(page=wrapper.context.page, text=text)
+    logger.info(f"'click_element' tool result:{pformat(result)}")
+    return result
 
 
 @function_tool
@@ -56,19 +59,21 @@ async def fill_element(
 ) -> ToolResult:
     """
     Fill a given input field.
-    :param text: Text of the input field to fill
+    :param text: Label of the input field
     :type text: str
-    :param input_type: Whether the input, that should be passed to input filed should be user email or password. Password and email will be read from database by function.
+    :param input_type: Whether the input, that should be passed to input field should be user email or password. Password and email will be read from database by function.
     :type input_type: InputFieldTypeEnum
     :return: Result of the action
     :rtype: ToolResult
     """
     logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'fill' tool call with params: input_type={input_type}\ntext={text}"
+        f"'{wrapper.context.agent_name}' invoked 'fill_element' tool with params: {input_type =}\n{text =}"
     )
-    return await fill(
+    result = await fill(
         page=wrapper.context.page,
         text=text,
         input_type=input_type,
         website_info=wrapper.context.website_info,
     )
+    logger.info(f"'fill_element' tool result:{pformat(result)}")
+    return result
