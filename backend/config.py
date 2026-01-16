@@ -55,7 +55,7 @@ class Settings(BaseSettings):
     @property
     def DATABASE_URI(self) -> str:
         if self.DB_BACKEND == "sqlite":
-            # TODO: sqlite+aiosqlite
+            # TODO: Switch to async database queries, use: sqlite+aiosqlite
             return f"sqlite:///{_ROOT_DIR / self.DB_NAME}.db"
         return PostgresDsn.build(
             scheme="postgresql+psycopg",
