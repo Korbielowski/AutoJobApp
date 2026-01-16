@@ -54,9 +54,9 @@ async def find_job_entries(
 
             running = True
             while running:
-                for job_locator in await scraper.get_job_entries():
+                for job_url in await scraper.get_job_entries():
                     job_data = await scraper.process_and_evaluate_job(
-                        locator=job_locator, user_needs=user_needs
+                        job_url=job_url, user_needs=user_needs
                     )
                     if not job_data:
                         continue
