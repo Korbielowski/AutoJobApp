@@ -6,11 +6,7 @@ from sqlmodel import JSON, Column, Field, SQLModel
 from backend.schemas.models import AutomationSteps, CVCreationModeEnum
 
 
-# TODO: Add model for storing all of the users preferences regarding scraping, cv creation and applying
-
 # TODO: Add priority to each category of skills and qualifications, so that the system can decide what should go into cv
-
-
 # TODO: How to recognise duplicate job offers on a different sites and on the same site at different time
 # Maybe try using normalization of several job information e.g. title, company name and part of description and fuzzy matching
 # https://github.com/rapidfuzz/RapidFuzz
