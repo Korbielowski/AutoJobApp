@@ -17,21 +17,15 @@ class BaseScraper(abc.ABC):
     def __init__(
         self,
         url: str,
-        email: str,
-        password: str,
         context: BrowserContext,
         page: Page,
-        website_info: WebsiteModel | None,
+        website_info: WebsiteModel,
         retries: int,
     ) -> None:
         self.url = url
-        self.email = (
-            email  # TODO: Get email for each website separately from database
-        )
-        self.password = password  # TODO: Get password for each website separately from database
         self.context = context
         self.page = page
-        self.website_info = website_info if website_info else WebsiteModel()
+        self.website_info = website_info
         self.retries = retries
 
     @abc.abstractmethod
