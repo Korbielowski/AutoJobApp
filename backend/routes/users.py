@@ -3,7 +3,8 @@ from typing import Union
 from fastapi import APIRouter, Form, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import select
+from sqlmodel import SQLModel, select
+from devtools import pformat
 
 from backend.config import settings
 from backend.database.crud import (
@@ -132,7 +133,8 @@ async def register(
     request: Request,
     form_data: ProfileInfo,  # form: Annotated[TestInfo, Form()]
 ):
-    d = {
+    logger.info(f"form_data: {pformat(form_data)}")
+    d: dict[str, type[SQLModel]] = {
         "locations": LocationModel,
         "programming_languages": ProgrammingLanguageModel,
         "languages": LanguageModel,
@@ -140,26 +142,19 @@ async def register(
         "certificates": CertificateModel,
         "charities": CharityModel,
         "educations": EducationModel,
-        "experience": ExperienceModel,
+        "experiences": ExperienceModel,
         "projects": ProjectModel,
         "social_platforms": SocialPlatformModel,
         "websites": WebsiteModel,
     }
+    user = create_user(session, UserModel.model_validate(form_data.profile))
     form_dump = form_data.model_dump()
-    user = UserModel.model_validate(form_dump.get("profile"))
+    form_dump.pop("profile")
 
-    models = []
-    for key, val in d.items():
-        tmp = form_dump.get(key, [])
-        for t in tmp:
-            models.append(val.model_validate(t))
-
-    user = create_user(session, user)
-
-    for model in models:
-        model.user_id = user.id
-        session.add(model)
-    session.commit()
+    for key, val in form_dump.items():
+        for v in val:
+            model = d[key].model_validate(v)
+            save_model(session=session, user=user, model=model)
 
     save_model(
         session=session,
@@ -354,7 +349,6 @@ async def delete_item(
     user: CurrentUser, session: SessionDep, request: Request, item: DeleteItem
 ):
     d = {
-        "user": UserModel,
         "location": LocationModel,
         "programmingLanguage": ProgrammingLanguageModel,
         "language": LanguageModel,
@@ -367,15 +361,17 @@ async def delete_item(
         "socialPlatform": SocialPlatformModel,
         "website": WebsiteModel,
     }
+
+    if item.item_type == "user":
+        delete_user(session, user.email)
+        set_current_user(session=session, email=None)
+        return RedirectResponse(
+            url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
+        )
+
     delete_model(
         session=session,
         user=user,
         model_type=d[item.item_type],
         item_id=item.item_id,
     )
-
-    if item.item_type == "user":
-        set_current_user(session=session, email=None)
-        return RedirectResponse(
-            url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
-        )
