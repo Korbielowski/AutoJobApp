@@ -528,7 +528,7 @@
           <!--                    <p data-pass="{{ website.user_password }}">***********</p>-->
           <dt>Cookies:</dt>
           <dd>{{ website.cookies }}</dd>
-          <dd>Automation steps:</dd>
+          <dt>Automation steps:</dt>
           <dd>{{ website.automation_steps }}</dd>
         </dl>
         <footer>
@@ -582,6 +582,7 @@
     socialPlatform: document.getElementById("social-platforms-list"),
     project: document.getElementById("projects-list"),
     experience: document.getElementById("experiences-list"),
+    certificate: document.getElementById("certificates-list"),
     education: document.getElementById("educations-list"),
     charity: document.getElementById("charities-list"),
     tool: document.getElementById("tools-list"),
@@ -821,6 +822,10 @@
     project: {
       header: ["project"],
       details: ["description", "url"],
+    },
+    certificate: {
+      header: ["certificate"],
+      details: ["organisation", "description"],
     },
     experience: {
       header: ["company", "position"],
