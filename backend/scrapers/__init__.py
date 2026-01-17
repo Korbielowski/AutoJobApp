@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, AsyncGenerator
+from typing import Any, AsyncGenerator, Sequence
 
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
@@ -11,6 +11,7 @@ from backend.career_documents.pdf import (
 from backend.config import settings
 from backend.database.models import (
     UserModel,
+    WebsiteModel,
 )
 from backend.logger import get_logger
 from backend.schemas.models import UserNeeds, UserPreferences
@@ -22,7 +23,7 @@ logger = get_logger()
 async def find_job_entries(
     user: UserModel,
     session: Session,
-    websites,
+    websites: Sequence[WebsiteModel],
     user_preferences: UserPreferences,
     user_needs: UserNeeds,
     # auto_apply: bool,
@@ -42,8 +43,6 @@ async def find_job_entries(
             logger.info(website)
             scraper = LLMScraperV2(
                 url=website.url,
-                email=website.user_email,
-                password=website.user_password,
                 context=context,
                 page=page,
                 website_info=website,
