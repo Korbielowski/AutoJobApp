@@ -627,11 +627,11 @@
         />
         `,
     website: `
-        <input type="hidden" name="cookies">
+        <input type="text" placeholder="Url to a website" name="url">
         <input type="text" placeholder="User login email" name="user_email">
         <input type="text" placeholder="User login password"
                name="user_password">
-        <input type="text" placeholder="Url to a website" name="url">
+        <input type="hidden" name="cookies">
         <input type="hidden" name="automation_steps">
         `,
     socialPlatform: `
@@ -1038,7 +1038,6 @@
     );
     console.log(allTags);
     for (const i in allTags) {
-      allTags[i].placeholder = "";
       allTags[i].value = tagList[i].innerText;
     }
     document.getElementById("edit-info-form-btn").dataset.type = type;
