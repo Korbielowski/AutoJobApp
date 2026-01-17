@@ -10,6 +10,7 @@
 - [ ] Add prompt editor (default values would consist of prompts currently used)
 - [ ] Add model picker
 - [ ] Add prompt editor for various actions
+- [ ] Hide user's email and password used for logging into websites
 
 ### Bugs:
 
@@ -29,14 +30,15 @@
 ### Internal:
 
 - [ ] Write bash script for setting up environment (python, libraries,
-  postgres/sqlite,
-  environmental variables)
+  postgres/sqlite, environmental variables)
+- [ ] Add make for automating different parts of application building, testing etc.
 - [ ] Switch to using TypeScript (JS is horrible)
 - [ ] Throw out Jinja2 from frontend
 - [ ] Add dev scripts
 - [ ] Switch to using puppeter(and find patchright counterpart for puppeter)
 - [ ] Switch to using LightPanda browser (Make two possible backends)
 - [ ] Add proper testing of features!!!
+- [x] Add github CI for testing, building and publishing
 - [ ] Play around with screenshots and OCR
 - [ ] Better async usage and add multithreading
 - [ ] Switch LangChain, other framework like that or write own implementation of
