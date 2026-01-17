@@ -143,19 +143,17 @@ class SocialPlatformPost(BaseModel):
 
 class ProfileInfo(BaseModel):
     profile: User
-    locations: (
-        list[Location] | None
-    )  # TODO: Maybe make this field a priority list
-    programming_languages: list[ProgrammingLanguage] | None
-    languages: list[Language] | None
-    tools: list[Tool] | None
-    certificates: list[Certificate] | None
-    charities: list[Charity] | None
-    educations: list[Education] | None
-    experiences: list[Experience] | None
-    projects: list[Project] | None
-    social_platforms: list[SocialPlatform] | None
-    websites: list[Website] | None
+    locations: list[Location]  # TODO: Maybe make this field a priority list
+    programming_languages: list[ProgrammingLanguage]
+    languages: list[Language]
+    tools: list[Tool]
+    certificates: list[Certificate]
+    charities: list[Charity]
+    educations: list[Education]
+    experiences: list[Experience]
+    projects: list[Project]
+    social_platforms: list[SocialPlatform]
+    websites: list[Website]
 
 
 class DeleteItem(BaseModel):
