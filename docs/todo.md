@@ -7,22 +7,23 @@
 - [ ] Add support for locally run LLMs
 - [ ] Add guardrails for agents' tasks
 - [ ] Add system for handling automatic job applying
-- [ ] Add placeholder values for edit fields on user account page
 - [ ] Add prompt editor (default values would consist of prompts currently used)
 - [ ] Add model picker
 - [ ] Add prompt editor for various actions
 
 ### Bugs:
 
-- [X] Error when running pipeline for the first time without specifying user
+- [x] Error when running pipeline for the first time without specifying user
   preferences regarding scraping (use default values when creating profile)
 - [ ] System fails for some specific CSS selectors (Add escape logic for some of the special symbols like '[]')
-- [ ] When editing websites on user account page, user needs to edit it twice to
+- [x] When editing websites on user account page, user needs to edit it twice to
   change the website url
 - [x] Experience is not saved when registering/creating new user
+- [x] Frontend error when adding new certificate on account page
 
 ### Minor issues:
 
+- [x] Fix placeholder values for edit form fields on user account page
 - [ ] Styling is off when adding new information about user or editing existing data (register page, account page)
 
 ### Internal:
