@@ -16,9 +16,14 @@
 
 - [X] Error when running pipeline for the first time without specifying user
   preferences regarding scraping (use default values when creating profile)
-- [ ] System fails for some specific CSS selectors
+- [ ] System fails for some specific CSS selectors (Add escape logic for some of the special symbols like '[]')
 - [ ] When editing websites on user account page, user needs to edit it twice to
   change the website url
+- [x] Experience is not saved when registering/creating new user
+
+### Minor issues:
+
+- [ ] Styling is off when adding new information about user or editing existing data (register page, account page)
 
 ### Internal:
 
