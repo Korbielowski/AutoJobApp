@@ -292,9 +292,9 @@ async def get_jobs_urls(
     try:
         job_urls = tuple(
             [
-                await loc.get_attribute("href")
+                href
                 for loc in await a_tags.all()
-                if await loc.get_attribute("href")
+                if (href := await loc.get_attribute("href"))
             ]
         )
         if job_urls:
@@ -316,9 +316,9 @@ async def get_jobs_urls(
     try:
         job_urls = tuple(
             [
-                await loc.get_attribute("href")
+                href
                 for loc in await a_tags.all()
-                if await loc.get_attribute("href")
+                if (href := await loc.get_attribute("href"))
             ]
         )
         if job_urls:
