@@ -38,7 +38,7 @@
 - [ ] Switch to using puppeter(and find patchright counterpart for puppeter)
 - [ ] Switch to using LightPanda browser (Make two possible backends)
 - [ ] Add proper testing of features!!!
-- [x] Add github CI for testing, building and publishing
+- [ ] Add github CI for testing, building and publishing
 - [ ] Play around with screenshots and OCR
 - [ ] Better async usage and add multithreading
 - [ ] Switch LangChain, other framework like that or write own implementation of
