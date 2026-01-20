@@ -18,7 +18,8 @@ venv/
 # Environment variables
 .env
 
-# PDFs and other files
+# Generated documents, PDFs
+cv/
 *.pdf
 
 # Code editors
