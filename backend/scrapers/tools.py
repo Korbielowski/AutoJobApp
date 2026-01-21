@@ -1,7 +1,7 @@
 from pprint import pformat
 from typing import Literal
 
-from agents import RunContextWrapper, function_tool
+from pydantic_ai import RunContext
 
 from backend.logger import get_logger
 from backend.schemas.llm_responses import (
@@ -14,27 +14,23 @@ from backend.scrapers.page_processing import get_page_content
 logger = get_logger()
 
 
-@function_tool
-async def get_page_data(
-    wrapper: RunContextWrapper[ContextForLLM],
-) -> ToolResult:
+async def get_page_data(context: RunContext[ContextForLLM]) -> ToolResult:
     """
     Get data about all page HTML elements in a simplified form of JSON and page url
     :return: Page elements in JSON-like form and url
     :rtype: ToolResult
     """
-    logger.debug(f"'{wrapper.context.agent_name}' invoked 'get_page_data' tool")
+    logger.debug(f"'{context.deps.agent_name}' invoked 'get_page_data' tool")
     result = ToolResult(
         success=True,
-        result=f"url: {wrapper.context.page.url}\npage elements representation:\n{await get_page_content(wrapper.context.page)}",
+        result=f"url: {context.deps.page.url}\npage elements representation:\n{await get_page_content(context.deps.page)}",
     )
     # logger.info(f"Tool: get_page_data, {pformat(result)}")
     return result
 
 
-@function_tool
 async def click_element(
-    wrapper: RunContextWrapper[ContextForLLM], text: str
+    context: RunContext[ContextForLLM], text: str
 ) -> ToolResult:
     """
     Click a given element on the page.
@@ -44,16 +40,15 @@ async def click_element(
     :rtype: ToolResult
     """
     logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'click_element' tool with params: {text =}"
+        f"'{context.deps.agent_name}' invoked 'click_element' tool with params: {text =}"
     )
-    result = await click(page=wrapper.context.page, text=text)
+    result = await click(page=context.deps.page, text=text)
     logger.info(f"'click_element' tool result:{pformat(result)}")
     return result
 
 
-@function_tool
 async def fill_element(
-    wrapper: RunContextWrapper[ContextForLLM],
+    context: RunContext[ContextForLLM],
     text: str,
     input_type: Literal["email", "password"],
 ) -> ToolResult:
@@ -67,13 +62,13 @@ async def fill_element(
     :rtype: ToolResult
     """
     logger.debug(
-        f"'{wrapper.context.agent_name}' invoked 'fill_element' tool with params: {input_type =}\n{text =}"
+        f"'{context.deps.agent_name}' invoked 'fill_element' tool with params: {input_type =}\n{text =}"
     )
     result = await fill(
-        page=wrapper.context.page,
+        page=context.deps.page,
         text=text,
         input_type=input_type,
-        website_info=wrapper.context.website_info,
+        website_info=context.deps.website_info,
     )
     logger.info(f"'fill_element' tool result:{pformat(result)}")
     return result
