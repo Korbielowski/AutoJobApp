@@ -2,7 +2,12 @@ import datetime
 
 from devtools import pformat
 from playwright.async_api import Page
-from pydantic_ai import Agent, AgentRunResult
+from pydantic_ai import (
+    Agent,
+    UnexpectedModelBehavior,
+    UsageLimitExceeded,
+    UsageLimits,
+)
 from pydantic_ai.models import KnownModelName
 
 from backend.llm.llm import send_req_to_llm
@@ -21,26 +26,11 @@ from backend.scrapers.page_processing import (
     get_jobs_urls,
     get_page_content,
 )
+from backend.utils import log_agent_run_data
 from backend.scrapers.tools import click_element, fill_element, get_page_data
 
 OPENAI_MODEL = "openai:gpt-5-mini-2025-08-07"
 logger = get_logger()
-
-
-def _log_agent_run_data(result: AgentRunResult[TaskState]):
-    input_tokens = result.usage().input_tokens
-    output_tokens = result.usage().output_tokens
-    logger.info(
-        f"Agent name: {result.response.model_name}\nTotal cost: {
-            result.response.cost()
-        }\nTotal tokens used: {
-            input_tokens + output_tokens
-        }\nInput tokens used: {input_tokens}\nOutput tokens used: {
-            output_tokens
-        }\nFinal agent output{pformat(result.output)}\nFinish reason: {
-            result.response.finish_reason
-        }"
-    )
 
 
 class LLMScraperV2(BaseScraper):
@@ -50,23 +40,39 @@ class LLMScraperV2(BaseScraper):
         logger.debug(f"Running agent loop for '{agent.name}'")
 
         start_url = self.page.url
-        for _ in range(self.retries):
-            result = await agent.run(
-                "",
-                deps=ContextForLLM(
-                    page=self.page,
-                    website_info=self.website_info,
-                    agent_name=name if (name := agent.name) else "",
-                ),
-            )
-            _log_agent_run_data(result)
+        max_requests = 15
+
+        for _ in range(1, self.retries + 1):
+            try:
+                result = await agent.run(
+                    "",
+                    deps=ContextForLLM(
+                        page=self.page,
+                        website_info=self.website_info,
+                        agent_name=name if (name := agent.name) else "",
+                    ),
+                    usage_limits=UsageLimits(request_limit=max_requests),
+                )
+                log_agent_run_data(result)
+            except (UnexpectedModelBehavior, UsageLimitExceeded) as e:
+                logger.exception(
+                    f"Error occurred: {e}\nCause: {e.__cause__}\nRun {_} of {self.retries}"
+                )
+
+                await goto(page=self.page, url=start_url)
+                if isinstance(e, UsageLimitExceeded):
+                    max_requests += 5
+
+                continue
+
             if (
                 result.output.state == "done"
                 and result.output.confidence >= 0.8
             ):
                 return True
-            elif result.output.state == "failed":
+            else:
                 await goto(page=self.page, url=start_url)
+
         return False
 
     async def login_to_page(self) -> None:
@@ -101,7 +107,8 @@ class LLMScraperV2(BaseScraper):
         text_response = await send_req_to_llm(
             system_prompt=await load_prompt("scraping:system:job_offer_links"),
             prompt=await get_page_content(self.page),
-            model=TextResponse,
+            response_type=TextResponse,
+            model=self._model,
         )
         return await get_jobs_urls(text_response=text_response, page=self.page)
 
