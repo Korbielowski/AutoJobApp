@@ -14,10 +14,10 @@ logger = get_logger()
 _action_lock = asyncio.Lock()
 
 
-async def goto(page: Page, link: str, retry: int = 3) -> None:
+async def goto(page: Page, url: str, retry: int = 3) -> None:
     for _ in range(retry):
         try:
-            await page.goto(link)
+            await page.goto(url)
             await page.wait_for_load_state("load")
             logger.info("goto action was successful")
             # await asyncio.sleep(7)
