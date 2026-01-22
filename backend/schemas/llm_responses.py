@@ -88,7 +88,7 @@ class TaskState(BaseModel):
     confidence: Confidence of a task state
     """
 
-    state: Literal["done", "failed"]
+    state: Literal["done", "cannot_be_done", "failed"]
     confidence: float = Field(gt=0.0, le=1.0)
 
 
