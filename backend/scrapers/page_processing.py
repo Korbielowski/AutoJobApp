@@ -1,9 +1,7 @@
 import asyncio
-import json
 import re
 from copy import deepcopy
 
-import tiktoken
 import toon
 from bs4 import BeautifulSoup
 from devtools import pformat
@@ -13,7 +11,6 @@ from backend.logger import get_logger
 from backend.schemas.llm_responses import HTMLElement, TextResponse
 
 logger = get_logger()
-TIK = tiktoken.encoding_for_model("gpt-5-")
 CUTOFF_LEN = 100
 TAGS_TO_REMOVE = (
     "head",
@@ -140,17 +137,17 @@ async def get_page_content(page: Page) -> str:
         tag_list_llm[index] = {"text": processed_text}
         mapping[processed_text] = cleaned_tag_list[index]
 
-    methods = {
-        "Raw HTML page": len(TIK.encode(page_content)),
-        "Raw HTML page with certain tags removed": len(TIK.encode(str(soup))),
-        "New cleaning method with json": len(
-            TIK.encode(json.dumps(tag_list_llm))
-        ),
-        "New cleaning method with toons": len(
-            TIK.encode(toon.encode(tag_list_llm))
-        ),
-    }
-    logger.info(pformat(methods))
+    # methods = {
+    #     "Raw HTML page": len(TIK.encode(page_content)),
+    #     "Raw HTML page with certain tags removed": len(TIK.encode(str(soup))),
+    #     "New cleaning method with json": len(
+    #         TIK.encode(json.dumps(tag_list_llm))
+    #     ),
+    #     "New cleaning method with toons": len(
+    #         TIK.encode(toon.encode(tag_list_llm))
+    #     ),
+    # }
+    # logger.info(pformat(methods))
 
     # set_tmp_data_store(tag_list)
     await set_mapping_store(mapping)
