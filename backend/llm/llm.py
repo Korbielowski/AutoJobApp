@@ -28,6 +28,7 @@ async def send_req_to_llm(
     model,
     *,
     system_prompt: str = "",
+    agent_name: str = "",
     temperature: float = 1,
     tools: Sequence[AbstractBuiltinTool] | None = None,
     retries: int = 3,
@@ -55,7 +56,7 @@ async def send_req_to_llm(
                 user_prompt=prompt,
                 usage_limits=UsageLimits(request_limit=1),
             )
-            log_agent_run_data(result)
+            log_agent_run_data(agent_name, result)
             return result.output
         except (UnexpectedModelBehavior, UsageLimitExceeded) as e:
             logger.exception(
