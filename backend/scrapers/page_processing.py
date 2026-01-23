@@ -5,7 +5,11 @@ from copy import deepcopy
 import toon
 from bs4 import BeautifulSoup
 from devtools import pformat
-from playwright.async_api import Locator, Page
+from playwright.async_api import (
+    Locator,
+    Page,
+    TimeoutError as PlaywrightTimeoutError,
+)
 
 from backend.logger import get_logger
 from backend.schemas.llm_responses import HTMLElement, TextResponse
@@ -282,33 +286,35 @@ async def get_jobs_urls(
         )
         class_selector = f".{'.'.join(tmp.split())}"
 
-    if class_selector == ".":
-        class_selector = ""
-
-    a_tags = page.locator(class_selector)
-    try:
-        job_urls = tuple(
-            [
-                href
-                for loc in await a_tags.all()
-                if (href := await loc.get_attribute("href"))
-            ]
-        )
-        if job_urls:
-            logger.info(
-                f"Job urls got using classList method: {class_selector}\n{pformat(job_urls)}"
+    if class_selector != "." and class_selector != "":
+        a_tags = page.locator(class_selector)
+        try:
+            job_urls = tuple(
+                [
+                    href
+                    for loc in await a_tags.all()
+                    if (href := await loc.get_attribute("href"))
+                ]
             )
-            return job_urls
-    except TimeoutError:
-        logger.error(
-            "TimeoutError occurred while trying to retrieve job urls, using classList method"
-        )
+            if job_urls:
+                logger.info(
+                    f"Job urls got using classList method: {class_selector}\n{pformat(job_urls)}"
+                )
+                return job_urls
+        except PlaywrightTimeoutError:
+            logger.error(
+                "TimeoutError occurred while trying to retrieve job urls, using classList method"
+            )
 
     start_index = len(tag.parents_list) - 1
     while start_index > 0 and tag.parents_list[start_index] != "a":
         start_index -= 1
 
     class_selector = " ".join(tag.parents_list[0 : start_index + 1])
+    if class_selector.strip() == "":
+        logger.warning("Could not find job urls, returning empty tuple")
+        return tuple()
+
     a_tags = page.locator(class_selector)
     try:
         job_urls = tuple(
@@ -323,7 +329,7 @@ async def get_jobs_urls(
                 f"Job urls got using parents method: {class_selector}\n{pformat(job_urls)}"
             )
             return job_urls
-    except TimeoutError:
+    except PlaywrightTimeoutError:
         logger.error(
             "TimeoutError occurred while trying to retrieve job urls, using parents method"
         )
