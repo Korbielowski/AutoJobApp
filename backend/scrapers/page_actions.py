@@ -2,7 +2,7 @@ import asyncio
 import random
 from typing import Literal
 
-from playwright.async_api import Page
+from playwright.async_api import Page, TimeoutError as PlaywrightTimeoutError
 
 from backend.config import settings
 from backend.database.models import WebsiteModel
@@ -22,7 +22,7 @@ async def goto(page: Page, url: str, retry: int = 3) -> None:
             logger.info("goto action was successful")
             # await asyncio.sleep(7)
             return
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             logger.exception("Timeout for goto")
 
 
@@ -40,7 +40,7 @@ async def click(page: Page, text: str) -> ToolResult:
             await page.wait_for_load_state("load")
             logger.info("click call was successful")
             return ToolResult(success=True)
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             logger.error("click call was not successful, TIMEOUT")
             return ToolResult(success=False, error_code="TIMEOUT")
 
@@ -74,6 +74,6 @@ async def fill(
             )
             logger.info("fill was successful")
             return ToolResult(success=True)
-        except TimeoutError:
+        except PlaywrightTimeoutError:
             logger.error("fill was not successful, TIMEOUT")
             return ToolResult(success=False, error_code="TIMEOUT")
