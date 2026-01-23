@@ -8,7 +8,7 @@ from pydantic_ai import (
     UsageLimitExceeded,
     UsageLimits,
 )
-from pydantic_ai.models import KnownModelName
+from pydantic_ai.models import KnownModelName, Model
 
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
@@ -27,21 +27,68 @@ from backend.scrapers.page_processing import (
     get_page_content,
 )
 from backend.utils import log_agent_run_data
+from backend.exceptions import AgentLoopError, ModelImportError
+from backend.config import settings
 from backend.scrapers.tools import click_element, fill_element, get_page_data
 
 OPENAI_MODEL = "openai:gpt-5-mini-2025-08-07"
 logger = get_logger()
 
 
+def _get_model(name: KnownModelName, api_key: str) -> Model:
+    provider_name, model_name = name.split(":")
+
+    # Grok (x.AI) works with both openai and anthropic models. We chose to use openai
+    # According to this github issue: https://github.com/pydantic/pydantic-ai/issues/261
+    if provider_name == "grok":
+        provider_name = "openai"
+
+    provider_model_import_map: dict[str, tuple[tuple[str, str], ...]] = {
+        "openai": (
+            ("pydantic_ai.models.openai", "pydantic_ai.providers.openai"),
+            ("OpenAIChatModel", "OpenAIProvider"),
+        ),
+        "google": (
+            ("pydantic_ai.models.google", "pydantic_ai.providers.google"),
+            ("GoogleModel", "GoogleProvider"),
+        ),
+        "anthropic": (
+            ("pydantic_ai.models.anthropic", "pydantic_ai.providers.anthropic"),
+            ("AnthropicModel", "AnthropicProvider"),
+        ),
+        "mistral": (
+            ("pydantic_ai.models.mistral", "pydantic_ai.providers.mistral"),
+            ("MistralModel", "MistralProvider"),
+        ),
+    }
+
+    imports = provider_model_import_map.get(provider_name)
+    if not imports:
+        raise ModelImportError(
+            f"Cannot import {model_name} model from {provider_name} provider. Check if You have required dependencies installed via application's dependencies manager.",
+        )
+
+    # Dynamically import provider and model classes
+    model = getattr(
+        __import__(imports[0][0], fromlist=imports[1][0]), imports[1][0]
+    )
+    provider = getattr(
+        __import__(imports[0][1], fromlist=imports[1][1]), imports[1][1]
+    )
+
+    return model(model_name=model_name, provider=provider(api_key=api_key))
+
+
 class LLMScraperV2(BaseScraper):
-    _model: KnownModelName = OPENAI_MODEL
+    _model: Model = _get_model(OPENAI_MODEL, settings.OPENAI_API_KEY)
 
     async def _agent_loop(self, agent: Agent[ContextForLLM, TaskState]) -> bool:
-        logger.debug(f"Running agent loop for '{agent.name}'")
-
         start_url = self.page.url
         max_requests = 15
+        agent_name = name if (name := agent.name) else "No agent name"
+        causes: list[BaseException | None] = []
 
+        logger.debug(f"Running agent loop for '{agent.name}'")
         for _ in range(1, self.retries + 1):
             try:
                 result = await agent.run(
@@ -49,15 +96,16 @@ class LLMScraperV2(BaseScraper):
                     deps=ContextForLLM(
                         page=self.page,
                         website_info=self.website_info,
-                        agent_name=name if (name := agent.name) else "",
+                        agent_name=agent_name,
                     ),
                     usage_limits=UsageLimits(request_limit=max_requests),
                 )
-                log_agent_run_data(result)
+                log_agent_run_data(agent_name, result)
             except (UnexpectedModelBehavior, UsageLimitExceeded) as e:
                 logger.exception(
                     f"Error occurred: {e}\nCause: {e.__cause__}\nRun {_} of {self.retries}"
                 )
+                causes.append(e.__cause__)
 
                 await goto(page=self.page, url=start_url)
                 if isinstance(e, UsageLimitExceeded):
@@ -70,10 +118,17 @@ class LLMScraperV2(BaseScraper):
                 and result.output.confidence >= 0.8
             ):
                 return True
-            else:
+            elif (
+                result.output.state == "cannot_be_done"
+                and result.output.confidence >= 0.8
+            ):
+                return False
+            elif result.output.state == "failed":
                 await goto(page=self.page, url=start_url)
 
-        return False
+        raise AgentLoopError(
+            f"Agent loop failed for {agent_name}", self.retries, causes
+        )
 
     async def login_to_page(self) -> None:
         await goto(self.page, self.url)
@@ -109,6 +164,7 @@ class LLMScraperV2(BaseScraper):
             prompt=await get_page_content(self.page),
             response_type=TextResponse,
             model=self._model,
+            agent_name="get_job_entries query",
         )
         return await get_jobs_urls(text_response=text_response, page=self.page)
 
@@ -136,8 +192,8 @@ class LLMScraperV2(BaseScraper):
                 prompt_path="scraping:user:job_offer_info",
                 page=await get_page_content(job_page),
             ),
-            use_openai=True,
-            model=JobEntryResponse,
+            response_type=JobEntryResponse,
+            model=self._model,
         )
 
         attributes = response.model_dump()
