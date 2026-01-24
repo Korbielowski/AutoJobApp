@@ -1,6 +1,6 @@
 import datetime
 from enum import StrEnum
-from typing import Callable, Sequence
+from typing import Literal, Sequence, TypeAliasType
 
 from pydantic import BaseModel, EmailStr
 
@@ -49,21 +49,44 @@ class AttributeType(StrEnum):
     class_l = "class_l"
 
 
+class HTMLElement(BaseModel):
+    id: str = ""
+    name: str = ""
+    element_type: str = ""
+    aria_label: str = ""
+    placeholder: str = ""
+    role: str = ""
+    text: str = ""
+    class_list: list[str] = []
+    parents: str = ""
+    parents_list: list[str] = []
+
+
 class Step(BaseModel):
-    action: Callable
-    html_element_attribute: str  # TODO: Experiment with Locators too if you can
-    attribute_type: AttributeType
-    arguments: dict
+    function: Literal["click", "fill"]
+    tag: HTMLElement
+    additional_arguments: dict
+
+
+AgentName = TypeAliasType(
+    "AgentName",
+    Literal[
+        "login_agent",
+        "job_listing_page_agent",
+        "next_page_agent",
+        "job_urls_agent",
+        "no_agent_name",
+    ],
+)
 
 
 class AutomationSteps(BaseModel):
-    login_to_page: list[Step]
-    is_on_login_page: list[Step]
-    navigate_to_login_page: list[Step]
-    pass_cookies_popup: list[Step]
-    navigate_to_job_list: list[Step]
-    get_job_entries: list[Step]
-    navigate_to_next_page: list[Step]
+    agent_name: AgentName
+    steps: list[Step]
+    # login: list[Step]
+    # job_listing_page: list[Step]
+    # job_urls: list[Step]
+    # next_page: list[Step]
     # TODO: Uncomment if this function gets html elements get_job_information: list[Step]
 
 
