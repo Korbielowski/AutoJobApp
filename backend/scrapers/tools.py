@@ -42,7 +42,9 @@ async def click_element(
     logger.debug(
         f"'{context.deps.agent_name}' invoked 'click_element' tool with params: {text =}"
     )
-    result = await click(page=context.deps.page, text=text)
+    result = await click(
+        page=context.deps.page, text=text, steps=context.deps.steps
+    )
     logger.info(f"'click_element' tool result:{pformat(result)}")
     return result
 
@@ -69,6 +71,7 @@ async def fill_element(
         text=text,
         input_type=input_type,
         website_info=context.deps.website_info,
+        steps=context.deps.steps,
     )
     logger.info(f"'fill_element' tool result:{pformat(result)}")
     return result
