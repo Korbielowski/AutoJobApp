@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from backend.database.models import WebsiteModel
 from backend.schemas.models import (
+    AutomationSteps,
     Certificate,
     Charity,
     Education,
@@ -16,19 +17,6 @@ from backend.schemas.models import (
     Project,
     Tool,
 )
-
-
-class HTMLElement(BaseModel):
-    id: str = ""
-    name: str = ""
-    element_type: str = ""
-    aria_label: str = ""
-    placeholder: str = ""
-    role: str = ""
-    text: str = ""
-    class_list: list[str] = []
-    parents: str = ""
-    parents_list: list[str] = []
 
 
 class CompanyDetails(BaseModel):
@@ -109,3 +97,4 @@ class ContextForLLM:
     page: Page
     website_info: WebsiteModel
     agent_name: str
+    steps: list[AutomationSteps]
