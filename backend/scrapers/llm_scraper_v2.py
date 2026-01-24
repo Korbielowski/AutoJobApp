@@ -1,4 +1,5 @@
 import datetime
+from typing import cast
 
 from devtools import pformat
 from playwright.async_api import Page
@@ -10,6 +11,9 @@ from pydantic_ai import (
 )
 from pydantic_ai.models import KnownModelName, Model
 
+from backend.config import settings
+from backend.database.models import WebsiteModel
+from backend.exceptions import AgentLoopError, ModelImportError
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
@@ -19,20 +23,34 @@ from backend.schemas.llm_responses import (
     TaskState,
     TextResponse,
 )
-from backend.schemas.models import JobEntry
+from backend.schemas.models import AgentName, JobEntry, Step
 from backend.scrapers.base_scraper import BaseScraper
 from backend.scrapers.page_actions import goto
 from backend.scrapers.page_processing import (
     get_jobs_urls,
     get_page_content,
 )
-from backend.utils import log_agent_run_data
-from backend.exceptions import AgentLoopError, ModelImportError
-from backend.config import settings
 from backend.scrapers.tools import click_element, fill_element, get_page_data
+from backend.utils import log_agent_run_data
 
 OPENAI_MODEL = "openai:gpt-5-mini-2025-08-07"
 logger = get_logger()
+
+
+async def _run_automation_steps(agent_name: AgentName, page: Page) -> bool:
+    # automation_steps: AutomationSteps = await get_automation_steps(agent_name)
+    return False
+
+
+async def _save_automation_steps(
+    agent_name: AgentName,
+    steps: list[Step],
+    website_info: WebsiteModel,
+) -> None:
+    return
+    # await save_automation_steps(
+    #     AutomationSteps(agent_name=agent_name, steps=steps)
+    # )
 
 
 def _get_model(name: KnownModelName, api_key: str) -> Model:
@@ -84,8 +102,11 @@ class LLMScraperV2(BaseScraper):
 
     async def _agent_loop(self, agent: Agent[ContextForLLM, TaskState]) -> bool:
         start_url = self.page.url
-        max_requests = 15
-        agent_name = name if (name := agent.name) else "No agent name"
+        max_turns = 15
+        agent_name: AgentName = cast(
+            typ=AgentName, val=name if (name := agent.name) else "no_agent_name"
+        )
+        steps: list[Step] = []
         causes: list[BaseException | None] = []
 
         logger.debug(f"Running agent loop for '{agent.name}'")
@@ -97,19 +118,21 @@ class LLMScraperV2(BaseScraper):
                         page=self.page,
                         website_info=self.website_info,
                         agent_name=agent_name,
+                        steps=steps,
                     ),
-                    usage_limits=UsageLimits(request_limit=max_requests),
+                    usage_limits=UsageLimits(request_limit=max_turns),
                 )
                 log_agent_run_data(agent_name, result)
             except (UnexpectedModelBehavior, UsageLimitExceeded) as e:
                 logger.exception(
                     f"Error occurred: {e}\nCause: {e.__cause__}\nRun {_} of {self.retries}"
                 )
+                steps.clear()
                 causes.append(e.__cause__)
 
                 await goto(page=self.page, url=start_url)
                 if isinstance(e, UsageLimitExceeded):
-                    max_requests += 5
+                    max_turns += 5
 
                 continue
 
@@ -117,6 +140,9 @@ class LLMScraperV2(BaseScraper):
                 result.output.state == "done"
                 and result.output.confidence >= 0.8
             ):
+                await _save_automation_steps(
+                    agent_name, steps, self.website_info
+                )
                 return True
             elif (
                 result.output.state == "cannot_be_done"
@@ -132,6 +158,9 @@ class LLMScraperV2(BaseScraper):
 
     async def login_to_page(self) -> None:
         await goto(self.page, self.url)
+
+        if await _run_automation_steps("login_agent", self.page):
+            return
 
         login_agent = Agent(
             name="login_agent",
