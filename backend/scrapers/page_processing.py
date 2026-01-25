@@ -12,7 +12,8 @@ from playwright.async_api import (
 )
 
 from backend.logger import get_logger
-from backend.schemas.llm_responses import HTMLElement, TextResponse
+from backend.schemas.llm_responses import TextResponse
+from backend.schemas.models import HTMLElement
 
 logger = get_logger()
 CUTOFF_LEN = 100
@@ -268,9 +269,13 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
 
 
 async def get_jobs_urls(
-    text_response: TextResponse, page: Page
+    text_response: TextResponse | HTMLElement, page: Page
 ) -> tuple[str, ...]:
-    tag = await read_key_from_mapping_store(text_response.text)
+    if isinstance(text_response, TextResponse):
+        tag = await read_key_from_mapping_store(text_response.text)
+    else:
+        tag = text_response
+
     logger.debug(f"HTML element holding job title: {pformat(tag)}")
 
     if tag.class_list:
