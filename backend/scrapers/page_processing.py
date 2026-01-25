@@ -1,9 +1,10 @@
 import asyncio
 import re
+from typing import cast
 from copy import deepcopy
 
 import toon
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, ResultSet
 from devtools import pformat
 from playwright.async_api import (
     Locator,
@@ -71,6 +72,7 @@ async def read_key_from_mapping_store(text_key: str) -> HTMLElement:
         return HTMLElement.model_validate(tag)
 
 
+# TODO: For login agent hide users email and password
 async def get_page_content(page: Page) -> str:
     page_content = await page.content()
 
@@ -79,8 +81,9 @@ async def get_page_content(page: Page) -> str:
         tag.decompose()
 
     tag_list: list[dict[str, str | list[str]]] = []
+    bs4_tags: ResultSet = soup.find_all()
     # Get "the most important" elements' attributes
-    for tag in soup.find_all():
+    for tag in bs4_tags:
         text = tag.find(string=True, recursive=False)
         if not text:
             text = ""
@@ -136,7 +139,8 @@ async def get_page_content(page: Page) -> str:
     # Make sure that text exists, if it exists check its length and cut if off, if it is too long
     tag_list_llm = [tag for tag in tag_list_llm if tag.get("text")]
     for index, tag in enumerate(tag_list_llm):
-        processed_text = re.sub(r"\s+", " ", tag.get("text", "")).strip()
+        base_text = cast(str, tag.get("text", ""))
+        processed_text = re.sub(r"\s+", " ", base_text).strip()
         if len(processed_text) >= CUTOFF_LEN:
             processed_text = processed_text[0 : CUTOFF_LEN + 1] + "..."
         tag_list_llm[index] = {"text": processed_text}
@@ -176,9 +180,9 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
     if element.role:
         logger.warning(f"{element.role=}")
         if locator and await locator.count() >= 2:
-            locator = locator.and_(page.get_by_role(element.role, exact=True))
+            locator = locator.and_(page.get_by_role(element.role, exact=True))  # type: ignore
         else:
-            locator = page.get_by_role(element.role, exact=True)
+            locator = page.get_by_role(element.role, exact=True)  # type: ignore
 
         count = await locator.count()
         if 0 < count < 2:
