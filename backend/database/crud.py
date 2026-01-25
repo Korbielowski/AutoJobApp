@@ -20,6 +20,7 @@ from backend.database.models import (
 )
 from backend.logger import get_logger
 from backend.schemas.models import (
+    AgentNameEnum,
     CandidateData,
     Certificate,
     Charity,
@@ -36,6 +37,7 @@ from backend.schemas.models import (
     UserNeeds,
     UserPreferences,
     Website,
+    Step,
 )
 
 logger = get_logger()
@@ -71,7 +73,7 @@ def get_user_preferences(
 
 def update_user_preferences(
     session: Session, user: UserModel, model: UserPreferencesModel
-):
+) -> None:
     record = session.exec(
         select(UserPreferencesModel).where(
             UserPreferencesModel.user_id == user.id
@@ -352,3 +354,22 @@ def delete_model(
     if item:
         session.delete(item)
         session.commit()
+
+
+def update_website_model(
+    session: Session,
+    agent_name: AgentNameEnum,
+    website_info: WebsiteModel,
+    steps: list[Step],
+) -> None:
+    if agent_name == AgentNameEnum.login_agent:
+        website_info.automation_steps.login_steps = steps
+    elif agent_name == AgentNameEnum.job_listing_page_agent:
+        website_info.automation_steps.job_listing_page_steps = steps
+    elif agent_name == AgentNameEnum.job_urls_agent:
+        website_info.automation_steps.job_urls_steps = steps
+    elif agent_name == AgentNameEnum.next_page_agent:
+        website_info.automation_steps.next_page_steps = steps
+
+    session.add(website_info)
+    session.commit()
