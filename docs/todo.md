@@ -9,7 +9,6 @@
 - [ ] Add system for handling automatic job applying
 - [ ] Add prompt editor (default values would consist of prompts currently used)
 - [ ] Add model picker
-- [ ] Add prompt editor for various actions
 - [ ] Hide user's email and password used for logging into job posting websites
 - [ ] Allow user to specify browser backend (LightPanda, Chrome, Chromium)
 
