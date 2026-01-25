@@ -2,12 +2,10 @@ import abc
 
 from devtools import pformat
 from playwright.async_api import BrowserContext, Page
+from sqlmodel import Session
 
 from backend.database.models import WebsiteModel
-from backend.llm.llm import send_req_to_llm
-from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
-from backend.schemas.llm_responses import StateOutput
 from backend.schemas.models import JobEntry, UserNeeds
 
 logger = get_logger()
@@ -20,12 +18,14 @@ class BaseScraper(abc.ABC):
         context: BrowserContext,
         page: Page,
         website_info: WebsiteModel,
+        session: Session,
         retries: int,
     ) -> None:
         self.url = url
         self.context = context
         self.page = page
         self.website_info = website_info
+        self.session = session
         self.retries = retries
 
     @abc.abstractmethod
@@ -60,17 +60,17 @@ class BaseScraper(abc.ABC):
         if not job_entry:
             return None
 
-        # return job_entry
-        state = await send_req_to_llm(
-            prompt=await load_prompt(
-                prompt_path="cv:user:determine_if_offer_valuable",
-                model=job_entry.model_dump(),
-                user_needs=user_needs,
-            ),
-            use_openai=True,
-            model=StateOutput,
-        )
+        return job_entry
+        # state = await send_req_to_llm(
+        #     prompt=await load_prompt(
+        #         prompt_path="scraping:user:determine_if_offer_valuable",
+        #         model=job_entry,
+        #         user_needs=user_needs,
+        #     ),
+        #     use_openai=True,
+        #     model=StateOutput,
+        # )
 
-        if state.state:
-            return job_entry
-        return None
+        # if state.state:
+        #     return job_entry
+        # return None

@@ -46,6 +46,7 @@ async def find_job_entries(
                 context=context,
                 page=page,
                 website_info=website,
+                session=session,
                 retries=user_preferences.retries,
             )
             await scraper.login_to_page()
