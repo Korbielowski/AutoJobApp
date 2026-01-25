@@ -1,5 +1,4 @@
 import datetime
-from typing import cast
 
 from devtools import pformat
 from playwright.async_api import Page
@@ -23,9 +22,10 @@ from backend.schemas.llm_responses import (
     TaskState,
     TextResponse,
 )
-from backend.schemas.models import AgentName, JobEntry, Step
+from backend.schemas.models import JobEntry, Step, AgentNameEnum, HTMLElement
+from backend.database.crud import update_website_model
 from backend.scrapers.base_scraper import BaseScraper
-from backend.scrapers.page_actions import goto
+from backend.scrapers.page_actions import click, fill, goto
 from backend.scrapers.page_processing import (
     get_jobs_urls,
     get_page_content,
@@ -37,20 +37,59 @@ OPENAI_MODEL = "openai:gpt-5-mini-2025-08-07"
 logger = get_logger()
 
 
-async def _run_automation_steps(agent_name: AgentName, page: Page) -> bool:
-    # automation_steps: AutomationSteps = await get_automation_steps(agent_name)
-    return False
-
-
-async def _save_automation_steps(
-    agent_name: AgentName,
-    steps: list[Step],
+async def _run_automation_steps(
+    agent_name: AgentNameEnum,
     website_info: WebsiteModel,
-) -> None:
-    return
-    # await save_automation_steps(
-    #     AutomationSteps(agent_name=agent_name, steps=steps)
-    # )
+    page: Page,
+) -> tuple[bool, HTMLElement | None]:
+    automation_steps = website_info.automation_steps
+    start_url = page.url
+
+    # if not automation_steps:
+    #     logger.warning(f"There is no automation steps for {agent_name}")
+    #     return False
+
+    if agent_name == AgentNameEnum.login_agent:
+        steps = automation_steps.login_steps
+    elif agent_name == AgentNameEnum.job_listing_page_agent:
+        steps = automation_steps.job_listing_page_steps
+    elif agent_name == AgentNameEnum.job_urls_agent:
+        steps = automation_steps.job_urls_steps
+    elif agent_name == AgentNameEnum.next_page_agent:
+        steps = automation_steps.next_page_steps
+
+    for step in steps:
+        if step.function == "click":
+            tool_result, _ = await click(page=page, text=step.tag.text)
+        elif step.function == "fill":
+            tool_result, _ = await fill(
+                page=page,
+                text=step.tag.text,
+                website_info=website_info,
+                **step.additional_arguments,
+            )
+        else:
+            return True, step.tag
+
+        if not tool_result.success:
+            logger.error(
+                f"There was an error while running {agent_name} automation steps. Navigating back to {start_url}, and using LLM to find proper elements"
+            )
+            await goto(page, start_url)
+            return False, None
+
+    return True, None
+
+
+# async def _save_automation_steps(
+#     agent_name: AgentNameEnum,
+#     steps: list[Step],
+#     website_info: WebsiteModel,
+# ) -> None:
+#     return
+# await save_automation_steps(
+#     AutomationSteps(agent_name=agent_name, steps=steps)
+# )
 
 
 def _get_model(name: KnownModelName, api_key: str) -> Model:
@@ -100,12 +139,11 @@ def _get_model(name: KnownModelName, api_key: str) -> Model:
 class LLMScraperV2(BaseScraper):
     _model: Model = _get_model(OPENAI_MODEL, settings.OPENAI_API_KEY)
 
-    async def _agent_loop(self, agent: Agent[ContextForLLM, TaskState]) -> bool:
+    async def _agent_loop(
+        self, agent: Agent[ContextForLLM, TaskState], agent_name: AgentNameEnum
+    ) -> bool:
         start_url = self.page.url
         max_turns = 15
-        agent_name: AgentName = cast(
-            typ=AgentName, val=name if (name := agent.name) else "no_agent_name"
-        )
         steps: list[Step] = []
         causes: list[BaseException | None] = []
 
@@ -140,8 +178,11 @@ class LLMScraperV2(BaseScraper):
                 result.output.state == "done"
                 and result.output.confidence >= 0.8
             ):
-                await _save_automation_steps(
-                    agent_name, steps, self.website_info
+                update_website_model(
+                    session=self.session,
+                    agent_name=agent_name,
+                    website_info=self.website_info,
+                    steps=steps,
                 )
                 return True
             elif (
@@ -159,11 +200,16 @@ class LLMScraperV2(BaseScraper):
     async def login_to_page(self) -> None:
         await goto(self.page, self.url)
 
-        if await _run_automation_steps("login_agent", self.page):
+        status, _ = await _run_automation_steps(
+            AgentNameEnum.login_agent,
+            self.website_info,
+            self.page,
+        )
+        if status:
             return
 
         login_agent = Agent(
-            name="login_agent",
+            name=AgentNameEnum.login_agent,
             model=self._model,
             system_prompt=await load_prompt("scraping:system:login_to_page"),
             tools=[click_element, fill_element, get_page_data],
@@ -171,11 +217,19 @@ class LLMScraperV2(BaseScraper):
             output_type=TaskState,
         )
 
-        await self._agent_loop(login_agent)
+        await self._agent_loop(login_agent, AgentNameEnum.login_agent)
 
     async def navigate_to_job_listing_page(self) -> None:
+        status, _ = await _run_automation_steps(
+            AgentNameEnum.job_listing_page_agent,
+            self.website_info,
+            self.page,
+        )
+        if status:
+            return
+
         job_list_page_agent = Agent(
-            name="job_list_page_agent",
+            name=AgentNameEnum.job_listing_page_agent,
             model=self._model,
             system_prompt=await load_prompt(
                 "scraping:system:navigate_to_job_listing_page"
@@ -185,21 +239,39 @@ class LLMScraperV2(BaseScraper):
             output_type=TaskState,
         )
 
-        await self._agent_loop(job_list_page_agent)
+        await self._agent_loop(
+            job_list_page_agent, AgentNameEnum.job_listing_page_agent
+        )
 
     async def get_job_entries(self) -> tuple[str, ...]:
+        status, tag = await _run_automation_steps(
+            AgentNameEnum.job_urls_agent,
+            self.website_info,
+            self.page,
+        )
+        if status and tag:
+            await get_jobs_urls(text_response=tag, page=self.page)
+
         text_response = await send_req_to_llm(
             system_prompt=await load_prompt("scraping:system:job_offer_links"),
             prompt=await get_page_content(self.page),
             response_type=TextResponse,
             model=self._model,
-            agent_name="get_job_entries query",
+            agent_name=AgentNameEnum.job_urls_agent,
         )
         return await get_jobs_urls(text_response=text_response, page=self.page)
 
     async def navigate_to_next_page(self) -> bool:
+        status, _ = await _run_automation_steps(
+            AgentNameEnum.next_page_agent,
+            self.website_info,
+            self.page,
+        )
+        if status:
+            return True
+
         next_page_agent = Agent(
-            name="next_page_agent",
+            name=AgentNameEnum.next_page_agent,
             model=self._model,
             system_prompt=await load_prompt("scraping:system:next_page_button"),
             tools=[click_element, get_page_data],
@@ -207,7 +279,9 @@ class LLMScraperV2(BaseScraper):
             output_type=TaskState,
         )
 
-        return await self._agent_loop(next_page_agent)
+        return await self._agent_loop(
+            next_page_agent, AgentNameEnum.next_page_agent
+        )
 
     async def _apply_for_job(self):
         pass
