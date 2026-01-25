@@ -30,12 +30,14 @@ async def goto(page: Page, url: str, retry: int = 3) -> None:
             logger.exception("Timeout for goto")
 
 
-async def click(page: Page, text: str, steps: list[Step]) -> ToolResult:
+async def click(page: Page, text: str) -> tuple[ToolResult, Step | None]:
     async with _action_lock:
         tag = await find_html_tag_v2(page=page, text=text)
         if not tag:
             logger.error("Could not find button, ELEMENT_NOT_FOUND")
-            return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
+            return ToolResult(
+                success=False, error_code="ELEMENT_NOT_FOUND"
+            ), None
 
         try:
             if settings.DEBUG:
@@ -43,18 +45,14 @@ async def click(page: Page, text: str, steps: list[Step]) -> ToolResult:
             await tag.click(force=True)
             await page.wait_for_load_state("load")
             logger.info("click call was successful")
-            steps.append(
-                Step(
-                    function="click",
-                    tag=await read_key_from_mapping_store(text),
-                    additional_arguments={},
-                )
+            return ToolResult(success=True), Step(
+                function="click",
+                tag=await read_key_from_mapping_store(text),
+                additional_arguments={},
             )
-
-            return ToolResult(success=True)
         except PlaywrightTimeoutError:
             logger.error("click call was not successful, TIMEOUT")
-            return ToolResult(success=False, error_code="TIMEOUT")
+            return ToolResult(success=False, error_code="TIMEOUT"), None
 
 
 async def fill(
@@ -62,13 +60,14 @@ async def fill(
     text: str,
     input_type: Literal["email", "password"],
     website_info: WebsiteModel,
-    steps: list[Step],
-) -> ToolResult:
+) -> tuple[ToolResult, Step | None]:
     async with _action_lock:
         tag = await find_html_tag_v2(page=page, text=text)
         if not tag:
             logger.error("Could not find input field, ELEMENT_NOT_FOUND")
-            return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
+            return ToolResult(
+                success=False, error_code="ELEMENT_NOT_FOUND"
+            ), None
 
         if input_type == InputFieldTypeEnum.email:
             value = website_info.user_email
@@ -76,7 +75,7 @@ async def fill(
             value = website_info.user_password
         else:
             logger.error("fill was not successful, WRONG_INPUT")
-            return ToolResult(success=False, error_code="WRONG_INPUT")
+            return ToolResult(success=False, error_code="WRONG_INPUT"), None
 
         try:
             if settings.DEBUG:
@@ -86,14 +85,11 @@ async def fill(
                 value, delay=random.randint(2, 12) * 100
             )
             logger.info("fill was successful")
-            steps.append(
-                Step(
-                    function="fill",
-                    tag=await read_key_from_mapping_store(text),
-                    additional_arguments={"input_type": input_type},
-                )
+            return ToolResult(success=True), Step(
+                function="fill",
+                tag=await read_key_from_mapping_store(text),
+                additional_arguments={"input_type": input_type},
             )
-            return ToolResult(success=True)
         except PlaywrightTimeoutError:
             logger.error("fill was not successful, TIMEOUT")
-            return ToolResult(success=False, error_code="TIMEOUT")
+            return ToolResult(success=False, error_code="TIMEOUT"), None
