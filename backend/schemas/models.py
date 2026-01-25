@@ -80,13 +80,21 @@ AgentName = TypeAliasType(
 )
 
 
+class AgentNameEnum(StrEnum):
+    login_agent = "login_agent"
+    job_listing_page_agent = "job_listing_page_agent"
+    next_page_agent = "next_page_agent"
+    job_urls_agent = "job_urls_agent"
+    # no_agent_name = "no_agent_name"
+
+
 class AutomationSteps(BaseModel):
-    agent_name: AgentName
-    steps: list[Step]
-    # login: list[Step]
-    # job_listing_page: list[Step]
-    # job_urls: list[Step]
-    # next_page: list[Step]
+    # agent_name: AgentNameEnum
+    # steps: list[Step]
+    login_steps: list[Step]
+    job_listing_page_steps: list[Step]
+    job_urls_steps: list[Step]
+    next_page_steps: list[Step]
     # TODO: Uncomment if this function gets html elements get_job_information: list[Step]
 
 
