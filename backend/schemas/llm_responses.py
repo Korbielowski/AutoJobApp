@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from backend.database.models import WebsiteModel
 from backend.schemas.models import (
-    AutomationSteps,
+    Step,
     Certificate,
     Charity,
     Education,
@@ -97,4 +97,4 @@ class ContextForLLM:
     page: Page
     website_info: WebsiteModel
     agent_name: str
-    steps: list[AutomationSteps]
+    steps: list[Step]
