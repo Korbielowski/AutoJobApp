@@ -12,9 +12,10 @@ from playwright.async_api import (
     TimeoutError as PlaywrightTimeoutError,
 )
 
+from backend.database.models import WebsiteModel
 from backend.logger import get_logger
 from backend.schemas.llm_responses import TextResponse
-from backend.schemas.models import HTMLElement
+from backend.schemas.models import AgentNameEnum, HTMLElement
 
 logger = get_logger()
 CUTOFF_LEN = 100
@@ -72,8 +73,9 @@ async def read_key_from_mapping_store(text_key: str) -> HTMLElement:
         return HTMLElement.model_validate(tag)
 
 
-# TODO: For login agent hide users email and password
-async def get_page_content(page: Page) -> str:
+async def get_page_content(
+    page: Page, website_info: WebsiteModel, agent_name: AgentNameEnum
+) -> str:
     page_content = await page.content()
 
     soup = BeautifulSoup(page_content, "html.parser")
@@ -84,12 +86,12 @@ async def get_page_content(page: Page) -> str:
     bs4_tags: ResultSet = soup.find_all()
     # Get "the most important" elements' attributes
     for tag in bs4_tags:
+        data: dict[str, str | list[str]] = {}
         text = tag.find(string=True, recursive=False)
         if not text:
             text = ""
         elif len(text) == 1:
             text = ""
-        data: dict[str, str | list[str]] = {}
         if tag_id := tag.get("id"):
             data["id"] = tag_id
         if name := tag.get("name"):
@@ -141,8 +143,17 @@ async def get_page_content(page: Page) -> str:
     for index, tag in enumerate(tag_list_llm):
         base_text = cast(str, tag.get("text", ""))
         processed_text = re.sub(r"\s+", " ", base_text).strip()
+
+        if agent_name == AgentNameEnum.login_agent:
+            processed_text = re.sub(
+                website_info.user_email, "user_email@mymail.com", processed_text
+            )
+            processed_text = re.sub(
+                website_info.user_password, "userpassword123A", processed_text
+            )
         if len(processed_text) >= CUTOFF_LEN:
             processed_text = processed_text[0 : CUTOFF_LEN + 1] + "..."
+
         tag_list_llm[index] = {"text": processed_text}
         mapping[processed_text] = cleaned_tag_list[index]
 
@@ -164,8 +175,13 @@ async def get_page_content(page: Page) -> str:
     return toon.encode(tag_list_llm)
 
 
-async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
-    element = await read_key_from_mapping_store(text)
+async def find_html_tag_v2(
+    page: Page, text: str | HTMLElement
+) -> Locator | None:
+    if isinstance(text, str):
+        element = await read_key_from_mapping_store(text)
+    else:
+        element = text
     locator = None
 
     if element.id:
