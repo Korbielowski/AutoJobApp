@@ -21,6 +21,7 @@ from backend.database.models import (
 from backend.logger import get_logger
 from backend.schemas.models import (
     AgentNameEnum,
+    AutomationSteps,
     CandidateData,
     Certificate,
     Charity,
@@ -32,12 +33,12 @@ from backend.schemas.models import (
     ProgrammingLanguage,
     Project,
     SocialPlatform,
+    Step,
     Tool,
     User,
     UserNeeds,
     UserPreferences,
     Website,
-    Step,
 )
 
 logger = get_logger()
@@ -362,14 +363,21 @@ def update_website_model(
     website_info: WebsiteModel,
     steps: list[Step],
 ) -> None:
+    if not website_info.automation_steps:
+        website_info.automation_steps = AutomationSteps().model_dump()
+
+    json_compatible_steps = [step.model_dump() for step in steps]
+
     if agent_name == AgentNameEnum.login_agent:
-        website_info.automation_steps.login_steps = steps
+        website_info.automation_steps["login_steps"] = json_compatible_steps
     elif agent_name == AgentNameEnum.job_listing_page_agent:
-        website_info.automation_steps.job_listing_page_steps = steps
+        website_info.automation_steps["job_listing_page_steps"] = (
+            json_compatible_steps
+        )
     elif agent_name == AgentNameEnum.job_urls_agent:
-        website_info.automation_steps.job_urls_steps = steps
+        website_info.automation_steps["job_urls_steps"] = json_compatible_steps
     elif agent_name == AgentNameEnum.next_page_agent:
-        website_info.automation_steps.next_page_steps = steps
+        website_info.automation_steps["next_page_steps"] = json_compatible_steps
 
     session.add(website_info)
     session.commit()
