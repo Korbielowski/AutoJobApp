@@ -21,9 +21,12 @@ async def get_page_data(context: RunContext[ContextForLLM]) -> ToolResult:
     :rtype: ToolResult
     """
     logger.debug(f"'{context.deps.agent_name}' invoked 'get_page_data' tool")
+    page_content = await get_page_content(
+        context.deps.page, context.deps.website_info, context.deps.agent_name
+    )
     result = ToolResult(
         success=True,
-        result=f"url: {context.deps.page.url}\npage elements representation:\n{await get_page_content(context.deps.page)}",
+        result=f"url: {context.deps.page.url}\npage elements representation:\n{page_content}",
     )
     # logger.info(f"Tool: get_page_data, {pformat(result)}")
     return result
