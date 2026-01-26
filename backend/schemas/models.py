@@ -91,10 +91,10 @@ class AgentNameEnum(StrEnum):
 class AutomationSteps(BaseModel):
     # agent_name: AgentNameEnum
     # steps: list[Step]
-    login_steps: list[Step]
-    job_listing_page_steps: list[Step]
-    job_urls_steps: list[Step]
-    next_page_steps: list[Step]
+    login_steps: list[Step] = []
+    job_listing_page_steps: list[Step] = []
+    job_urls_steps: list[Step] = []
+    next_page_steps: list[Step] = []
     # TODO: Uncomment if this function gets html elements get_job_information: list[Step]
 
 
