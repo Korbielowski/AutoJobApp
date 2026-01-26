@@ -25,7 +25,7 @@ from backend.schemas.llm_responses import (
 from backend.schemas.models import JobEntry, Step, AgentNameEnum, HTMLElement
 from backend.database.crud import update_website_model
 from backend.scrapers.base_scraper import BaseScraper
-from backend.scrapers.page_actions import click, fill, goto
+from backend.scrapers.page_actions import goto, step_click, step_fill
 from backend.scrapers.page_processing import (
     get_jobs_urls,
     get_page_content,
@@ -42,29 +42,42 @@ async def _run_automation_steps(
     website_info: WebsiteModel,
     page: Page,
 ) -> tuple[bool, HTMLElement | None]:
+    logger.info(f"Running automation steps for {agent_name} agent")
     automation_steps = website_info.automation_steps
     start_url = page.url
 
-    # if not automation_steps:
-    #     logger.warning(f"There is no automation steps for {agent_name}")
-    #     return False
+    if not automation_steps:
+        logger.warning(f"There are no automation steps for {agent_name}")
+        return False, None
 
     if agent_name == AgentNameEnum.login_agent:
-        steps = automation_steps.login_steps
+        steps = [
+            Step.model_validate(step)
+            for step in automation_steps.get("login_steps", [])
+        ]
     elif agent_name == AgentNameEnum.job_listing_page_agent:
-        steps = automation_steps.job_listing_page_steps
+        steps = [
+            Step.model_validate(step)
+            for step in automation_steps.get("job_listing_page_steps", [])
+        ]
     elif agent_name == AgentNameEnum.job_urls_agent:
-        steps = automation_steps.job_urls_steps
+        steps = [
+            Step.model_validate(step)
+            for step in automation_steps.get("job_urls_steps", [])
+        ]
     elif agent_name == AgentNameEnum.next_page_agent:
-        steps = automation_steps.next_page_steps
+        steps = [
+            Step.model_validate(step)
+            for step in automation_steps.get("next_page_steps", [])
+        ]
 
     for step in steps:
         if step.function == "click":
-            tool_result, _ = await click(page=page, text=step.tag.text)
+            tool_result = await step_click(page=page, element=step.tag)
         elif step.function == "fill":
-            tool_result, _ = await fill(
+            tool_result = await step_fill(
                 page=page,
-                text=step.tag.text,
+                element=step.tag,
                 website_info=website_info,
                 **step.additional_arguments,
             )
@@ -254,7 +267,9 @@ class LLMScraperV2(BaseScraper):
 
         text_response = await send_req_to_llm(
             system_prompt=await load_prompt("scraping:system:job_offer_links"),
-            prompt=await get_page_content(self.page),
+            prompt=await get_page_content(
+                self.page, self.website_info, AgentNameEnum.job_urls_agent
+            ),
             response_type=TextResponse,
             model=self._model,
             agent_name=AgentNameEnum.job_urls_agent,
@@ -293,7 +308,11 @@ class LLMScraperV2(BaseScraper):
         response = await send_req_to_llm(
             prompt=await load_prompt(
                 prompt_path="scraping:user:job_offer_info",
-                page=await get_page_content(job_page),
+                page=await get_page_content(
+                    job_page,
+                    self.website_info,
+                    AgentNameEnum.login_agent,  # FIXME: Call to get_page_content function is not correct here, as we are calling it with login_agent data
+                ),
             ),
             response_type=JobEntryResponse,
             model=self._model,
