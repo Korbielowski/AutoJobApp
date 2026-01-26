@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 
 from backend.database.models import WebsiteModel
 from backend.schemas.models import (
+    AgentNameEnum,
     Step,
     Certificate,
     Charity,
@@ -96,5 +97,5 @@ class ToolResult(BaseModel):
 class ContextForLLM:
     page: Page
     website_info: WebsiteModel
-    agent_name: str
+    agent_name: AgentNameEnum
     steps: list[Step]
