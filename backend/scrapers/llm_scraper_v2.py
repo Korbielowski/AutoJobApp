@@ -71,6 +71,10 @@ async def _run_automation_steps(
             for step in automation_steps.get("next_page_steps", [])
         ]
 
+    if not steps:
+        logger.warning(f"There are no automation steps for {agent_name}")
+        return False, None
+
     for step in steps:
         if step.function == "click":
             tool_result = await step_click(page=page, element=step.tag)
@@ -81,7 +85,7 @@ async def _run_automation_steps(
                 website_info=website_info,
                 **step.additional_arguments,
             )
-        else:
+        else:  # Required for job_urls_steps/job_urls_agent
             return True, step.tag
 
         if not tool_result.success:
