@@ -116,7 +116,7 @@ async def fill(
 
         if tool_result.success:
             return tool_result, Step(
-                function="click",
+                function="fill",
                 tag=await read_key_from_mapping_store(text),
                 additional_arguments={"input_type": input_type},
             )
