@@ -8,15 +8,15 @@
 - [ ] Add guardrails for agents' tasks
 - [ ] Add system for handling automatic job applying
 - [ ] Add prompt editor (default values would consist of prompts currently used)
-- [ ] Add model picker
-- [ ] Hide user's email and password used for logging into job posting websites
+- [/] Add model picker
+- [/] Hide user's email and password used for logging into job posting websites
 - [ ] Allow user to specify browser backend (LightPanda, Chrome, Chromium)
 
 ### Bugs:
 
 - [x] Error when running pipeline for the first time without specifying user
   preferences regarding scraping (use default values when creating profile)
-- [ ] System fails for some specific CSS selectors (Add escape logic for some of the special symbols like '[]')
+- [/] System fails for some specific CSS selectors (Add escape logic for some of the special symbols like '[]')
 - [x] When editing websites on user account page, user needs to edit it twice to
   change the website url
 - [x] Experience is not saved when registering/creating new user
@@ -41,7 +41,7 @@
 - [ ] Add github CI for testing, building and publishing
 - [ ] Play around with screenshots and OCR
 - [ ] Better async usage and add multithreading
-- [ ] Switch LangChain, other framework like that or write own implementation of
+- [/] Switch to PydanticAI, other framework like that or write own implementation of
   agents and agent loop
 - [ ] Add system for tracking uniqueness of job offers in database
 - [ ] Switch to Websockets (currently SSE)
