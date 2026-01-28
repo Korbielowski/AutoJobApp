@@ -1,6 +1,6 @@
 import datetime
 from enum import StrEnum
-from typing import Literal, Sequence, TypeAliasType
+from typing import Literal, TypeAliasType
 
 from pydantic import BaseModel, EmailStr
 
@@ -177,26 +177,26 @@ class UserPreferences(BaseModel):
 
 
 class UserNeeds(BaseModel):
-    locations: Sequence[Location] | None
-    programming_languages: Sequence[ProgrammingLanguage] | None
-    languages: Sequence[Language] | None
-    tools: Sequence[Tool] | None
-    certificates: Sequence[Certificate] | None
-    experiences: Sequence[Experience] | None
-    projects: Sequence[Project] | None
+    locations: list[Location] | None
+    programming_languages: list[ProgrammingLanguage] | None
+    languages: list[Language] | None
+    tools: list[Tool] | None
+    certificates: list[Certificate] | None
+    experiences: list[Experience] | None
+    projects: list[Project] | None
 
 
 class CandidateData(BaseModel):
     full_name: str
     email: EmailStr
     phone_number: str
-    locations: Sequence[Location] | None
-    programming_languages: Sequence[ProgrammingLanguage] | None
-    languages: Sequence[Language] | None
-    tools: Sequence[Tool] | None
-    certificates: Sequence[Certificate] | None
-    charities: Sequence[Charity] | None
-    educations: Sequence[Education] | None
-    experiences: Sequence[Experience] | None
-    projects: Sequence[Project] | None
-    social_platforms: Sequence[SocialPlatform] | None
+    locations: list[Location] | None
+    programming_languages: list[ProgrammingLanguage] | None
+    languages: list[Language] | None
+    tools: list[Tool] | None
+    certificates: list[Certificate] | None
+    charities: list[Charity] | None
+    educations: list[Education] | None
+    experiences: list[Experience] | None
+    projects: list[Project] | None
+    social_platforms: list[SocialPlatform] | None
