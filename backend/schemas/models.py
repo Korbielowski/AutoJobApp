@@ -98,7 +98,7 @@ class AutomationSteps(BaseModel):
     # TODO: Uncomment if this function gets html elements get_job_information: list[Step]
 
 
-class Website(BaseModel):
+class JobBoardWebsite(BaseModel):
     cookies: str
     user_email: EmailStr
     user_password: str
