@@ -1,9 +1,9 @@
 import datetime
-from typing import Any, Self
+from typing import Any
 
 # from pydantic_ai.models import KnownModelName
 from pydantic import EmailStr, Json
-from sqlmodel import JSON, Column, Field, SQLModel, Session, select
+from sqlmodel import JSON, Column, Field, SQLModel
 
 from backend.schemas.models import CVCreationModeEnum
 
@@ -16,40 +16,6 @@ class BaseUserConnectedData(BaseDatabaseModel):
     user_id: int | None = Field(
         default=None, foreign_key="usermodel.id", ondelete="CASCADE"
     )
-
-    @classmethod
-    def read_all(cls, session: Session, user_id: int | None) -> list[Self]:
-        if not user_id:
-            return list()
-
-        rows = session.exec(
-            select(cls.__class__).where(cls.__class__.user_id == user_id)
-        ).all()
-        return list(rows)
-
-    def save(
-        self,
-        session: Session,
-        user_id: int,
-    ) -> None:
-        self.user_id = user_id
-        session.add(self)
-        session.commit()
-        session.refresh(self)
-
-    def delete(self, session: Session) -> None:
-        session.delete(
-            session.exec(
-                select(self.__class__).where(self.__class__.id == self.id)
-            ).one()
-        )
-        session.commit()
-
-    def update(self, session: Session, **kwargs) -> None:
-        for key, val in kwargs.items():
-            setattr(self, key, val)
-        session.add(self)
-        session.commit()
 
 
 # TODO: Add priority to each category of skills and qualifications, so that the system can decide what should go into cv
@@ -93,7 +59,7 @@ class UserPreferencesModel(BaseUserConnectedData, table=True):
     retries: int = 3
 
 
-class WebsiteModel(BaseUserConnectedData, table=True):
+class JobBoardWebsiteModel(BaseUserConnectedData, table=True):
     cookies: str
     user_email: EmailStr
     user_password: str
