@@ -2,11 +2,19 @@ from sqlmodel import Session
 
 from backend.database.models import JobBoardWebsiteModel
 from backend.database.repositories.base import DataRepository
-from backend.schemas.models import AgentNameEnum, AutomationSteps, Step
+from backend.schemas.models import (
+    AgentNameEnum,
+    AutomationSteps,
+    JobBoardWebsite,
+    Step,
+)
 
 
-class JobBoardWebsiteRepository(DataRepository[JobBoardWebsiteModel]):
+class JobBoardWebsiteRepository(
+    DataRepository[JobBoardWebsiteModel, JobBoardWebsite]
+):
     model = JobBoardWebsiteModel
+    read_model = JobBoardWebsite
 
     @staticmethod
     def update(
