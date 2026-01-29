@@ -46,6 +46,9 @@ dev = [
     "pytest-playwright>=0.7.0",
     "ruff>=0.11.7",
 ]
+type-check = [
+    "types-aiofiles>=25.1.0.20251011",
+]
 
 [project.urls]
 repository = "https://github.com/Korbielowski/AutoJobApp"
@@ -89,10 +92,30 @@ exclude = ["branding*"]
 
 [tool.ruff]
 line-length = 80
+target-version = "py312"
 
-[tool.ruff.format]
-docstring-code-format = true
+[tool.ruff.lint]
+extend-select = ["B"]
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
 force-single-line = false
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+
+[tool.mypy]
+disallow_untyped_defs = true
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+show_error_codes = true
+warn_unused_ignores =true
+
+[[tool.mypy.overrides]]
+module = ["weasyprint.*"]
+follow_untyped_imports = true
