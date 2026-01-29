@@ -4,7 +4,7 @@ from fastapi import Depends
 from pydantic import EmailStr
 from sqlmodel import Session, select
 
-from backend.database.db import engine
+from backend.database.init_db import engine
 from backend.database.models import UserModel
 
 user: UserModel = UserModel()
