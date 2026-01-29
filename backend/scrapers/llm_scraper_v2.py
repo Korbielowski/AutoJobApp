@@ -1,5 +1,6 @@
 import datetime
 
+from backend.database.repositories.website import update_website_model
 from devtools import pformat
 from playwright.async_api import Page
 from pydantic_ai import (
@@ -22,8 +23,7 @@ from backend.schemas.llm_responses import (
     TaskState,
     TextResponse,
 )
-from backend.schemas.models import JobEntry, Step, AgentNameEnum, HTMLElement
-from backend.database.crud import update_website_model
+from backend.schemas.models import AgentNameEnum, HTMLElement, JobEntry, Step
 from backend.scrapers.base_scraper import BaseScraper
 from backend.scrapers.page_actions import goto, step_click, step_fill
 from backend.scrapers.page_processing import (
