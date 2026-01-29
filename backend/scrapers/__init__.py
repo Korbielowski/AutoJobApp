@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, AsyncGenerator, Sequence
+from typing import Any, AsyncGenerator
 
 from playwright.async_api import async_playwright
 from playwright_stealth import Stealth
@@ -10,8 +10,8 @@ from backend.career_documents.pdf import (
 )
 from backend.config import settings
 from backend.database.models import (
+    JobBoardWebsiteModel,
     UserModel,
-    WebsiteModel,
 )
 from backend.logger import get_logger
 from backend.schemas.models import UserNeeds, UserPreferences
@@ -23,7 +23,7 @@ logger = get_logger()
 async def find_job_entries(
     user: UserModel,
     session: Session,
-    websites: Sequence[WebsiteModel],
+    websites: list[JobBoardWebsiteModel],
     user_preferences: UserPreferences,
     user_needs: UserNeeds,
     # auto_apply: bool,
