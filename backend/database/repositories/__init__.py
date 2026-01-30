@@ -24,6 +24,7 @@ from backend.database.repositories.utils import (
     get_candidate_data,
     get_user_needs,
 )
+from backend.database.repositories.base import DataRepository
 
 __all__ = [
     "JobBoardWebsiteRepository",
@@ -42,4 +43,5 @@ __all__ = [
     "ToolRepository",
     "LanguageRepository",
     "ProgrammingLanguageRepository",
+    "DataRepository",
 ]
