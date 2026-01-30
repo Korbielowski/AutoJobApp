@@ -58,8 +58,8 @@ class DataRepository[T: BaseUserConnectedData, G: BaseModel](
         session.add(obj)
         session.commit()
 
-    @staticmethod
-    def delete(session: Session, obj: T) -> None:
+    def delete(self, session: Session, item_id: int | None) -> None:
+        obj = self.read(session, item_id)
         session.delete(obj)
         session.commit()
 
