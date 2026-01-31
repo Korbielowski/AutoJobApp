@@ -1,4 +1,5 @@
 import os.path
+from email.base64mime import body_encode
 from typing import Annotated, Union
 
 import aiofiles
@@ -14,6 +15,7 @@ from fastapi.responses import (
     HTMLResponse,
     RedirectResponse,
     StreamingResponse,
+    JSONResponse,
 )
 from fastapi.templating import Jinja2Templates
 from sqlmodel import func
@@ -34,6 +36,7 @@ from backend.database.models import (
 from backend.logger import get_logger
 from backend.routes.deps import CurrentUser, SessionDep
 from backend.scrapers import find_job_entries
+from backend.utils import return_exception_response
 
 router = APIRouter(tags=["pages"])
 templates = Jinja2Templates(settings.ROOT_DIR / "templates")
@@ -102,13 +105,15 @@ async def save_preferences(
     )
     update_user_preferences(session=session, user=user, model=preferences_model)
 
+@router.get("/scrape_jobs_check", response_model=None)
+async def scrape_jobs_check(request: Request, user: CurrentUser, session: SessionDep) -> JSONResponse | None:
+    websites = get_websites(session=session, user=user, use_base_model=True)
+    if not websites:
+        return return_exception_response(body="No Job posting websites specified in 'Job Positing Websites' section of 'Account' page", url=request.url)
+    return None
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
 async def scrape_jobs(user: CurrentUser, session: SessionDep):
-    # if not settings.OPENAI_API_KEY:
-    #     raise HTTPException(
-    #         status_code=404, detail="OPENAI_API_KEY env variable is not set"
-    #     )
     websites = get_websites(session=session, user=user, use_base_model=True)
     user_preferences = get_user_preferences(session=session, user=user)
     user_needs = get_user_needs(session=session, user=user)
