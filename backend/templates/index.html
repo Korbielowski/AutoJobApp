@@ -235,7 +235,6 @@ block styles %} {{ super() }}
       <p id="status-text">Run Status <span id="status-dot"></span></p>
     </div>
   </div>
-</div>
 
 <ul id="job-entries-container"></ul>
 {% endblock content %} {% block scripts %}
@@ -360,13 +359,13 @@ block styles %} {{ super() }}
     const statusDot = document.getElementById("status-dot");
 
     if (button.innerText === "Start job search") {
-      statusDot.style.backgroundColor = "#22C55E";
-      statusDot.style.animationName = "dot-animation";
-      statusDot.style.animationIterationCount = "infinite";
-      statusDot.style.animationDuration = "4s";
-      button.innerText = "Stop job search";
+        const response = await sendRequest("{{ url_for('scrape_jobs_check') }}")
+        if(!response){
+            return;
+        }
 
       eventSrc = new EventSource("{{ url_for('scrape_jobs') }}");
+
       eventSrc.onmessage = function (event) {
         const data = JSON.parse(event.data);
         if (data === null) {
@@ -377,6 +376,12 @@ block styles %} {{ super() }}
         }
         draw_job(data);
       };
+
+      statusDot.style.backgroundColor = "#22C55E";
+      statusDot.style.animationName = "dot-animation";
+      statusDot.style.animationIterationCount = "infinite";
+      statusDot.style.animationDuration = "4s";
+      button.innerText = "Stop job search";
     } else {
       eventSrc.close();
       eventSrc = null;
@@ -388,5 +393,4 @@ block styles %} {{ super() }}
     }
   }
 </script>
-
 {% endblock scripts %}
