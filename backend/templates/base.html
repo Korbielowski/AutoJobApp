@@ -15,6 +15,7 @@
       href="{{ url_for('static', path='base.css') }}"
     />
 
+      <script src="{{ url_for('static', path='js/requests.js')}}"></script>
     {% block styles %}{% endblock styles %}
   </head>
   <body>
@@ -52,6 +53,19 @@
         <p id="modal-msg"></p>
         <span id="modal-close-btn">&times;</span>
       </div>
+    </div>
+
+    <div id="alert-container" hidden="hidden">
+        <div>
+            <h3>Error message:</h3>
+            <p id="alert-body"></p>
+        </div>
+        <div>
+            <h3>Endpoint url/path:</h3>
+            <p id="alert-url"></p>
+        </div>
+
+        <button onclick="closeAlert()">Close alert</button>
     </div>
 
     <script>
