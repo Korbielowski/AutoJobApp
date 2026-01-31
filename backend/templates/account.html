@@ -986,24 +986,48 @@
     console.log("{{ url_for('add_new_information_to_account') }}");
 
     // TODO: Add error handling
-    await fetch("{{ url_for('add_new_information_to_account') }}", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(jsonData),
-    })
-      .then((response) => response.json())
-      .then(async (model) => {
-        buildCard(type, model);
+      await sendRequest("{{ url_for('edit_information_about_account') }}", {
+          method: "POST",
+          headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonData),
+      }).then(async (response) => {
+          if(!response){
+              document.getElementById("add-new-info-container").innerHTML = "";
+              addForm.style.display = "none";
+              return;
+          }
+          const model = await response.json();
+          buildCard(type, model);
 
-        document.getElementById("add-new-info-container").innerHTML = "";
-        document
-          .getElementById("add-new-info-form-btn")
-          .setAttribute("data-type", "");
-        addForm.style.display = "none";
+          document.getElementById("add-new-info-container").innerHTML = "";
+          document
+              .getElementById("add-new-info-form-btn")
+              .setAttribute("data-type", "");
+          addForm.style.display = "none";
       });
+    // await fetch("{{ url_for('add_new_information_to_account') }}", {
+    //   method: "POST",
+    //   headers: {
+    //     Accept: "application/json",
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(jsonData),
+    // })
+    //   .then(async (response) => {
+    //     if(!response.ok){
+    //
+    //     }
+    //     buildCard(type, model);
+    //
+    //     document.getElementById("add-new-info-container").innerHTML = "";
+    //     document
+    //       .getElementById("add-new-info-form-btn")
+    //       .setAttribute("data-type", "");
+    //     addForm.style.display = "none";
+    //   });
   }
 
   function openEditInformationForm(e) {
@@ -1074,20 +1098,36 @@
     console.log(`Type: ${type}, json: ${JSON.stringify(jsonData)}`);
 
     // TODO: Add error handling
-    await fetch("{{ url_for('edit_information_about_account') }}", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(jsonData),
-    })
-      .then((response) => response.json())
-      .then(async (model) => {
-        buildCard(type, model, id);
-        document.getElementById("edit-info-container").innerHTML = "";
-        editForm.style.display = "none";
+      await sendRequest("{{ url_for('edit_information_about_account') }}", {
+          method: "POST",
+          headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+          },
+          body: JSON.stringify(jsonData),
+      }).then(async (response) => {
+          if(!response){
+              return;
+          }
+          const model = await response.json();
+          buildCard(type, model, id);
+          document.getElementById("edit-info-container").innerHTML = "";
+          editForm.style.display = "none";
       });
+    // await fetch("{{ url_for('edit_information_about_account') }}", {
+    //   method: "POST",
+    //   headers: {
+    //     Accept: "application/json",
+    //     "Content-Type": "application/json",
+    //   },
+    //   body: JSON.stringify(jsonData),
+    // })
+    //   .then((response) => response.json())
+    //   .then(async (model) => {
+    //     buildCard(type, model, id);
+    //     document.getElementById("edit-info-container").innerHTML = "";
+    //     editForm.style.display = "none";
+    //   });
   }
 
   async function deleteInformation(e) {
