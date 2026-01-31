@@ -17,6 +17,7 @@ from backend.schemas.models import (
     Tool,
     User,
     Website,
+    CVCreationModeEnum,
 )
 
 
@@ -140,6 +141,14 @@ class SocialPlatformPost(BaseModel):
 
     model_config = ConfigDict(strict=True)
 
+class UserPreferencesPost(BaseModel):
+    id: int
+    cv_creation_mode: CVCreationModeEnum
+    generate_cover_letter: bool
+    cv_path: str
+    retries: int = 3
+
+    model_config = ConfigDict(strict=True)
 
 class ProfileInfo(BaseModel):
     profile: User
