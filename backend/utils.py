@@ -1,7 +1,11 @@
 from functools import wraps
+from devtools import pformat
 import time
-from typing import Callable
+from typing import Callable, Any
 
+from starlette.datastructures import URL
+from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from backend.logger import get_logger
 
 
@@ -20,3 +24,11 @@ def measure_func_time(func: Callable):
         return result
 
     return wrapper
+
+
+def return_exception_response(body: str, url: URL, status_code: int = 400, exceptions: Any = None) -> JSONResponse:
+    content = {"body": body, "url": str(url)}
+    if exceptions:
+        logger.info(pformat(exceptions))
+        content["exceptions"] = exceptions
+    return JSONResponse(status_code=status_code, content=jsonable_encoder(content))
