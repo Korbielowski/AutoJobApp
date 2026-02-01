@@ -7,7 +7,7 @@ from sqlmodel import select
 from fastapi import APIRouter
 
 
-router = APIRouter(prefix="tools")
+router = APIRouter(prefix="/tools")
 
 
 @router.get("/")

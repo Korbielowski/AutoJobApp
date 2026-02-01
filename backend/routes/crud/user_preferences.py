@@ -8,7 +8,7 @@ from sqlmodel import select
 from fastapi import APIRouter
 
 
-router = APIRouter(prefix="user_preferences")
+router = APIRouter(prefix="/user_preferences")
 
 
 @router.get("/")

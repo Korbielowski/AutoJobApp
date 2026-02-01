@@ -7,7 +7,7 @@
 # from fastapi import APIRouter
 #
 #
-# router = APIRouter(prefix="job_entries")
+# router = APIRouter(prefix="/job_entries")
 #
 #
 # @router.get("/")
