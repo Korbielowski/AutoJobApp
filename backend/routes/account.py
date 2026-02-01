@@ -81,7 +81,7 @@ templates = Jinja2Templates(settings.ROOT_DIR / "templates")
 logger = get_logger()
 
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get("/login")
 async def load_login_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):
@@ -98,7 +98,7 @@ async def load_login_page(
     )
 
 
-@router.post("/login", response_class=RedirectResponse)
+@router.post("/login")
 async def login(session: SessionDep, request: Request, email: str = Form(...)):
     # TODO: Get current profile in other/better way ;)
     set_current_user(session, email)
@@ -107,7 +107,7 @@ async def login(session: SessionDep, request: Request, email: str = Form(...)):
     )
 
 
-@router.get("/logout", response_class=RedirectResponse)
+@router.get("/logout")
 async def logout(session: SessionDep, request: Request):
     set_current_user(session, None)
     return RedirectResponse(
@@ -115,7 +115,7 @@ async def logout(session: SessionDep, request: Request):
     )
 
 
-@router.get("/register", response_class=Union[RedirectResponse, HTMLResponse])
+@router.get("/register")
 async def load_register_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):
@@ -127,7 +127,7 @@ async def load_register_page(
     )
 
 
-@router.post("/register", response_class=RedirectResponse)
+@router.post("/register")
 async def register(
     session: SessionDep,
     request: Request,
@@ -175,7 +175,7 @@ async def register(
     )
 
 
-@router.get("/account", response_class=Union[HTMLResponse, RedirectResponse])
+@router.get("/account")
 async def account_details(
     current_user: CurrentUser, session: SessionDep, request: Request
 ):
@@ -225,7 +225,7 @@ async def account_details(
 
 
 @router.post(
-    "/delete_account", response_class=Union[HTMLResponse, RedirectResponse]
+    "/delete_account"
 )
 async def delete_account(
     session: SessionDep, request: Request, email: str = Form(...)
@@ -283,7 +283,7 @@ async def add_new_information_to_account(
     return model
 
 
-@router.post("/edit_information_about_account", response_class=JSONResponse)
+@router.post("/edit_information_about_account")
 async def edit_information_about_account(
     session: SessionDep,
     form_data: Union[
@@ -330,7 +330,7 @@ async def edit_information_about_account(
     return model_to_update
 
 
-@router.get("/manage_users", response_class=HTMLResponse)
+@router.get("/manage_users")
 async def load_manage_users_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):

@@ -43,7 +43,7 @@ templates = Jinja2Templates(settings.ROOT_DIR / "templates")
 logger = get_logger()
 
 
-@router.get("/", response_class=Union[RedirectResponse, HTMLResponse])
+@router.get("/")
 async def index(user: CurrentUser, session: SessionDep, request: Request):
     if not user.id:
         if session.scalar(func.count(UserModel.id)) >= 1:
@@ -105,8 +105,8 @@ async def save_preferences(
     )
     update_user_preferences(session=session, user=user, model=preferences_model)
 
-@router.get("/scrape_jobs_check", response_model=None)
-async def scrape_jobs_check(request: Request, user: CurrentUser, session: SessionDep) -> JSONResponse | None:
+@router.get("/scrape_jobs_check")
+async def scrape_jobs_check(request: Request, user: CurrentUser, session: SessionDep):
     websites = get_websites(session=session, user=user, use_base_model=True)
     if not websites:
         return return_exception_response(body="No Job posting websites specified in 'Job Positing Websites' section of 'Account' page", url=request.url)
@@ -136,14 +136,14 @@ async def scrape_jobs(user: CurrentUser, session: SessionDep):
 #
 
 
-@router.get("/cv_page", response_class=HTMLResponse)
+@router.get("/cv_page")
 async def cv_page(
     current_user: CurrentUser, session: SessionDep, request: Request
 ):
     return
 
 
-@router.get("/upload_cv", response_class=HTMLResponse)
+@router.get("/upload_cv")
 async def upload_cv(
     current_user: CurrentUser, session: SessionDep, request: Request
 ):
