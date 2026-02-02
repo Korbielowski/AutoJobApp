@@ -1,7 +1,7 @@
 {% extends "base.html" %} {% block title %}AutoJobApp{% endblock title %} {%
 block styles %} {{ super() }}
 <style>
-  #scrape-container {
+  #scrape-container, #already-scraped-jobs {
     padding: 10px 10px;
     width: 100%;
     display: flex;
@@ -9,7 +9,7 @@ block styles %} {{ super() }}
     gap: 10px;
   }
 
-  #job-entries-container li {
+  #job-entries-container li, #already-scraped-jobs li {
     margin: 10px 0;
     padding: 10px;
     background-color: var(--surface);
@@ -235,12 +235,108 @@ block styles %} {{ super() }}
       <p id="status-text">Run Status <span id="status-dot"></span></p>
     </div>
   </div>
-</div>
 
-<ul id="job-entries-container"></ul>
+{% if scraped_job_entries %}
+<div id="already-scraped-jobs">
+    <h2>Already scraped jobs</h2>
+    <ul>
+        {% for job_entry in scraped_job_entries %}
+        <li>
+            <div>
+                <h5>Job Title: </h5>
+                <p class="job-data">{{ job_entry.title }}</p>
+                <br>
+                <h5>Location: </h5>
+                <p class="job-data">{{ job_entry.location }}</p>
+                <br>
+                <h5>Company Name: </h5>
+                <p class="job-data">{{ job_entry.company_name }}</p>
+            </div>
+            <details>
+                <summary>Job details</summary>
+                <div class="job-data-container">
+                    <h5>CV Path: </h5>
+                    <p>{{ job_entry.cv_path }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Cover letter Path: </h5>
+                    <p>{{ job_entry.cover_letter_path }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Job Url: </h5>
+                    <p>
+                        <a href="${data.job_url}" target="_blank">{{ job_entry.job_url }}</a>
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Url: </h5>
+                    <p>
+                        <a href="${data.company_url}" target="_blank">{{ job_entry.company_url }}</a>
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Contract Type: </h5>
+                    <p class="job-data">{{ job_entry.contract_type }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Employment Type: </h5>
+                    <p class="job-data">{{ job_entry.employment_type }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Work Arrangement: </h5>
+                    <p class="job-data">{{ job_entry.work_arrangement }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Job Requirements: </h5>
+                    <p class="job-data">{{ job_entry.requirements }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Duties: </h5>
+                    <p class="job-data">{{ job_entry.duties }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>About Project: </h5>
+                    <p class="job-data">{{ job_entry.about_project }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Benefits: </h5>
+                    <p class="job-data">{{ job_entry.offer_benefits }}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Additional Information: </h5>
+                    <p class="job-data">{{ job_entry.additional_information }}</p>
+                </div>
+            </details>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+<div id="newly-scraped-jobs">
+    <h2>Newly scraped jobs</h2>
+    <ul id="job-entries-container"></ul>
+</div>
 {% endblock content %} {% block scripts %}
 <script>
   let eventSrc = null;
+
+window.addEventListener("beforeunload", (event) => {
+    if(!eventSrc) {
+     console.log("Event source already closed");
+    } else {
+      const button = document.getElementById("scrape-btn");
+      const statusDot = document.getElementById("status-dot");
+      eventSrc.close();
+      eventSrc = null;
+      button.innerText = "Start job search";
+      statusDot.style.backgroundColor = "#475569";
+      statusDot.style.animationName = "";
+      statusDot.style.animationIterationCount = "";
+      statusDot.style.animationDuration = "";
+    }
+
+  event.returnValue = "";
+});
 
   const savePreferencesBtn = document.getElementById("save-preferences-btn");
   savePreferencesBtn.addEventListener("click", async (e) => {
@@ -301,11 +397,15 @@ block styles %} {{ super() }}
                 <p class="job-data">${data.company_name}</p>
             </div>
             <details>
+                <summary>Job details</summary>
                 <div class="job-data-container">
                     <h5>CV Path: </h5>
                     <p>${data.cv_path}</p>
                 </div>
-                <summary>Job details</summary>
+                <div class="job-data-container">
+                    <h5>Cover letter Path: </h5>
+                    <p>${data.cover_letter_path}</p>
+                </div>
                 <div class="job-data-container">
                     <h5>Job Url: </h5>
                      <p>
