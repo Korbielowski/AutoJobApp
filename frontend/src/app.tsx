@@ -4,6 +4,7 @@ import { FileRoutes } from "@solidjs/start/router";
 import { Suspense } from "solid-js";
 import createClient from "openapi-fetch";
 import { paths } from "../api/api";
+import  NavBar  from "~/components/NavBar";
 import "./app.css";
 
 const client = createClient<paths>({baseUrl: "http://127.0.0.1:8000/"});
@@ -14,8 +15,7 @@ export default function App() {
       root={props => (
         <MetaProvider>
           <Title>SolidStart - Basic</Title>
-          <a href="/">Index</a>
-          <a href="/about">About</a>
+            <NavBar/>
           <Suspense>{props.children}</Suspense>
         </MetaProvider>
       )}
