@@ -24,8 +24,8 @@ async def setup(inner_app: FastAPI) -> AsyncGenerator:
     set_tracing_disabled(disabled=True)
 
     inner_app.mount(
-        "/static",
-        StaticFiles(directory=settings.ROOT_DIR / "static"),
+        path="/",
+        app=StaticFiles(directory=settings.ROOT_DIR / "_static", html=True),
         name="static",
     )
 
