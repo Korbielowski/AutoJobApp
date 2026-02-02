@@ -31,3 +31,6 @@ cv/
 
 # Sqlite database
 *.db
+
+# Automatically generated static files
+_static/
