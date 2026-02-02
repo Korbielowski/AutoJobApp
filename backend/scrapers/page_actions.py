@@ -2,7 +2,7 @@ import asyncio
 import random
 from typing import Literal
 
-from playwright.async_api import Page
+from playwright.async_api import Page, Error
 
 from backend.config import settings
 from backend.database.models import WebsiteModel
@@ -28,7 +28,12 @@ async def goto(page: Page, link: str, retry: int = 3) -> None:
 
 async def click(page: Page, text: str) -> ToolResult:
     async with _action_lock:
-        tag = await find_html_tag_v2(page=page, text=text)
+        try:
+            tag = await find_html_tag_v2(page=page, text=text)
+        except Error as e:
+            logger.error(f"Could not find button, ELEMENT_NOT_FOUND. Because of {e.message}")
+            return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND", additional_information=f"{e.name}\n{e.message}")
+
         if not tag:
             logger.error("Could not find button, ELEMENT_NOT_FOUND")
             return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
@@ -52,7 +57,12 @@ async def fill(
     website_info: WebsiteModel,
 ) -> ToolResult:
     async with _action_lock:
-        tag = await find_html_tag_v2(page=page, text=text)
+        try:
+            tag = await find_html_tag_v2(page=page, text=text)
+        except Error as e:
+            logger.error(f"Could not find button, ELEMENT_NOT_FOUND. Because of {e.name}")
+            return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND", additional_information=f"{e.name}\n{e.message}")
+
         if not tag:
             logger.error("Could not find input field, ELEMENT_NOT_FOUND")
             return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
