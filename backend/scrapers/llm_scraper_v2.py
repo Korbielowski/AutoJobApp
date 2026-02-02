@@ -211,12 +211,18 @@ class LLMScraperV2(BaseScraper):
                 prompt=await get_page_content(self.page),
                 model=TextResponse,
             )
-            job_urls = await get_jobs_urls(text_response=text_response, page=self.page)
+            try:
+                job_urls = await get_jobs_urls(text_response=text_response, page=self.page)
+            except Exception:
+                pass
 
             if job_urls:
                 break
             else:
                 await asyncio.sleep(5)
+
+        if not job_urls:
+            logger.info("Could not find job tiles")
 
         return job_urls
 
