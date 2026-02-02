@@ -7,7 +7,7 @@ import tiktoken
 import toon
 from bs4 import BeautifulSoup
 from devtools import pformat
-from playwright.async_api import Locator, Page
+from playwright.async_api import Locator, Page, Error
 
 from backend.logger import get_logger
 from backend.schemas.llm_responses import HTMLElement, TextResponse
@@ -58,7 +58,6 @@ async def set_mapping_store(
 async def read_key_from_mapping_store(text_key: str) -> HTMLElement:
     async with _mapping_lock:
         if not _mapping_store:
-            logger.error("It does not exist xd")
             raise Exception(
                 "Reading from empty tmp_data_store, this should not happen"
             )
@@ -259,7 +258,7 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
             return locator.last
         logger.error(f"Count: {count}")
 
-    # TODO: Add step where LLMselects from multiple elements, if code above could not select single one element
+    # TODO: Add step where LLM selects from multiple elements, if code above could not select single one element
     if locator:
         return locator.last
 
@@ -269,49 +268,63 @@ async def find_html_tag_v2(page: Page, text: str) -> Locator | None:
 async def get_jobs_urls(
     text_response: TextResponse, page: Page
 ) -> tuple[str, ...]:
-    tag = await read_key_from_mapping_store(text_response.text)
+    try:
+        tag = await read_key_from_mapping_store(text_response.text)
+    except Exception:
+        return tuple()
+
     logger.debug(f"HTML element holding job title: {pformat(tag)}")
 
+    class_selector = ""
     if tag.class_list:
         class_selector = f".{'.'.join(tag.class_list)}"
     else:
         a_tag_with_job_title = page.get_by_role("link").filter(
             has_text=tag.text
         )
-        tmp = (
-            _
-            if (_ := await a_tag_with_job_title.last.get_attribute("class"))
-            else ""
-        )
-        class_selector = f".{'.'.join(tmp.split())}"
+        try:
+            await a_tag_with_job_title.count()
+            tmp = (
+                _
+                if (_ := await a_tag_with_job_title.last.get_attribute("class"))
+                else ""
+            )
+            class_selector = f".{'.'.join(tmp.split())}"
+        except Error:
+            pass
 
     if class_selector == ".":
         class_selector = ""
 
-    a_tags = page.locator(class_selector)
-    try:
-        job_urls = tuple(
-            [
-                href
-                for loc in await a_tags.all()
-                if (href := await loc.get_attribute("href"))
-            ]
-        )
-        if job_urls:
-            logger.info(
-                f"Job urls got using classList method: {class_selector}\n{pformat(job_urls)}"
+    if class_selector.strip():
+        a_tags = page.locator(class_selector)
+        try:
+            job_urls = tuple(
+                [
+                    href
+                    for loc in await a_tags.all()
+                    if (href := await loc.get_attribute("href"))
+                ]
             )
-            return job_urls
-    except TimeoutError:
-        logger.error(
-            "TimeoutError occurred while trying to retrieve job urls, using classList method"
-        )
+            if job_urls:
+                logger.info(
+                    f"Job urls got using classList method: {class_selector}\n{pformat(job_urls)}"
+                )
+                return job_urls
+        except TimeoutError:
+            logger.error(
+                "TimeoutError occurred while trying to retrieve job urls, using classList method"
+            )
 
     start_index = len(tag.parents_list) - 1
     while start_index > 0 and tag.parents_list[start_index] != "a":
         start_index -= 1
 
     class_selector = " ".join(tag.parents_list[0 : start_index + 1])
+
+    if not class_selector.strip():
+        return tuple()
+
     a_tags = page.locator(class_selector)
     try:
         job_urls = tuple(
