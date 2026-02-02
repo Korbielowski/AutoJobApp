@@ -63,7 +63,7 @@ class BaseScraper(abc.ABC):
         # return job_entry
         state = await send_req_to_llm(
             prompt=await load_prompt(
-                prompt_path="cv:user:determine_if_offer_valuable",
+                prompt_path="career_documents:user:determine_if_offer_valuable",
                 model=job_entry.model_dump(),
                 user_needs=user_needs,
             ),
