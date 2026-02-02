@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
+import asyncio
 
 from agents import set_tracing_disabled
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import settings
@@ -11,6 +12,10 @@ from backend.logger import get_logger
 from backend.routes.main import api_router
 
 logger = get_logger()
+
+
+def handle_asyncio_exception(loop, context):
+    logger.info("Ending job scraping process")
 
 
 @asynccontextmanager
@@ -24,6 +29,9 @@ async def setup(inner_app: FastAPI) -> AsyncGenerator:
         StaticFiles(directory=settings.ROOT_DIR / "static"),
         name="static",
     )
+
+    loop = asyncio.get_event_loop()
+    loop.set_exception_handler(handle_asyncio_exception)
 
     yield
 
