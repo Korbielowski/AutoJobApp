@@ -166,6 +166,7 @@ class LLMScraperV2(BaseScraper):
                 )
                 _log_agent_run_data(e.run_data)
                 max_turns += 5
+                logger.info(f"Agent '{agent.name}' is making a retry with more turns ({max_turns})")
                 await goto(page=self.page, link=start_url)
                 continue
 
@@ -202,12 +203,22 @@ class LLMScraperV2(BaseScraper):
         await self._agent_loop(job_list_page_agent)
 
     async def get_job_entries(self) -> tuple[str, ...]:
-        text_response = await send_req_to_llm(
-            system_prompt=await load_prompt("scraping:system:job_offer_links"),
-            prompt=await get_page_content(self.page),
-            model=TextResponse,
-        )
-        return await get_jobs_urls(text_response=text_response, page=self.page)
+        job_urls = tuple()
+
+        for _ in range(self.retries):
+            text_response = await send_req_to_llm(
+                system_prompt=await load_prompt("scraping:system:job_offer_links"),
+                prompt=await get_page_content(self.page),
+                model=TextResponse,
+            )
+            job_urls = await get_jobs_urls(text_response=text_response, page=self.page)
+
+            if job_urls:
+                break
+            else:
+                await asyncio.sleep(5)
+
+        return job_urls
 
     async def navigate_to_next_page(self) -> bool:
         next_page_agent = Agent(
