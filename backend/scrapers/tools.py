@@ -1,5 +1,6 @@
 from pprint import pformat
 from typing import Literal
+import asyncio
 
 from agents import RunContextWrapper, function_tool
 
@@ -46,7 +47,18 @@ async def click_element(
     logger.debug(
         f"'{wrapper.context.agent_name}' invoked 'click_element' tool with params: {text =}"
     )
-    result = await click(page=wrapper.context.page, text=text)
+
+    result = None
+    for _ in range(2):
+        result = await click(page=wrapper.context.page, text=text)
+        if result.success:
+            break
+        else:
+            await asyncio.sleep(5)
+
+    if not result:
+        return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
+
     logger.info(f"'click_element' tool result:{pformat(result)}")
     return result
 
@@ -69,11 +81,22 @@ async def fill_element(
     logger.debug(
         f"'{wrapper.context.agent_name}' invoked 'fill_element' tool with params: {input_type =}\n{text =}"
     )
-    result = await fill(
-        page=wrapper.context.page,
-        text=text,
-        input_type=input_type,
-        website_info=wrapper.context.website_info,
-    )
+
+    result = None
+    for _ in range(2):
+        result = await fill(
+            page=wrapper.context.page,
+            text=text,
+            input_type=input_type,
+            website_info=wrapper.context.website_info,
+        )
+        if result.success:
+            break
+        else:
+            await asyncio.sleep(5)
+
+    if not result:
+        return ToolResult(success=False, error_code="ELEMENT_NOT_FOUND")
+
     logger.info(f"'fill_element' tool result:{pformat(result)}")
     return result

@@ -102,6 +102,7 @@ class ToolResult(BaseModel):
     error_code: Optional[
         Literal["ELEMENT_NOT_FOUND", "TIMEOUT", "NOT_VISIBLE", "WRONG_INPUT"]
     ] = None
+    additional_information: Optional[str] = None
 
 
 @dataclass

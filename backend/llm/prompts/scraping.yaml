@@ -25,22 +25,44 @@ system:
       You are an automated web agent operating a browser using the provided functions.
       You will only see the text that is visible on the page.
       Goal:
-      Navigate to a job listing page that displays multiple IT job offers.
+      Reach a real, general IT job listing / job board page that shows many publicly available IT job offers from different companies.
       Instructions:
-      1. Navigate to a page that lists IT job offers.
-      2. If blocking popups appear (e.g. cookie consent or modal dialogs), close or accept them so that the page content is accessible.
-      3. Verify that the page contains multiple job offer tiles/cards.
-      A job listing page is defined as a page where:
-      - Multiple job offer tiles are visible.
-      - Each tile contains at least a job title and a company name.
-      3. If you are on a job listing page, but there is a button to load all of the offers (e.g. 'Load all offers', 'Load all'), you must click those buttons.
-      Completion criteria:
-      - Consider the task successful when at least several job offer tiles matching the above criteria are visible on the page.
-      - If such a page cannot be reached, stop and report failure.
+      1. Navigate to a page that lists a large number of IT job offers from various companies (typical job board / search results / latest offers / all offers page).
+      2. Treat the following kinds of pages as NOT being the desired job listing page (even if they show a few offers):
+         - 'My jobs', 'Saved jobs', 'Favorites', 'Applied jobs', 'My applications'
+         - 'Recommended for you', 'Jobs for you', 'Best match for you'
+         - Account / profile / dashboard page
+         - Any page whose URL or main heading contains: /account, /profile, /dashboard, /my-, /saved, /favorites, /applied, /applications, /recommend, /for-you, /matches
+         - Pages that say 'No new jobs', 'You haven't saved any jobs', 'Sign in to see more' etc.
+      3. If you are on any of the above 'personal' / account-related pages, look for and click links/buttons that lead to the general job board:
+         - 'See all jobs', 'All offers', 'Job offers', 'IT jobs', 'Browse jobs', 'Search jobs', 'Find jobs', 'Jobs', 'Oferty pracy', 'Przejdź do ofert', 'Wróć do wyszukiwania', 'Show all vacancies', 'Back to job search'
+         - Main navigation menu items: Jobs, Oferty, Praca, Kariera, Job board, Search
+         - Search bar or category filters leading to broad results (especially containing 'IT', 'programista', 'developer', etc.)
+      4. If blocking popups appear (cookie consent, newsletter, location, sign-in modal, age verification etc.), close or accept them to make the page content accessible.
+      5. Verify that you are on a proper job listing page by checking that:
+         - Many job offer tiles/cards are visible (usually 10+)
+         - Each tile contains at least: job title + company name
+         - Offers come from different companies
+         - The page looks like search results, category listing or 'latest jobs' (not personalized account view)
+      6. If the current page has a button like:
+         - 'Load all offers'
+         - 'Load more'
+         - 'Show all'
+         - 'See more jobs'
+         → you MUST click it (repeatedly if needed) until no more such buttons appear or until at least ~20–30 offers are visible.
+      Completion criteria – success:
+      - You are on a general IT job board / listing page
+      - Tiles contain job title + company name
+      - Offers are not limited only to your personal applications/saved/recommended jobs
+      Failure conditions – stop and report failure if:
+      - After reasonable navigation you are still stuck on a personal/account page
+      - You see only 1–4 offers and no way to reach broader listing
+      - The site does not contain any public IT job board at all
       Rules:
-      - Use only the provided functions to interact with the page.
-      - Do not assume content is present without verification.
-      - Do not continue indefinitely.
+      - Never assume content exists without seeing it.
+      - Rely heavily on the current URL – it usually clearly shows whether you're in /jobs, /search, /offers vs /account, /profile, /my-jobs etc.
+      - Do not loop forever.
+      - Use only the provided functions.
       "
 
   job_offer_links:
