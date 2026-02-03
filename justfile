@@ -1,4 +1,4 @@
-install-deps: && instal-prod-deps install-dev-deps
+install-deps: && install-prod-deps install-dev-deps
 
 install-dev-deps:
     uv sync --dev
@@ -10,10 +10,10 @@ build-be:
     uv build
 
 build-fe:
-    bun run --cwd ./frontend openapi-typescript api/api.yaml -o api/api.ts
-    bun run vinxi build
-    rm -rf backend/_static && mkdir -p backend/_static && mv frontend/.output/public/* backend/_static
-    echo "Frontend has been successfully built"
+    ./scripts/buildfrontend.sh
+
+dev:
+    ./scripts/dev.sh
 
 test-all: && test-be test-fe
 
