@@ -1,7 +1,121 @@
 import { Title } from "@solidjs/meta";
+import {GET} from "@solidjs/start";
+import {client} from "../../api/client";
 
-function scrape_jobs(){
+function draw_job(data) {
+    let jobContainer = document.getElementById("job-entries-container");
+    if (!jobContainer){
+        return;
+    }
 
+    let li = document.createElement("li");
+
+    li.innerHTML = `
+            <div>
+                <h5>Job Title: </h5>
+                <p class="job-data">${data.title}</p>
+                <br>
+                <h5>Location: </h5>
+                <p class="job-data">${data.location}</p>
+                <br>
+                <h5>Company Name: </h5>
+                <p class="job-data">${data.company_name}</p>
+            </div>
+            <details>
+                <div class="job-data-container">
+                    <h5>CV Path: </h5>
+                    <p>${data.cv_path}</p>
+                </div>
+                <summary>Job details</summary>
+                <div class="job-data-container">
+                    <h5>Job Url: </h5>
+                     <p>
+                         <a href="${data.job_url}" target="_blank">${data.job_url}</a>
+                     </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Url: </h5>
+                    <p>
+                        <a href="${data.company_url}" target="_blank">${data.company_url}</a>
+                    </p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Contract Type: </h5>
+                    <p class="job-data">${data.contract_type}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Employment Type: </h5>
+                    <p class="job-data">${data.employment_type}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Work Arrangement: </h5>
+                    <p class="job-data">${data.work_arrangement}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Job Requirements: </h5>
+                    <p class="job-data">${data.requirements}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Duties: </h5>
+                    <p class="job-data">${data.duties}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>About Project: </h5>
+                    <p class="job-data">${data.about_project}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Company Benefits: </h5>
+                    <p class="job-data">${data.offer_benefits}</p>
+                </div>
+                <div class="job-data-container">
+                    <h5>Additional Information: </h5>
+                    <p class="job-data">${data.additional_information}</p>
+                </div>
+            </details>
+        `;
+    jobContainer.appendChild(li);
+}
+
+let eventSrc: EventSource | null = null;
+
+async function scrape_jobs(){
+    const scrapeBtn = document.getElementById("scrape-btn");
+    const statusDot = document.getElementById("status-dot");
+
+    if(! scrapeBtn || !statusDot){
+        return;
+    }
+
+    if (scrapeBtn.innerText === "Start job search") {
+        const response = await client.GET("/scrape_jobs_check")
+
+        if(!response){
+            return;
+        }
+
+         eventSrc = new EventSource("http://127.0.0.1:8000/");
+
+        eventSrc.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+            if (data === null && eventSrc) {
+                scrapeBtn.innerText = "Start job search";
+                eventSrc.close();
+                eventSrc = null;
+                return;
+            }
+            draw_job(data);
+        };
+
+        statusDot.className = "status-dot-alive";
+        scrapeBtn.innerText = "Stop job search";
+    } else {
+        if (eventSrc){
+            eventSrc.close();
+            eventSrc = null;
+        }
+        scrapeBtn.innerText = "Start job search";
+        statusDot.className = "status-dot-dead";
+    }
 }
 
 export default function Home() {
@@ -100,7 +214,7 @@ export default function Home() {
                       <button onClick={scrape_jobs} id="scrape-btn" class="normal-btn">Start job
                           search
                       </button>
-                      <p id="status-text">Run Status <span
+                      <p id="status-text">Run Status<span class="status-dot-dead"
                           id="status-dot"></span></p>
                   </div>
               </div>
