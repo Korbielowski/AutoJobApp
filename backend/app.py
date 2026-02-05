@@ -3,32 +3,16 @@ from typing import AsyncGenerator
 
 from agents import set_tracing_disabled
 from fastapi import FastAPI, Request
-from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.staticfiles import StaticFiles
-from starlette.responses import JSONResponse
 
 from backend.config import settings
 from backend.database.db import init_db
 from backend.logger import get_logger
 from backend.routes.main import api_router
 from backend.utils import return_exception_response
+from backend.auth import AuthStaticFiles
 
 logger = get_logger()
-
-async def verify_user(q):
-    pass
-
-class AuthStaticFiles(StaticFiles):
-    def __init__(self, *args, **kwargs) -> None:
-        super().__init__(*args, **kwargs)
-
-    async def __call__(self, scope, receive, send) -> None:
-
-        request = Request(scope, receive)
-        await verify_user(request)
-        await super().__call__(scope, receive, send)
-
 
 @asynccontextmanager
 async def setup(inner_app: FastAPI) -> AsyncGenerator:
@@ -38,7 +22,7 @@ async def setup(inner_app: FastAPI) -> AsyncGenerator:
 
     inner_app.mount(
         path="/",
-        app=AuthStaticFiles(directory=settings.ROOT_DIR / "_static", html=True),
+        app=AuthStaticFiles(directory=settings.STATIC_PATH, html=True),
         name="static",
     )
 
