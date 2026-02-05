@@ -19,6 +19,7 @@ class Settings(BaseSettings):
     CV_DIR_PATH: Path = _ROOT_DIR / "cv"
     HTML_TEMPLATE_PATH: Path = _ROOT_DIR / "career_documents" / "template.html"
     STYLING_PATH: Path = _ROOT_DIR / "career_documents" / "styling.css"
+    STATIC_PATH: Path = ROOT_DIR / "_static"
     PDF_ENGINE: str = "weasyprint"
     DEBUG: bool = False
     HEADLESS: bool = False
