@@ -12,18 +12,17 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 
 # Installation and Configuration Guide
 
-## Docker Installation (Recommended):
-
-## Installation:
 
 ### Requirements:
 - [Python 3.12+](https://www.python.org/downloads/) (Recommended [uv](https://docs.astral.sh/uv/getting-started/installation/))
 - [Weasyprint](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
 
+### Installation:
+
 ```bash
 uv install autojobapp
 ```
-Or
+#### Or
 ```bash
 pip install autojobapp
 ```
