@@ -20,7 +20,7 @@ __*AI agents that look for adequate jobs and create tailored CVs and cover lette
 ### Installation:
 
 ```bash
-uv install autojobapp
+uv tool install autojobapp
 ```
 #### Or
 ```bash
@@ -29,6 +29,10 @@ pip install autojobapp
 
 # Usage/Quick Start
 
+```bash
+uvx autojobapp
+```
+#### Or
 ```bash
 autojobapp
 ```
