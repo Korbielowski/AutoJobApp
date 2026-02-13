@@ -1,35 +1,19 @@
 from typing import Union
 
+from devtools import pformat
 from fastapi import APIRouter, Form, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
-from sqlmodel import SQLModel, select
-from devtools import pformat
+from sqlmodel import select
 
 from backend.config import settings
-from backend.database.crud import (
-    create_user,
-    delete_model,
-    delete_user,
-    get_certificates,
-    get_charities,
-    get_educations,
-    get_experiences,
-    get_languages,
-    get_locations,
-    get_programming_languages,
-    get_projects,
-    get_social_platforms,
-    get_tools,
-    get_users,
-    get_websites,
-    save_model,
-)
 from backend.database.models import (
+    BaseUserConnectedData,
     CertificateModel,
     CharityModel,
     EducationModel,
     ExperienceModel,
+    JobBoardWebsiteModel,
     LanguageModel,
     LocationModel,
     ProgrammingLanguageModel,
@@ -38,7 +22,22 @@ from backend.database.models import (
     ToolModel,
     UserModel,
     UserPreferencesModel,
-    WebsiteModel,
+)
+from backend.database.repositories import (
+    CertificateRepository,
+    CharityRepository,
+    DataRepository,
+    EducationRepository,
+    ExperienceRepository,
+    JobBoardWebsiteRepository,
+    LanguageRepository,
+    LocationRepository,
+    ProgrammingLanguageRepository,
+    ProjectRepository,
+    SocialPlatformRepository,
+    ToolRepository,
+    UserPreferencesRepository,
+    UserRepository,
 )
 from backend.logger import get_logger
 from backend.routes.deps import (
@@ -67,15 +66,41 @@ from backend.schemas.models import (
     CVCreationModeEnum,
     Education,
     Experience,
+    JobBoardWebsite,
     Language,
     Location,
     ProgrammingLanguage,
     Project,
     SocialPlatform,
     Tool,
-    Website,
 )
 
+REPO_MAP: dict[str, type[DataRepository]] = {
+    "location": LocationRepository,
+    "programmingLanguage": ProgrammingLanguageRepository,
+    "language": LanguageRepository,
+    "tool": ToolRepository,
+    "certificate": CertificateRepository,
+    "charity": CharityRepository,
+    "education": EducationRepository,
+    "experience": ExperienceRepository,
+    "project": ProjectRepository,
+    "socialPlatform": SocialPlatformRepository,
+    "website": JobBoardWebsiteRepository,
+}
+MODEL_MAP: dict[str, type[BaseUserConnectedData]] = {
+    "Location": LocationModel,
+    "ProgrammingLanguage": ProgrammingLanguageModel,
+    "Language": LanguageModel,
+    "Tool": ToolModel,
+    "Certificate": CertificateModel,
+    "Charity": CharityModel,
+    "Education": EducationModel,
+    "Experience": ExperienceModel,
+    "Project": ProjectModel,
+    "SocialPlatform": SocialPlatformModel,
+    "Website": JobBoardWebsiteModel,
+}
 router = APIRouter(tags=["users"])
 templates = Jinja2Templates(settings.ROOT_DIR / "templates")
 logger = get_logger()
@@ -85,7 +110,7 @@ logger = get_logger()
 async def load_login_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):
-    users = get_users(session=session, use_base_model=True)
+    users = UserRepository().get_users(session)
     if not users:
         return RedirectResponse(
             url=request.url_for("load_register_page"),
@@ -119,7 +144,7 @@ async def logout(session: SessionDep, request: Request):
 async def load_register_page(
     user: CurrentUser, session: SessionDep, request: Request
 ):
-    users = get_users(session=session, use_base_model=True)
+    users = UserRepository().get_users(session)
     return templates.TemplateResponse(
         request=request,
         name="register.html",
@@ -134,32 +159,24 @@ async def register(
     form_data: ProfileInfo,  # form: Annotated[TestInfo, Form()]
 ):
     logger.info(f"form_data: {pformat(form_data)}")
-    d: dict[str, type[SQLModel]] = {
-        "locations": LocationModel,
-        "programming_languages": ProgrammingLanguageModel,
-        "languages": LanguageModel,
-        "tools": ToolModel,
-        "certificates": CertificateModel,
-        "charities": CharityModel,
-        "educations": EducationModel,
-        "experiences": ExperienceModel,
-        "projects": ProjectModel,
-        "social_platforms": SocialPlatformModel,
-        "websites": WebsiteModel,
-    }
-    user = create_user(session, UserModel.model_validate(form_data.profile))
+
+    user_repo = UserRepository()
+    user = user_repo.create(
+        session, UserModel.model_validate(form_data.profile)
+    )
+
     form_dump = form_data.model_dump()
     form_dump.pop("profile")
 
     for key, val in form_dump.items():
         for v in val:
-            model = d[key].model_validate(v)
-            save_model(session=session, user=user, model=model)
+            model = MODEL_MAP[key].model_validate(v)
+            repo = REPO_MAP[key]()
+            repo.create(session=session, obj=model)
 
-    save_model(
+    UserPreferencesRepository().create(
         session=session,
-        user=user,
-        model=UserPreferencesModel(
+        obj=UserPreferencesModel(
             user_id=user.id,
             cv_creation_mode=CVCreationModeEnum.llm_generation,
             generate_cover_letter=False,
@@ -183,41 +200,10 @@ async def account_details(
         return RedirectResponse(
             url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
         )
+    user_id = current_user.id
+    # Load all user connected data into context
     context = {
-        "user": current_user,
-        "locations": get_locations(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "programming_languages": get_programming_languages(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "languages": get_languages(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "tools": get_tools(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "certificates": get_certificates(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "charities": get_charities(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "educations": get_educations(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "experiences": get_experiences(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "projects": get_projects(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "social_platforms": get_social_platforms(
-            session=session, user=current_user, use_base_model=True
-        ),
-        "websites": get_websites(
-            session=session, user=current_user, use_base_model=True
-        ),
+        key: val().read_all(session, user_id) for key, val in REPO_MAP.items()
     }
     return templates.TemplateResponse(
         request=request, name="account.html", context=context
@@ -230,7 +216,7 @@ async def account_details(
 async def delete_account(
     session: SessionDep, request: Request, email: str = Form(...)
 ):  # TODO: Try using EmailStr instead of plain str
-    delete_user(session, email)
+    UserRepository().delete_user(session, email)
     set_current_user(session, None)
 
     return RedirectResponse(
@@ -253,26 +239,13 @@ async def add_new_information_to_account(
         Experience,
         Project,
         SocialPlatform,
-        Website,
+        JobBoardWebsite,
     ],
 ):
-    d = {
-        "Location": LocationModel,
-        "ProgrammingLanguage": ProgrammingLanguageModel,
-        "Language": LanguageModel,
-        "Tool": ToolModel,
-        "Certificate": CertificateModel,
-        "Charity": CharityModel,
-        "Education": EducationModel,
-        "Experience": ExperienceModel,
-        "Project": ProjectModel,
-        "SocialPlatform": SocialPlatformModel,
-        "Website": WebsiteModel,
-    }
     form_dump = form_data.model_dump()
     logger.debug(f"Model sent for 'create' operation: {form_dump}")
 
-    validator = d[form_data.__class__.__name__]
+    validator = MODEL_MAP[form_data.__class__.__name__]
     model = validator.model_validate(form_dump)
 
     model.user_id = user.id
@@ -311,7 +284,7 @@ async def edit_information_about_account(
         "ExperiencePost": ExperienceModel,
         "ProjectPost": ProjectModel,
         "SocialPlatformPost": SocialPlatformModel,
-        "WebsitePost": WebsiteModel,
+        "WebsitePost": JobBoardWebsiteModel,
     }
 
     form_dump = form_data.model_dump()
@@ -327,6 +300,7 @@ async def edit_information_about_account(
     session.commit()
     session.refresh(model_to_update)
 
+    logger.info(f"Model to be returned: {pformat(model_to_update)}")
     return model_to_update
 
 
@@ -337,10 +311,7 @@ async def load_manage_users_page(
     return templates.TemplateResponse(
         request=request,
         name="manage_users.html",
-        context={
-            "user": user,
-            "users": get_users(session, use_base_model=True),
-        },
+        context={"user": user, "users": UserRepository().get_users(session)},
     )
 
 
@@ -348,30 +319,11 @@ async def load_manage_users_page(
 async def delete_item(
     user: CurrentUser, session: SessionDep, request: Request, item: DeleteItem
 ):
-    d = {
-        "location": LocationModel,
-        "programmingLanguage": ProgrammingLanguageModel,
-        "language": LanguageModel,
-        "tool": ToolModel,
-        "certificate": CertificateModel,
-        "charity": CharityModel,
-        "education": EducationModel,
-        "experience": ExperienceModel,
-        "project": ProjectModel,
-        "socialPlatform": SocialPlatformModel,
-        "website": WebsiteModel,
-    }
-
     if item.item_type == "user":
-        delete_user(session, user.email)
+        UserRepository().delete_user(session, user.email)
         set_current_user(session=session, email=None)
         return RedirectResponse(
             url=request.url_for("index"), status_code=status.HTTP_303_SEE_OTHER
         )
 
-    delete_model(
-        session=session,
-        user=user,
-        model_type=d[item.item_type],
-        item_id=item.item_id,
-    )
+    REPO_MAP[item.item_type]().delete(session, item.item_id)
