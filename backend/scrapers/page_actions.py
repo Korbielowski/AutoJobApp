@@ -3,16 +3,16 @@ import random
 from typing import Literal
 
 from playwright.async_api import (
+    Locator,
     Page,
     TimeoutError as PlaywrightTimeoutError,
-    Locator,
 )
 
 from backend.config import settings
-from backend.database.models import WebsiteModel
+from backend.database.models import JobBoardWebsiteModel
 from backend.logger import get_logger
 from backend.schemas.llm_responses import InputFieldTypeEnum, ToolResult
-from backend.schemas.models import Step, HTMLElement
+from backend.schemas.models import HTMLElement, Step
 from backend.scrapers.page_processing import (
     find_html_tag_v2,
     read_key_from_mapping_store,
@@ -76,7 +76,7 @@ async def step_click(element: HTMLElement, page: Page) -> ToolResult:
 async def base_fill(
     tag: Locator | None,
     input_type: Literal["email", "password"],
-    website_info: WebsiteModel,
+    website_info: JobBoardWebsiteModel,
 ) -> ToolResult:
     if not tag:
         logger.error("Could not find input field, ELEMENT_NOT_FOUND")
@@ -106,7 +106,7 @@ async def fill(
     page: Page,
     text: str,
     input_type: Literal["email", "password"],
-    website_info: WebsiteModel,
+    website_info: JobBoardWebsiteModel,
 ) -> tuple[ToolResult, Step | None]:
     async with _action_lock:
         tag = await find_html_tag_v2(page=page, text=text)
@@ -128,7 +128,7 @@ async def step_fill(
     page: Page,
     element: HTMLElement,
     input_type: Literal["email", "password"],
-    website_info: WebsiteModel,
+    website_info: JobBoardWebsiteModel,
 ) -> ToolResult:
     tag = await find_html_tag_v2(page=page, text=element)
     return await base_fill(
