@@ -4,7 +4,7 @@ from devtools import pformat
 from playwright.async_api import BrowserContext, Page
 from sqlmodel import Session
 
-from backend.database.models import WebsiteModel
+from backend.database.models import JobBoardWebsiteModel
 from backend.logger import get_logger
 from backend.schemas.models import JobEntry, UserNeeds
 
@@ -17,7 +17,7 @@ class BaseScraper(abc.ABC):
         url: str,
         context: BrowserContext,
         page: Page,
-        website_info: WebsiteModel,
+        website_info: JobBoardWebsiteModel,
         session: Session,
         retries: int,
     ) -> None:
