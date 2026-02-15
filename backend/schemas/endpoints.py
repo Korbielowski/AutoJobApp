@@ -9,6 +9,7 @@ from backend.schemas.models import (
     Charity,
     Education,
     Experience,
+    JobBoardWebsite,
     Language,
     Location,
     ProgrammingLanguage,
@@ -16,7 +17,6 @@ from backend.schemas.models import (
     SocialPlatform,
     Tool,
     User,
-    Website,
 )
 
 
@@ -153,7 +153,7 @@ class ProfileInfo(BaseModel):
     experiences: list[Experience]
     projects: list[Project]
     social_platforms: list[SocialPlatform]
-    websites: list[Website]
+    websites: list[JobBoardWebsite]
 
 
 class DeleteItem(BaseModel):
