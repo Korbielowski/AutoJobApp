@@ -5,10 +5,9 @@ from typing import Literal, Optional
 from playwright.async_api import Page
 from pydantic import BaseModel, Field
 
-from backend.database.models import WebsiteModel
+from backend.database.models import JobBoardWebsiteModel
 from backend.schemas.models import (
     AgentNameEnum,
-    Step,
     Certificate,
     Charity,
     Education,
@@ -16,6 +15,7 @@ from backend.schemas.models import (
     Language,
     ProgrammingLanguage,
     Project,
+    Step,
     Tool,
 )
 
@@ -96,6 +96,6 @@ class ToolResult(BaseModel):
 @dataclass
 class ContextForLLM:
     page: Page
-    website_info: WebsiteModel
+    website_info: JobBoardWebsiteModel
     agent_name: AgentNameEnum
     steps: list[Step]
