@@ -1,6 +1,5 @@
 import datetime
 
-from backend.database.repositories.website import update_website_model
 from devtools import pformat
 from playwright.async_api import Page
 from pydantic_ai import (
@@ -12,7 +11,8 @@ from pydantic_ai import (
 from pydantic_ai.models import KnownModelName, Model
 
 from backend.config import settings
-from backend.database.models import WebsiteModel
+from backend.database.models import JobBoardWebsiteModel
+from backend.database.repositories import JobBoardWebsiteRepository
 from backend.exceptions import AgentLoopError, ModelImportError
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
@@ -39,7 +39,7 @@ logger = get_logger()
 
 async def _run_automation_steps(
     agent_name: AgentNameEnum,
-    website_info: WebsiteModel,
+    website_info: JobBoardWebsiteModel,
     page: Page,
 ) -> tuple[bool, HTMLElement | None]:
     logger.info(f"Running automation steps for {agent_name} agent")
@@ -195,10 +195,10 @@ class LLMScraperV2(BaseScraper):
                 result.output.state == "done"
                 and result.output.confidence >= 0.8
             ):
-                update_website_model(
+                JobBoardWebsiteRepository().update(
                     session=self.session,
                     agent_name=agent_name,
-                    website_info=self.website_info,
+                    obj=self.website_info,
                     steps=steps,
                 )
                 return True
