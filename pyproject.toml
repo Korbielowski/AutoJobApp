@@ -21,6 +21,7 @@ dependencies = [
     "aiosqlite>=0.22.1",
     "beautifulsoup4>=4.13.5",
     "devtools>=0.12.2",
+    "easyocr>=1.7.2",
     "fastapi[standard]>=0.115.12",
     "loguru>=0.7.3",
     "patchright>=1.57.2",
