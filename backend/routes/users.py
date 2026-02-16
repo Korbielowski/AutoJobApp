@@ -86,7 +86,7 @@ REPO_MAP: dict[str, type[DataRepository]] = {
     "experience": ExperienceRepository,
     "project": ProjectRepository,
     "socialPlatform": SocialPlatformRepository,
-    "website": JobBoardWebsiteRepository,
+    "jobBoardWebsite": JobBoardWebsiteRepository,
 }
 MODEL_MAP: dict[str, type[BaseUserConnectedData]] = {
     "Location": LocationModel,
@@ -99,7 +99,7 @@ MODEL_MAP: dict[str, type[BaseUserConnectedData]] = {
     "Experience": ExperienceModel,
     "Project": ProjectModel,
     "SocialPlatform": SocialPlatformModel,
-    "Website": JobBoardWebsiteModel,
+    "JobBoardWebsite": JobBoardWebsiteModel,
 }
 router = APIRouter(tags=["users"])
 templates = Jinja2Templates(settings.ROOT_DIR / "templates")
@@ -205,6 +205,7 @@ async def account_details(
     context = {
         key: val().read_all(session, user_id) for key, val in REPO_MAP.items()
     }
+    context["user"] = current_user
     return templates.TemplateResponse(
         request=request, name="account.html", context=context
     )
