@@ -1,10 +1,9 @@
 import asyncio
 import re
 from typing import cast
-from copy import deepcopy
 
 import toon
-from bs4 import BeautifulSoup, ResultSet
+from bs4 import BeautifulSoup, ResultSet, Tag
 from devtools import pformat
 from playwright.async_api import (
     Locator,
@@ -12,7 +11,7 @@ from playwright.async_api import (
     TimeoutError as PlaywrightTimeoutError,
 )
 
-from backend.database.models import WebsiteModel
+from backend.database.models import JobBoardWebsiteModel
 from backend.logger import get_logger
 from backend.schemas.llm_responses import TextResponse
 from backend.schemas.models import AgentNameEnum, HTMLElement
@@ -73,8 +72,19 @@ async def read_key_from_mapping_store(text_key: str) -> HTMLElement:
         return HTMLElement.model_validate(tag)
 
 
+def _get_z_index(tag: Tag) -> str:
+    max_z_index = int(tag.get("z-index", "0"))
+
+    for t in list(reversed([t for t in tag.parents if t.name != "[document]"])):
+        z_index = int(t.get("z-index", "0"))
+        if z_index > max_z_index:
+            max_z_index = z_index
+
+    return str(max_z_index)
+
+
 async def get_page_content(
-    page: Page, website_info: WebsiteModel, agent_name: AgentNameEnum
+    page: Page, website_info: JobBoardWebsiteModel, agent_name: AgentNameEnum
 ) -> str:
     page_content = await page.content()
 
@@ -86,12 +96,17 @@ async def get_page_content(
     bs4_tags: ResultSet = soup.find_all()
     # Get "the most important" elements' attributes
     for tag in bs4_tags:
+        tag = cast(Tag, tag)
         data: dict[str, str | list[str]] = {}
+
         text = tag.find(string=True, recursive=False)
         if not text:
             text = ""
         elif len(text) == 1:
             text = ""
+        if not text:
+            continue
+
         if tag_id := tag.get("id"):
             data["id"] = tag_id
         if name := tag.get("name"):
@@ -115,32 +130,20 @@ async def get_page_content(
             else:
                 data["class_list"] = [class_list]
 
-        # If there is only class_list don't append element to the tag_list
-        if [k for k in data.keys() if k != "class_list"]:
-            data["parents_list"] = list(
-                reversed(
-                    [t.name for t in tag.parents if t.name != "[document]"]
-                )
-            )
-            data["parents"] = " ".join(data["parents_list"])
-            tag_list.append(data)
+        data["parents_list"] = list(
+            reversed([t.name for t in tag.parents if t.name != "[document]"])
+        )
+        data["parents"] = " ".join(data["parents_list"])
 
-    tag_list_llm: list[dict[str, str | list[str]]] = []
-    # Create list that will be sent to LLM/agent and will only include processed text
-    for elem in tag_list:
-        copied_elem: dict = deepcopy(elem)
-        copied_elem.pop("parents")
-        copied_elem.pop("parents_list")
-        tag_list_llm.append(copied_elem)
+        # data["z_index"] = _get_z_index(tag)
 
-    cleaned_tag_list: list[dict[str, str | list[str]]] = [
-        tag for tag in tag_list if tag.get("text")
-    ]
-    mapping = {}
+        tag_list.append(data)
 
-    # Make sure that text exists, if it exists check its length and cut if off, if it is too long
-    tag_list_llm = [tag for tag in tag_list_llm if tag.get("text")]
-    for index, tag in enumerate(tag_list_llm):
+    mapping: dict[str, dict[str, str | list[str]]] = {}
+    tag_list_llm: list[dict[str, str]] = []
+
+    # Check text's length and cut if off, if it is too long
+    for index, tag in enumerate(tag_list):
         base_text = cast(str, tag.get("text", ""))
         processed_text = re.sub(r"\s+", " ", base_text).strip()
 
@@ -154,22 +157,9 @@ async def get_page_content(
         if len(processed_text) >= CUTOFF_LEN:
             processed_text = processed_text[0 : CUTOFF_LEN + 1] + "..."
 
-        tag_list_llm[index] = {"text": processed_text}
-        mapping[processed_text] = cleaned_tag_list[index]
+        tag_list_llm.append({"text": processed_text})
+        mapping[processed_text] = tag_list[index]
 
-    # methods = {
-    #     "Raw HTML page": len(TIK.encode(page_content)),
-    #     "Raw HTML page with certain tags removed": len(TIK.encode(str(soup))),
-    #     "New cleaning method with json": len(
-    #         TIK.encode(json.dumps(tag_list_llm))
-    #     ),
-    #     "New cleaning method with toons": len(
-    #         TIK.encode(toon.encode(tag_list_llm))
-    #     ),
-    # }
-    # logger.info(pformat(methods))
-
-    # set_tmp_data_store(tag_list)
     await set_mapping_store(mapping)
 
     return toon.encode(tag_list_llm)
@@ -361,3 +351,17 @@ async def get_jobs_urls(
 
     logger.warning("Could not find job urls, returning empty tuple")
     return tuple()
+
+
+async def is_element_visible(locator: Locator) -> bool:
+    expression = """
+    (el) => { el. };
+    """
+    value = await locator.evaluate(expression)
+    if not isinstance(value, bool):
+        raise Exception(f"Value is not boolean, type: {type(value)}")
+    return value
+
+
+async def make_element_visible(locator: Locator) -> None:
+    pass
