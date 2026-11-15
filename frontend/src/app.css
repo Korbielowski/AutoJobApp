@@ -38,4 +38,17 @@
         focus-visible:ring-offset-2
         transition-colors duration-200
     }
+
+    .status-dot-dead {
+        @apply
+        inline-block
+        size-3
+        rounded-full
+        bg-blue-600
+    }
+
+    .status-dot-alive {
+        @apply
+        bg-green-700 animate-pulse
+    }
 }

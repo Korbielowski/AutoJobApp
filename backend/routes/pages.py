@@ -16,6 +16,7 @@ from fastapi.responses import (
     RedirectResponse,
     StreamingResponse,
     JSONResponse,
+    FileResponse
 )
 from fastapi.templating import Jinja2Templates
 from sqlmodel import func
@@ -43,30 +44,31 @@ templates = Jinja2Templates(settings.ROOT_DIR / "templates")
 logger = get_logger()
 
 
-@router.get("/")
-async def index(user: CurrentUser, session: SessionDep, request: Request):
-    if not user.id:
-        if session.scalar(func.count(UserModel.id)) >= 1:
-            return RedirectResponse(
-                url=request.url_for("load_login_page"),
-                status_code=status.HTTP_303_SEE_OTHER,
-            )
-        return RedirectResponse(
-            url=request.url_for("load_register_page"),
-            status_code=status.HTTP_303_SEE_OTHER,
-        )
-
-    scraped_job_entries = get_job_entries(session, user)
-
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={
-            "user": user,
-            "scraped_job_entries": scraped_job_entries,
-            "key_exists": True if settings.OPENAI_API_KEY else False,
-        },
-    )
+# @router.get("/")
+# async def index(user: CurrentUser, session: SessionDep, request: Request):
+#     return FileResponse(path=settings.ROOT_DIR / "_static" / "index.html")
+#     if not user.id:
+#         if session.scalar(func.count(UserModel.id)) >= 1:
+#             return RedirectResponse(
+#                 url=request.url_for("load_login_page"),
+#                 status_code=status.HTTP_303_SEE_OTHER,
+#             )
+#         return RedirectResponse(
+#             url=request.url_for("load_register_page"),
+#             status_code=status.HTTP_303_SEE_OTHER,
+#         )
+#
+#     scraped_job_entries = get_job_entries(session, user)
+#
+#     return templates.TemplateResponse(
+#         request=request,
+#         name="index.html",
+#         context={
+#             "user": user,
+#             "scraped_job_entries": scraped_job_entries,
+#             "key_exists": True if settings.OPENAI_API_KEY else False,
+#         },
+#     )
 
 
 async def save_user_cv(cv_file: UploadFile) -> str:

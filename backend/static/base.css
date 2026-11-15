@@ -209,45 +209,6 @@ summary::marker {
   gap: 0 20px;
 }
 
-#modal-container {
-  display: none;
-  position: fixed;
-  z-index: 1;
-  padding-top: 100px;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-}
-
-#modal-content {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  background-color: var(--surface);
-  margin: 0 auto;
-  padding: 1rem;
-  border: 1px solid var(--borders);
-  width: 80%;
-}
-
-#modal-close-btn {
-  color: var(--link);
-  font-size: 28px;
-  font-weight: bold;
-  text-decoration: none;
-  cursor: pointer;
-}
-
-#modal-close-btn:hover {
-  color: var(--link-active);
-}
-
-#modal-close-btn:focus {
-  color: var(--link-active);
-}
-
 #alert-container {
     background-color: var(--surface);
     width: 20rem;
@@ -258,9 +219,29 @@ summary::marker {
     padding: 1rem;
     align-items: stretch;
 
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 10;
+}
+
+#alert-close-btn {
+    color: var(--link);
+    font-size: 28px;
+    font-weight: bold;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+#alert-close-btn:hover {
+    color: var(--link-active);
+}
+
+#alert-close-btn:focus {
+    color: var(--link-active);
 }

@@ -1,4 +1,5 @@
 import datetime
+from typing import Any
 
 from pydantic import EmailStr
 from sqlmodel import JSON, Column, Field, SQLModel
@@ -65,9 +66,9 @@ class WebsiteModel(SQLModel, table=True):
     user_email: EmailStr
     user_password: str
     url: str
-    automation_steps: AutomationSteps | None = Field(
-        sa_column=Column(JSON), default_factory=dict
-    )
+    automation_steps: str | None #= Field(
+        #sa_column=Column(JSON), default_factory=dict
+    #)
 
 
 class LocationModel(SQLModel, table=True):

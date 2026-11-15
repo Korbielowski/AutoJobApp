@@ -15,7 +15,45 @@
       href="{{ url_for('static', path='base.css') }}"
     />
 
-      <script src="{{ url_for('static', path='js/requests.js')}}"></script>
+      <script>
+          function closeAlert(){
+              const alertContainer = document.getElementById("alert-container");
+              const alertBody = document.getElementById("alert-body");
+              const alertUrl = document.getElementById("alert-url");
+
+              alertContainer.hidden = true;
+              alertBody.innerText = "";
+              alertUrl.innerText = "";
+          }
+
+          async function sendRequest(url, data) {
+              let response = null;
+              if(data === undefined){
+                  response = await fetch(url);
+              } else {
+                  response = await fetch(url, data);
+              }
+
+              if(response === null){
+                  console.log("Response should not be null. There is some error in the code");
+              }
+
+              if (!response.ok){
+                  const content = await response.json();
+                  const alertContainer = document.getElementById("alert-container");
+                  const alertBody = document.getElementById("alert-body");
+                  const alertUrl = document.getElementById("alert-url");
+
+                  alertBody.innerText = JSON.stringify(content["body"]);
+                  alertUrl.innerText = content["url"];
+                  alertContainer.hidden = false;
+
+                  return null;
+              } else{
+                  return response;
+              }
+          }
+      </script>
     {% block styles %}{% endblock styles %}
   </head>
   <body>
@@ -47,14 +85,6 @@
       <p>&copy; 2026 AutoJobApp</p>
     </footer>
 
-    <div id="modal-container">
-      <div id="modal-content">
-        <h2>Error</h2>
-        <p id="modal-msg"></p>
-        <span id="modal-close-btn">&times;</span>
-      </div>
-    </div>
-
     <div id="alert-container" hidden="hidden">
         <div>
             <h3>Error message:</h3>
@@ -65,35 +95,9 @@
             <p id="alert-url"></p>
         </div>
 
-        <button onclick="closeAlert()">Close alert</button>
+        <button onclick="closeAlert()" id="alert-close-btn">Close alert</button>
     </div>
 
-    <script>
-      const modal = document.getElementById("modal-container");
-      const modalText = document.getElementById("modal-msg");
-      const modalCloseBtn = document.getElementById("modal-close-btn");
-
-      modalCloseBtn.addEventListener("click", async (e) => {
-        modal.style.display = "none";
-      });
-
-      window.addEventListener("click", async (e) => {
-        if (e.target == modal) {
-          modal.style.display = "none";
-        }
-      });
-
-      async function handleResponse(response) {
-        if (!response.ok) {
-          modal.style.display = "block";
-          modalText.innerText = `Status: ${response.status}, Message: ${response.statusText}`;
-
-          return;
-        }
-        model = await response.json();
-        return model;
-      }
-    </script>
     {% block scripts %}{% endblock scripts %}
   </body>
 </html>

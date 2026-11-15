@@ -50,7 +50,7 @@ class AttributeType(StrEnum):
 
 
 class Step(BaseModel):
-    action: Callable
+    action: str
     html_element_attribute: str  # TODO: Experiment with Locators too if you can
     attribute_type: AttributeType
     arguments: dict
