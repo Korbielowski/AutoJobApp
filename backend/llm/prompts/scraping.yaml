@@ -33,7 +33,7 @@ system:
       A job listing page is defined as a page where:
       - Multiple job offer tiles are visible.
       - Each tile contains at least a job title and a company name.
-      3. If you are on a job listing page, but there is a button to load all of the offers (e.g. 'Load all offers', 'Load all'), you must click those buttons.
+      3. If you are on a job listing page, but there is a button to load more offers (e.g. 'Load more offers', 'Load more'), you must click those buttons.
       Completion criteria:
       - Consider the task successful when at least several job offer tiles matching the above criteria are visible on the page.
       - If such a page cannot be reached, stop and report failure.

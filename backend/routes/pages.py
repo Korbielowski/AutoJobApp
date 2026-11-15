@@ -2,6 +2,7 @@ import os.path
 from typing import Annotated, Union
 
 import aiofiles
+from devtools import pformat
 from fastapi import (
     APIRouter,
     File,
@@ -10,29 +11,27 @@ from fastapi import (
     UploadFile,
     status,
 )
-from fastapi.responses import (
-    HTMLResponse,
-    RedirectResponse,
-    StreamingResponse,
-)
+from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import func
 
 from backend.config import settings
-from backend.database.crud import (
-    get_job_entries,
-    get_user_needs,
-    get_user_preferences,
-    get_websites,
-    update_user_preferences,
-)
 from backend.database.models import (
     CVCreationModeEnum,
     UserModel,
     UserPreferencesModel,
 )
+from backend.database.repositories.job_board_website import (
+    JobBoardWebsiteRepository,
+)
+from backend.database.repositories.job_entry import JobEntryRepository
+from backend.database.repositories.user_preferences import (
+    UserPreferencesRepository,
+)
+from backend.database.repositories.utils import get_user_needs
 from backend.logger import get_logger
 from backend.routes.deps import CurrentUser, SessionDep
+from backend.schemas.models import UserPreferences
 from backend.scrapers import find_job_entries
 
 router = APIRouter(tags=["pages"])
@@ -53,7 +52,7 @@ async def index(user: CurrentUser, session: SessionDep, request: Request):
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    scraped_job_entries = get_job_entries(session, user)
+    scraped_job_entries = JobEntryRepository().read_all(session, user.id)
 
     return templates.TemplateResponse(
         request=request,
@@ -100,17 +99,22 @@ async def save_preferences(
         cv_path=await save_user_cv(cv_file),
         retries=retries,
     )
-    update_user_preferences(session=session, user=user, model=preferences_model)
+    repo = UserPreferencesRepository()
+    db_preferences_model = repo.read_one_by_user_id(session, user.id)
+    repo.update(session, db_preferences_model, **preferences_model.model_dump())
 
 
 @router.get("/scrape_jobs", response_class=StreamingResponse)
 async def scrape_jobs(user: CurrentUser, session: SessionDep):
-    # if not settings.OPENAI_API_KEY:
-    #     raise HTTPException(
-    #         status_code=404, detail="OPENAI_API_KEY env variable is not set"
-    #     )
-    websites = get_websites(session=session, user=user, use_base_model=True)
-    user_preferences = get_user_preferences(session=session, user=user)
+    job_board_website_repo = JobBoardWebsiteRepository()
+    websites = job_board_website_repo.read_all(session=session, user_id=user.id)
+    user_preferences_repository = UserPreferencesRepository()
+
+    x = user_preferences_repository.read_one_by_user_id(
+        session=session, user_id=user.id
+    ).model_dump()
+    logger.error(pformat(x))
+    user_preferences = UserPreferences.model_validate(x)
     user_needs = get_user_needs(session=session, user=user)
     return StreamingResponse(
         content=find_job_entries(

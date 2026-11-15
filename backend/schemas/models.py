@@ -60,6 +60,7 @@ class HTMLElement(BaseModel):
     class_list: list[str] = []
     parents: str = ""
     parents_list: list[str] = []
+    z_index: str = ""
 
 
 class Step(BaseModel):

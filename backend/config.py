@@ -52,7 +52,7 @@ class Settings(BaseSettings):
         return "localhost"
 
     @computed_field
-    @property
+    # @property
     def DATABASE_URI(self) -> str:
         if self.DB_BACKEND == "sqlite":
             # TODO: Switch to async database queries, use: sqlite+aiosqlite

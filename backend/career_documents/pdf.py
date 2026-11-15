@@ -7,16 +7,16 @@ from sqlmodel import Session
 from weasyprint import CSS, HTML
 
 from backend.config import settings
-from backend.database.crud import (
-    get_candidate_data,
-    get_user_preferences,
-    save_job_entry,
-)
 from backend.database.models import (
     CVCreationModeEnum,
     JobEntryModel,
     UserModel,
 )
+from backend.database.repositories.job_entry import JobEntryRepository
+from backend.database.repositories.user_preferences import (
+    UserPreferencesRepository,
+)
+from backend.database.repositories.utils import get_candidate_data
 from backend.llm.llm import send_req_to_llm
 from backend.llm.prompts import load_prompt
 from backend.logger import get_logger
@@ -29,6 +29,7 @@ from backend.schemas.llm_responses import (
 from backend.scrapers.base_scraper import JobEntry
 
 logger = get_logger()
+OPENAI_MODEL = "openai:gpt-5-mini-2025-08-07"
 
 
 async def _load_template_and_styling() -> tuple[str, str]:
@@ -75,7 +76,8 @@ async def _create_cover_letter(
             prompt_path="career_documents:user:company_data_search",
             company_name=job_entry.company_name,
         ),
-        model=CompanyDetails,
+        response_type=CompanyDetails,
+        model=OPENAI_MODEL,
         tools=["web_search"],
     )
     logger.debug(f"Company info: {devtools.pformat(company_details)}")
@@ -96,7 +98,8 @@ async def _create_cover_letter(
             business_and_industry_context=company_details.business_and_industry_context,
             mission_and_strategic_direction=company_details.mission_and_strategic_direction,
         ),
-        model=CoverLetterOutput,
+        response_type=CoverLetterOutput,
+        model=OPENAI_MODEL,
     )
 
     file_name = f"Letter_{converted_title}_{current_time}"
@@ -124,32 +127,33 @@ async def _create_cv(
     cv = None
 
     if cv_creation_mode == "llm-generation":
-        skills_chosen_by_llm = await send_req_to_llm(
-            system_prompt=await load_prompt(
-                prompt_path="career_documents:system:skill_selection"
-            ),
-            prompt=await load_prompt(
-                prompt_path="career_documents:user:skill_selection",
-                model=candidate_data,
-                requirements=job_entry.requirements,
-                duties=job_entry.duties,
-                about_project=job_entry.about_project,
-            ),
-            model=SkillsLLMResponse,
-        )
+        # skills_chosen_by_llm = await send_req_to_llm(
+        #     system_prompt=await load_prompt(
+        #         prompt_path="career_documents:system:skill_selection"
+        #     ),
+        #     prompt=await load_prompt(
+        #         prompt_path="career_documents:user:skill_selection",
+        #         model=candidate_data,
+        #         requirements=job_entry.requirements,
+        #         duties=job_entry.duties,
+        #         about_project=job_entry.about_project,
+        #     ),
+        #     model=SkillsLLMResponse,
+        # )
         cv = await send_req_to_llm(
             system_prompt=await load_prompt(
                 prompt_path="career_documents:system:cv_generation"
             ),
             prompt=await load_prompt(
                 prompt_path="career_documents:user:cv_generation",
-                model=skills_chosen_by_llm,
+                model=candidate_data,
                 full_name=candidate_data.full_name,
                 email=candidate_data.email,
                 phone_number=candidate_data.phone_number,
                 social_platforms=candidate_data.social_platforms,
             ),
-            model=CVOutput,
+            response_type=CVOutput,
+            model=OPENAI_MODEL,
         )
     elif cv_creation_mode == "llm-selection":
         skills_chosen_by_llm = await send_req_to_llm(
@@ -163,7 +167,8 @@ async def _create_cv(
                 duties=job_entry.duties,
                 about_project=job_entry.about_project,
             ),
-            model=SkillsLLMResponse,
+            response_type=SkillsLLMResponse,
+            model=OPENAI_MODEL,
         )
         cv = await send_req_to_llm(
             prompt=await load_prompt(
@@ -175,7 +180,8 @@ async def _create_cv(
                 social_platforms=candidate_data.social_platforms,
                 template=html_template,
             ),
-            model=CVOutput,
+            response_type=CVOutput,
+            model=OPENAI_MODEL,
         )
     elif cv_creation_mode == "no-llm-generation":
         raise NotImplementedError(
@@ -191,12 +197,17 @@ async def _create_cv(
         # )
         # cv = CVOutput(html=html, css=styling)
     elif cv_creation_mode == "user-specified":
-        if user_preferences := get_user_preferences(session, user):
+        if user_preferences := UserPreferencesRepository().read_one_by_user_id(
+            session, user.id
+        ):
             return Path(user_preferences.cv_path).as_uri()
         raise Exception("Could not load or create/generate CV")
 
     file_name = f"CV_{converted_title}_{current_time}"
     cv_path = path / f"{file_name}.pdf"
+
+    if not cv:
+        raise Exception("cv variable is None, this should not happen")
 
     HTML(string=cv.html).write_pdf(cv_path, stylesheets=[CSS(string=cv.css)])
     await _save_document_to_file(
@@ -242,7 +253,7 @@ async def generate_career_documents(
             current_time=current_time,
             path=documents_path,
         )
-    job_entry_model = save_job_entry(
+    job_entry_model = JobEntryRepository().update(
         session=session, user=user, job_entry=job_entry
     )
     return job_entry_model
